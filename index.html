@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bản đồ Vector Cà Mau Siêu Nét</title>
+  <title>Bản đồ Vector Cà Mau</title>
   
   <!-- CSS MapLibre GL -->
   <link href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css" rel="stylesheet" />
@@ -38,115 +38,103 @@
   <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
 
   <script>
-    // 1. Đăng ký đọc file PMTiles
+    // 1. Đăng ký protocol PMTiles
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol("pmtiles", protocol.tile);
 
-    // Đường dẫn trực tiếp file Ca-Mau.pmtiles trên GitHub Pages
     const PMTILES_URL = "https://vinhhungdesign2345-tech.github.io/Ban-do/Ca-Mau.pmtiles"; 
 
-    const p = new pmtiles.PMTiles(PMTILES_URL);
-    protocol.add(p);
-
-    // Đọc metadata để lấy tên source-layer chuẩn bên trong file
-    p.getHeader().then(() => {
-      p.getMetadata().then(meta => {
-        const sourceLayerName = (meta.vector_layers && meta.vector_layers.length > 0) 
-          ? meta.vector_layers[0].id 
-          : 'Ca-Mau';
-
-        console.log("Source layer Cà Mau phát hiện được:", sourceLayerName);
-
-        // 2. Khởi tạo bản đồ tập trung vào Cà Mau
-        const map = new maplibregl.Map({
-          container: 'map',
-          style: {
-            version: 8,
-            sources: {
-              'osm-tiles': {
-                type: 'raster',
-                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                tileSize: 256,
-                attribution: '© OpenStreetMap'
-              },
-              'camau-vector': {
-                type: 'vector',
-                url: `pmtiles://${PMTILES_URL}`
-              }
-            },
-            layers: [
-              // Nền bản đồ OSM
-              { id: 'osm-layer', type: 'raster', source: 'osm-tiles' },
-              
-              // Layer Tô màu: Tự động băm màu rực rỡ dựa vào tên/id của từng mảng polygon
-              {
-                id: 'camau-fill',
-                type: 'fill',
-                source: 'camau-vector',
-                'source-layer': sourceLayerName,
-                paint: {
-                  'fill-color': [
-                    'hsl',
-                    // Băm màu ngẫu nhiên (0 -> 360 độ màu HSL)
-                    ['%', ['abs', ['hash', ['coalesce', ['get', 'ten_phuong'], ['get', 'TEN_XA'], ['get', 'NAME_2'], ['get', 'name'], 'unknown']]], 360],
-                    75, // Độ bão hòa màu 75% cho tươi
-                    55  // Độ sáng 55% dễ nhìn
-                  ],
-                  'fill-opacity': 0.65 // Độ trong suốt nhẹ để thấy nền OSM
-                }
-              },
-
-              // Layer Viền trắng sắc nét giữa các vùng
-              {
-                id: 'camau-line',
-                type: 'line',
-                source: 'camau-vector',
-                'source-layer': sourceLayerName,
-                paint: {
-                  'line-color': '#ffffff',
-                  'line-width': 1
-                }
-              }
-            ]
+    // 2. Khởi tạo bản đồ trực tiếp (không bắt trình duyệt chờ promise)
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: {
+          'osm-tiles': {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap'
           },
-          center: [105.15, 9.18], // Tọa độ trung tâm Cà Mau
-          zoom: 9.5 // Mức zoom vừa vặn nhìn toàn bộ Cà Mau
-        });
-
-        // Cập nhật trạng thái
-        map.on('load', () => {
-          document.getElementById('status').textContent = 'Đã tải xong bản đồ Cà Mau!';
-        });
-
-        // 3. Hiện Popup tên xã/huyện khi click vào
-        map.on('click', 'camau-fill', (e) => {
-          if (e.features.length > 0) {
-            const props = e.features[0].properties;
-            
-            // Tìm thuộc tính chứa tên địa danh
-            const name = props.ten_phuong || props.TEN_XA || props.ten_xa || props.NAME_2 || props.NAME_1 || props.name || 'Ranh giới Cà Mau';
-            const huyen = props.ten_huyen || props.TEN_HUYEN || props.NAME_1 || '';
-
-            let popupContent = `<b style="font-size:14px; color:#0066cc;">${name}</b>`;
-            if (huyen) popupContent += `<br/><span style="font-size:12px; color:#555;">Huyện/TP: ${huyen}</span>`;
-
-            new maplibregl.Popup()
-              .setLngLat(e.lngLat)
-              .setHTML(popupContent)
-              .addTo(map);
+          'camau-vector': {
+            type: 'vector',
+            url: `pmtiles://${PMTILES_URL}`
           }
-        });
+        },
+        layers: [
+          // Lớp nền OpenStreetMap
+          { id: 'osm-layer', type: 'raster', source: 'osm-tiles' },
+          
+          // Lớp tô màu các vùng Cà Mau
+          {
+            id: 'camau-fill',
+            type: 'fill',
+            source: 'camau-vector',
+            'source-layer': 'Ca-Mau', // Tên layer mặc định
+            paint: {
+              'fill-color': [
+                'interpolate',
+                ['linear'],
+                ['coalesce', ['id'], ['line-progress'], 1],
+                0, '#1f77b4',
+                5, '#aec7e8',
+                10, '#ff7f0e',
+                15, '#2ca02c',
+                20, '#d62728',
+                25, '#9467bd',
+                30, '#8c564b'
+              ],
+              'fill-opacity': 0.6
+            }
+          },
 
-        map.on('mouseenter', 'camau-fill', () => map.getCanvas().style.cursor = 'pointer');
-        map.on('mouseleave', 'camau-fill', () => map.getCanvas().style.cursor = '');
-      }).catch(err => {
-        console.error("Lỗi đọc metadata PMTiles:", err);
-        document.getElementById('status').textContent = 'Lỗi đọc file Ca-Mau.pmtiles!';
-      });
-    }).catch(err => {
-      console.error("Lỗi tải PMTiles:", err);
-      document.getElementById('status').textContent = 'Không kết nối được file Ca-Mau.pmtiles!';
+          // Lớp viền trắng rõ nét
+          {
+            id: 'camau-line',
+            type: 'line',
+            source: 'camau-vector',
+            'source-layer': 'Ca-Mau',
+            paint: {
+              'line-color': '#ffffff',
+              'line-width': 1
+            }
+          }
+        ]
+      },
+      center: [105.15, 9.18], // Tọa độ trung tâm Cà Mau
+      zoom: 9.5
     });
+
+    // 3. Xử lý khi bản đồ tải xong
+    map.on('load', () => {
+      document.getElementById('status').textContent = 'Đã tải xong bản đồ Cà Mau!';
+
+      // Kiểm tra chính xác tên source-layer ngầm bên trong file để liên kết chuẩn
+      const p = new pmtiles.PMTiles(PMTILES_URL);
+      p.getMetadata().then(meta => {
+        if (meta.vector_layers && meta.vector_layers.length > 0) {
+          const realLayerName = meta.vector_layers[0].id;
+          map.setProperty('camau-fill', 'source-layer', realLayerName);
+          map.setProperty('camau-line', 'source-layer', realLayerName);
+        }
+      }).catch(err => console.log(err));
+    });
+
+    // Hiện thông tin Popup khi click vào từng vùng
+    map.on('click', 'camau-fill', (e) => {
+      if (e.features.length > 0) {
+        const props = e.features[0].properties;
+        const name = props.ten_phuong || props.TEN_XA || props.ten_xa || props.NAME_2 || props.NAME_1 || props.name || 'Cà Mau';
+        
+        new maplibregl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(`<b style="font-size: 14px; color: #0066cc;">${name}</b>`)
+          .addTo(map);
+      }
+    });
+
+    map.on('mouseenter', 'camau-fill', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'camau-fill', () => map.getCanvas().style.cursor = '');
   </script>
 </body>
 </html>
