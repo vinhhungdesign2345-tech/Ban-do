@@ -30,7 +30,7 @@
 </head>
 <body>
 
-  <div id="status">Đang khởi tạo bản đồ...</div>
+  <div id="status">Đang tải bản đồ...</div>
   <div id="map"></div>
 
   <!-- Thư viện MapLibre GL & PMTiles -->
@@ -38,142 +38,114 @@
   <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
 
   <script>
-    // ==========================================================
-    // CẤU HÌNH ĐƯỜNG DẪN FILE PMTILES
-    // ==========================================================
-    // Dùng URL tuyệt đối để bypass lỗi CORS trên GitHub Pages
-    const PMTILES_URL = "https://vinhhungdesign2345-tech.github.io/Ban-do/34-Tinh-Thanh.pmtiles"; 
-    
-    // Tên thuộc tính trong GeoJSON chứa tên tỉnh (dùng để tạo màu)
-    // MapLibre sẽ dò tìm các cột này theo thứ tự.
-    const PROVINCE_NAME_FIELDS = ['ten_tinh', 'NAME_1', 'name_1', 'Province', 'Tinh', 'name'];
-
-    // ==========================================================
-    // KHỞI TẠO PMTILES PROTOCOL
-    // ==========================================================
+    // 1. Đăng ký đọc chuẩn PMTiles
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol("pmtiles", protocol.tile);
 
-    const p = new pmtiles.PMTiles(PMTILES_URL);
-    protocol.add(p);
+    const PMTILES_URL = "https://vinhhungdesign2345-tech.github.io/Ban-do/34-Tinh-Thanh.pmtiles"; 
 
-    // ==========================================================
-    // ĐỌC METADATA VÀ KHỞI TẠO BẢN ĐỒ
-    // ==========================================================
-    p.getHeader().then(() => {
-      p.getMetadata().then(meta => {
-        // Tự động lấy tên layer đầu tiên bên trong file PMTiles
-        const sourceLayerName = (meta.vector_layers && meta.vector_layers.length > 0) 
-          ? meta.vector_layers[0].id 
-          : '34-Tinh-Thanh';
+    // Bảng màu sắc tươi sáng dành riêng cho các tỉnh
+    const PALETTE = [
+      '#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', 
+      '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabed4', 
+      '#469990', '#dcbeff', '#9A6324', '#fffac8', '#800000', 
+      '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'
+    ];
 
-        console.log("Tên Source Layer phát hiện được:", sourceLayerName);
-
-        // Khởi tạo bản đồ MapLibre
-        const map = new maplibregl.Map({
-          container: 'map',
-          style: {
-            version: 8,
-            sources: {
-              'osm-tiles': {
-                type: 'raster',
-                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                tileSize: 256,
-                attribution: '© OpenStreetMap'
-              },
-              'vietnam-vector': {
-                type: 'vector',
-                url: `pmtiles://${PMTILES_URL}`
-              }
-            },
-            layers: [
-              { id: 'osm-layer', type: 'raster', source: 'osm-tiles' },
-              
-              // ==================================================
-              // LAYER TÔ MÀU (FILL): MỖI TỈNH MỘT MÀU
-              // ==================================================
-              {
-                id: 'vietnam-fill',
-                type: 'fill',
-                source: 'vietnam-vector',
-                'source-layer': sourceLayerName,
-                paint: {
-                  // SỬ DỤNG EXPRESSION ĐỂ TẠO MÀU ĐỘNG BẰNG HASHING
-                  // Thuật toán: Lấy tên tỉnh -> Hash thành số -> Chuyển thành màu HSL
-                  'fill-color': [
-                    'hsl',
-                    // BƯỚC 1: Hash tên tỉnh thành một góc Hue (0-360)
-                    [
-                      '%', 
-                      [
-                        'abs', 
-                        ['hash', ['coalesce', ...PROVINCE_NAME_FIELDS.map(f => ['get', f]), 'unknown']]
-                      ],
-                      360
-                    ],
-                    // BƯỚC 2: Độ bão hòa (Saturation) - cố định 70% cho màu tươi
-                    70,
-                    // BƯỚC 3: Độ sáng (Lightness) - cố định 60% để nhìn rõ chữ OSM nền
-                    60
-                  ],
-                  'fill-opacity': 0.6 // Độ trong suốt để nhìn thấy bản đồ nền
-                }
-              },
-              
-              // LAYER ĐƯỜNG VIỀN (LINE): MÀU TRẮNG MẢNH
-              {
-                id: 'vietnam-line',
-                type: 'line',
-                source: 'vietnam-vector',
-                'source-layer': sourceLayerName,
-                paint: {
-                  'line-color': '#ffffff', // Viền trắng mảnh để phân biệt các màu
-                  'line-width': 0.8
-                }
-              }
-            ]
+    // Khởi tạo bản đồ trực tiếp
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: {
+          'osm-tiles': {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap'
           },
-          center: [108.0, 16.0],
-          zoom: 5
-        });
-
-        // ==========================================================
-        // XỬ LÝ SỰ KIỆN TẢI XONG VÀ POPUP
-        // ==========================================================
-        map.on('load', () => {
-          document.getElementById('status').textContent = 'Bản đồ tô màu đã tải xong!';
-        });
-
-        map.on('click', 'vietnam-fill', (e) => {
-          if (e.features.length > 0) {
-            const props = e.features[0].properties;
-            
-            // Tìm tên tỉnh từ metadata
-            let provinceName = 'Không rõ tên';
-            for (const field of PROVINCE_NAME_FIELDS) {
-              if (props[field]) {
-                provinceName = props[field];
-                break;
-              }
-            }
-            
-            new maplibregl.Popup()
-              .setLngLat(e.lngLat)
-              .setHTML(`<b>${provinceName}</b>`)
-              .addTo(map);
+          'vietnam-vector': {
+            type: 'vector',
+            url: `pmtiles://${PMTILES_URL}`
           }
-        });
+        },
+        layers: [
+          // Layer Nền OSM
+          { id: 'osm-layer', type: 'raster', source: 'osm-tiles' },
+          
+          // Layer Tô màu (dùng match tự động tô ngẫu nhiên các tỉnh)
+          {
+            id: 'vietnam-fill',
+            type: 'fill',
+            source: 'vietnam-vector',
+            'source-layer': '34-Tinh-Thanh', // Tên mặc định của layer
+            paint: {
+              // Tô màu đa dạng dựa vào id/tọa độ tính năng
+              'fill-color': [
+                'interpolate',
+                ['linear'],
+                ['coalesce', ['id'], 1],
+                0, '#3cb44b',
+                5, '#e6194B',
+                10, '#ffe119',
+                15, '#4363d8',
+                20, '#f58231',
+                25, '#911eb4',
+                30, '#42d4f4',
+                35, '#f032e6'
+              ],
+              'fill-opacity': 0.55
+            }
+          },
 
-        map.on('mouseenter', 'vietnam-fill', () => map.getCanvas().style.cursor = 'pointer');
-        map.on('mouseleave', 'vietnam-fill', () => map.getCanvas().style.cursor = '');
-      }).catch(err => {
-        console.error("Lỗi đọc Metadata:", err);
-        document.getElementById('status').textContent = 'Lỗi đọc file PMTiles!';
-      });
-    }).catch(err => {
-      console.error("Lỗi tải PMTiles:", err);
-      document.getElementById('status').textContent = 'Lỗi kết nối file PMTiles!';
+          // Layer Viền đỏ sắc nét
+          {
+            id: 'vietnam-line',
+            type: 'line',
+            source: 'vietnam-vector',
+            'source-layer': '34-Tinh-Thanh',
+            paint: {
+              'line-color': '#d62728',
+              'line-width': 1.2
+            }
+          }
+        ]
+      },
+      center: [108.0, 16.0],
+      zoom: 5
     });
+
+    // Khi bản đồ sẵn sàng
+    map.on('load', () => {
+      document.getElementById('status').textContent = 'Đã tải xong Vector Tiles!';
+
+      // Tự động kiểm tra tên layer thật bên trong file pmtiles để sửa nếu lỡ lệch
+      const p = new pmtiles.PMTiles(PMTILES_URL);
+      p.getMetadata().then(meta => {
+        if (meta.vector_layers && meta.vector_layers.length > 0) {
+          const realLayerName = meta.vector_layers[0].id;
+          map.setFilter('vietnam-fill', null);
+          map.setProperty('vietnam-fill', 'source-layer', realLayerName);
+          map.setProperty('vietnam-line', 'source-layer', realLayerName);
+        }
+      });
+    });
+
+    // Hiện Popup tên tỉnh khi bấm vào
+    map.on('click', 'vietnam-fill', (e) => {
+      if (e.features.length > 0) {
+        const props = e.features[0].properties;
+        const name = props.ten_phuong || props.TEN_XA || props.NAME_2 || props.NAME_1 || props.name || props.ten_tinh || 'Ranh giới tỉnh';
+        
+        new maplibregl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(`<b style="font-size: 14px;">${name}</b>`)
+          .addTo(map);
+      }
+    });
+
+    map.on('mouseenter', 'vietnam-fill', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'vietnam-fill', () => map.getCanvas().style.cursor = '');
   </script>
 </body>
 </html>
