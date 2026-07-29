@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bản đồ Vector Việt Nam - Mỗi Tỉnh Một Màu</title>
+  <title>Bản đồ Vector Cà Mau Siêu Nét</title>
   
   <!-- CSS MapLibre GL -->
   <link href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css" rel="stylesheet" />
@@ -30,7 +30,7 @@
 </head>
 <body>
 
-  <div id="status">Đang tải bản đồ...</div>
+  <div id="status">Đang tải bản đồ Cà Mau...</div>
   <div id="map"></div>
 
   <!-- Thư viện MapLibre GL & PMTiles -->
@@ -38,152 +38,115 @@
   <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
 
   <script>
-    // 1. Đăng ký PMTiles Protocol
+    // 1. Đăng ký đọc file PMTiles
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol("pmtiles", protocol.tile);
 
-    const PMTILES_URL = "https://vinhhungdesign2345-tech.github.io/Ban-do/34-Tinh-Thanh.pmtiles"; 
+    // Đường dẫn trực tiếp file Ca-Mau.pmtiles trên GitHub Pages
+    const PMTILES_URL = "https://vinhhungdesign2345-tech.github.io/Ban-do/Ca-Mau.pmtiles"; 
 
-    // Hàm tạo màu HSL ngẫu nhiên sinh động từ chuỗi chữ bất kỳ
-    function stringToColor(str) {
-      if (!str) return '#808080';
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      const h = Math.abs(hash) % 360;
-      return `hsl(${h}, 75%, 55%)`; // Màu HSL tươi sáng
-    }
+    const p = new pmtiles.PMTiles(PMTILES_URL);
+    protocol.add(p);
 
-    // Các tên cột có thể chứa Tên Tỉnh trong file GeoJSON của bạn
-    const PROVINCE_FIELDS = ['ten_tinh', 'NAME_1', 'name_1', 'Tinh', 'province', 'NAME_0'];
-
-    const map = new maplibregl.Map({
-      container: 'map',
-      style: {
-        version: 8,
-        sources: {
-          'osm-tiles': {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '© OpenStreetMap'
-          },
-          'vietnam-vector': {
-            type: 'vector',
-            url: `pmtiles://${PMTILES_URL}`
-          }
-        },
-        layers: [
-          { id: 'osm-layer', type: 'raster', source: 'osm-tiles' },
-          
-          // Layer Fill: Mặc định trong suốt ban đầu
-          {
-            id: 'vietnam-fill',
-            type: 'fill',
-            source: 'vietnam-vector',
-            'source-layer': '34-Tinh-Thanh',
-            paint: {
-              'fill-color': '#0066cc',
-              'fill-opacity': 0.5
-            }
-          },
-          
-          // Layer Viền: Viền xám mỏng nhạt để không bị rối mắt
-          {
-            id: 'vietnam-line',
-            type: 'line',
-            source: 'vietnam-vector',
-            'source-layer': '34-Tinh-Thanh',
-            paint: {
-              'line-color': '#555555',
-              'line-width': 0.5
-            }
-          }
-        ]
-      },
-      center: [108.0, 16.0],
-      zoom: 5
-    });
-
-    map.on('load', () => {
-      document.getElementById('status').textContent = 'Đang tô màu từng tỉnh...';
-
-      // 2. Sửa đúng source-layer từ metadata
-      const p = new pmtiles.PMTiles(PMTILES_URL);
+    // Đọc metadata để lấy tên source-layer chuẩn bên trong file
+    p.getHeader().then(() => {
       p.getMetadata().then(meta => {
-        let realLayerName = '34-Tinh-Thanh';
-        if (meta.vector_layers && meta.vector_layers.length > 0) {
-          realLayerName = meta.vector_layers[0].id;
-          map.setProperty('vietnam-fill', 'source-layer', realLayerName);
-          map.setProperty('vietnam-line', 'source-layer', realLayerName);
-        }
+        const sourceLayerName = (meta.vector_layers && meta.vector_layers.length > 0) 
+          ? meta.vector_layers[0].id 
+          : 'Ca-Mau';
 
-        // 3. Tự động lấy tất cả tính năng trên màn hình để tạo bảng màu cho TỈNH
-        map.once('idle', () => {
-          const features = map.queryRenderedFeatures({ layers: ['vietnam-fill'] });
-          
-          if (features.length > 0) {
-            // Tìm cột chứa tên tỉnh chuẩn nhất trong dữ liệu của bạn
-            let targetField = null;
-            const sampleProps = features[0].properties;
-            for (const f of PROVINCE_FIELDS) {
-              if (sampleProps[f] !== undefined) {
-                targetField = f;
-                break;
+        console.log("Source layer Cà Mau phát hiện được:", sourceLayerName);
+
+        // 2. Khởi tạo bản đồ tập trung vào Cà Mau
+        const map = new maplibregl.Map({
+          container: 'map',
+          style: {
+            version: 8,
+            sources: {
+              'osm-tiles': {
+                type: 'raster',
+                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                tileSize: 256,
+                attribution: '© OpenStreetMap'
+              },
+              'camau-vector': {
+                type: 'vector',
+                url: `pmtiles://${PMTILES_URL}`
               }
-            }
+            },
+            layers: [
+              // Nền bản đồ OSM
+              { id: 'osm-layer', type: 'raster', source: 'osm-tiles' },
+              
+              // Layer Tô màu: Tự động băm màu rực rỡ dựa vào tên/id của từng mảng polygon
+              {
+                id: 'camau-fill',
+                type: 'fill',
+                source: 'camau-vector',
+                'source-layer': sourceLayerName,
+                paint: {
+                  'fill-color': [
+                    'hsl',
+                    // Băm màu ngẫu nhiên (0 -> 360 độ màu HSL)
+                    ['%', ['abs', ['hash', ['coalesce', ['get', 'ten_phuong'], ['get', 'TEN_XA'], ['get', 'NAME_2'], ['get', 'name'], 'unknown']]], 360],
+                    75, // Độ bão hòa màu 75% cho tươi
+                    55  // Độ sáng 55% dễ nhìn
+                  ],
+                  'fill-opacity': 0.65 // Độ trong suốt nhẹ để thấy nền OSM
+                }
+              },
 
-            // Nếu không tìm thấy cột tên tỉnh chuẩn, tự động lấy tên từ Popup làm chuẩn
-            if (!targetField) {
-              targetField = Object.keys(sampleProps)[0]; 
-            }
-
-            // Tạo biểu thức match màu cho từng tỉnh
-            const colorMatch = ['match', ['get', targetField]];
-            const provinceColors = {};
-
-            features.forEach(f => {
-              const provName = f.properties[targetField];
-              if (provName && !provinceColors[provName]) {
-                provinceColors[provName] = stringToColor(provName);
-                colorMatch.push(provName, provinceColors[provName]);
+              // Layer Viền trắng sắc nét giữa các vùng
+              {
+                id: 'camau-line',
+                type: 'line',
+                source: 'camau-vector',
+                'source-layer': sourceLayerName,
+                paint: {
+                  'line-color': '#ffffff',
+                  'line-width': 1
+                }
               }
-            });
-
-            // Màu mặc định cho các vùng chưa tô
-            colorMatch.push('#cccccc'); 
-
-            // Áp dụng màu đa dạng từng tỉnh lên bản đồ
-            map.setPaintProperty('vietnam-fill', 'fill-color', colorMatch);
-          }
-
-          document.getElementById('status').textContent = 'Đã hoàn tất tô màu mỗi tỉnh 1 màu!';
+            ]
+          },
+          center: [105.15, 9.18], // Tọa độ trung tâm Cà Mau
+          zoom: 9.5 // Mức zoom vừa vặn nhìn toàn bộ Cà Mau
         });
-      });
-    });
 
-    // Hiện Popup khi click vào
-    map.on('click', 'vietnam-fill', (e) => {
-      if (e.features.length > 0) {
-        const props = e.features[0].properties;
-        let name = 'Ranh giới';
-        for (const key in props) {
-          if (props[key] && typeof props[key] === 'string' && props[key].length > 1) {
-            name = props[key];
-            break;
+        // Cập nhật trạng thái
+        map.on('load', () => {
+          document.getElementById('status').textContent = 'Đã tải xong bản đồ Cà Mau!';
+        });
+
+        // 3. Hiện Popup tên xã/huyện khi click vào
+        map.on('click', 'camau-fill', (e) => {
+          if (e.features.length > 0) {
+            const props = e.features[0].properties;
+            
+            // Tìm thuộc tính chứa tên địa danh
+            const name = props.ten_phuong || props.TEN_XA || props.ten_xa || props.NAME_2 || props.NAME_1 || props.name || 'Ranh giới Cà Mau';
+            const huyen = props.ten_huyen || props.TEN_HUYEN || props.NAME_1 || '';
+
+            let popupContent = `<b style="font-size:14px; color:#0066cc;">${name}</b>`;
+            if (huyen) popupContent += `<br/><span style="font-size:12px; color:#555;">Huyện/TP: ${huyen}</span>`;
+
+            new maplibregl.Popup()
+              .setLngLat(e.lngLat)
+              .setHTML(popupContent)
+              .addTo(map);
           }
-        }
-        
-        new maplibregl.Popup()
-          .setLngLat(e.lngLat)
-          .setHTML(`<b style="font-size: 14px;">${name}</b>`)
-          .addTo(map);
-      }
-    });
+        });
 
-    map.on('mouseenter', 'vietnam-fill', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'vietnam-fill', () => map.getCanvas().style.cursor = '');
+        map.on('mouseenter', 'camau-fill', () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', 'camau-fill', () => map.getCanvas().style.cursor = '');
+      }).catch(err => {
+        console.error("Lỗi đọc metadata PMTiles:", err);
+        document.getElementById('status').textContent = 'Lỗi đọc file Ca-Mau.pmtiles!';
+      });
+    }).catch(err => {
+      console.error("Lỗi tải PMTiles:", err);
+      document.getElementById('status').textContent = 'Không kết nối được file Ca-Mau.pmtiles!';
+    });
   </script>
 </body>
 </html>
