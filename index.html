@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bản đồ Vector Việt Nam Siêu Nét</title>
+  <title>Bản đồ Vector Việt Nam - Mỗi Tỉnh Một Màu</title>
   
   <!-- CSS MapLibre GL -->
   <link href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css" rel="stylesheet" />
@@ -38,26 +38,38 @@
   <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
 
   <script>
-    // 1. Đăng ký đọc chuẩn PMTiles
-    const protocol = new pmtiles.Protocol();
-    maplibregl.addProtocol("pmtiles", protocol.tile);
-
+    // ==========================================================
+    // CẤU HÌNH ĐƯỜNG DẪN FILE PMTILES
+    // ==========================================================
     // Dùng URL tuyệt đối để bypass lỗi CORS trên GitHub Pages
     const PMTILES_URL = "https://vinhhungdesign2345-tech.github.io/Ban-do/34-Tinh-Thanh.pmtiles"; 
+    
+    // Tên thuộc tính trong GeoJSON chứa tên tỉnh (dùng để tạo màu)
+    // MapLibre sẽ dò tìm các cột này theo thứ tự.
+    const PROVINCE_NAME_FIELDS = ['ten_tinh', 'NAME_1', 'name_1', 'Province', 'Tinh', 'name'];
+
+    // ==========================================================
+    // KHỞI TẠO PMTILES PROTOCOL
+    // ==========================================================
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
 
     const p = new pmtiles.PMTiles(PMTILES_URL);
     protocol.add(p);
 
-    // 2. Tự động đọc Metadata để lấy tên Source Layer chính xác
+    // ==========================================================
+    // ĐỌC METADATA VÀ KHỞI TẠO BẢN ĐỒ
+    // ==========================================================
     p.getHeader().then(() => {
       p.getMetadata().then(meta => {
-        const layerName = (meta.vector_layers && meta.vector_layers.length > 0) 
+        // Tự động lấy tên layer đầu tiên bên trong file PMTiles
+        const sourceLayerName = (meta.vector_layers && meta.vector_layers.length > 0) 
           ? meta.vector_layers[0].id 
           : '34-Tinh-Thanh';
 
-        console.log("Tên Source Layer phát hiện được:", layerName);
+        console.log("Tên Source Layer phát hiện được:", sourceLayerName);
 
-        // 3. Khởi tạo bản đồ MapLibre
+        // Khởi tạo bản đồ MapLibre
         const map = new maplibregl.Map({
           container: 'map',
           style: {
@@ -76,24 +88,47 @@
             },
             layers: [
               { id: 'osm-layer', type: 'raster', source: 'osm-tiles' },
+              
+              // ==================================================
+              // LAYER TÔ MÀU (FILL): MỖI TỈNH MỘT MÀU
+              // ==================================================
               {
                 id: 'vietnam-fill',
                 type: 'fill',
                 source: 'vietnam-vector',
-                'source-layer': layerName,
+                'source-layer': sourceLayerName,
                 paint: {
-                  'fill-color': '#0066cc',
-                  'fill-opacity': 0.25
+                  // SỬ DỤNG EXPRESSION ĐỂ TẠO MÀU ĐỘNG BẰNG HASHING
+                  // Thuật toán: Lấy tên tỉnh -> Hash thành số -> Chuyển thành màu HSL
+                  'fill-color': [
+                    'hsl',
+                    // BƯỚC 1: Hash tên tỉnh thành một góc Hue (0-360)
+                    [
+                      '%', 
+                      [
+                        'abs', 
+                        ['hash', ['coalesce', ...PROVINCE_NAME_FIELDS.map(f => ['get', f]), 'unknown']]
+                      ],
+                      360
+                    ],
+                    // BƯỚC 2: Độ bão hòa (Saturation) - cố định 70% cho màu tươi
+                    70,
+                    // BƯỚC 3: Độ sáng (Lightness) - cố định 60% để nhìn rõ chữ OSM nền
+                    60
+                  ],
+                  'fill-opacity': 0.6 // Độ trong suốt để nhìn thấy bản đồ nền
                 }
               },
+              
+              // LAYER ĐƯỜNG VIỀN (LINE): MÀU TRẮNG MẢNH
               {
                 id: 'vietnam-line',
                 type: 'line',
                 source: 'vietnam-vector',
-                'source-layer': layerName,
+                'source-layer': sourceLayerName,
                 paint: {
-                  'line-color': '#ff0000',
-                  'line-width': 1.5
+                  'line-color': '#ffffff', // Viền trắng mảnh để phân biệt các màu
+                  'line-width': 0.8
                 }
               }
             ]
@@ -102,18 +137,29 @@
           zoom: 5
         });
 
+        // ==========================================================
+        // XỬ LÝ SỰ KIỆN TẢI XONG VÀ POPUP
+        // ==========================================================
         map.on('load', () => {
-          document.getElementById('status').textContent = 'Đã tải xong Vector Tiles!';
+          document.getElementById('status').textContent = 'Bản đồ tô màu đã tải xong!';
         });
 
         map.on('click', 'vietnam-fill', (e) => {
           if (e.features.length > 0) {
             const props = e.features[0].properties;
-            const name = props.ten_phuong || props.TEN_XA || props.NAME_2 || props.NAME_1 || props.name || props.ten_tinh || 'Ranh giới';
+            
+            // Tìm tên tỉnh từ metadata
+            let provinceName = 'Không rõ tên';
+            for (const field of PROVINCE_NAME_FIELDS) {
+              if (props[field]) {
+                provinceName = props[field];
+                break;
+              }
+            }
             
             new maplibregl.Popup()
               .setLngLat(e.lngLat)
-              .setHTML(`<b>${name}</b>`)
+              .setHTML(`<b>${provinceName}</b>`)
               .addTo(map);
           }
         });
