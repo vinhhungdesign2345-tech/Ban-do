@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bản đồ Vector Cà Mau</title>
+  <title>Bản đồ Vector Cà Mau - Viền Ranh Giới</title>
   
   <!-- CSS MapLibre GL -->
   <link href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css" rel="stylesheet" />
@@ -44,7 +44,7 @@
 
     const PMTILES_URL = "https://vinhhungdesign2345-tech.github.io/Ban-do/Ca-Mau.pmtiles"; 
 
-    // 2. Khởi tạo bản đồ trực tiếp (không bắt trình duyệt chờ promise)
+    // 2. Khởi tạo bản đồ
     const map = new maplibregl.Map({
       container: 'map',
       style: {
@@ -65,38 +65,28 @@
           // Lớp nền OpenStreetMap
           { id: 'osm-layer', type: 'raster', source: 'osm-tiles' },
           
-          // Lớp tô màu các vùng Cà Mau
+          // Lớp Fill trong suốt (chỉ dùng để nhận sự kiện click/hover)
           {
             id: 'camau-fill',
             type: 'fill',
             source: 'camau-vector',
-            'source-layer': 'Ca-Mau', // Tên layer mặc định
+            'source-layer': 'Ca-Mau',
             paint: {
-              'fill-color': [
-                'interpolate',
-                ['linear'],
-                ['coalesce', ['id'], ['line-progress'], 1],
-                0, '#1f77b4',
-                5, '#aec7e8',
-                10, '#ff7f0e',
-                15, '#2ca02c',
-                20, '#d62728',
-                25, '#9467bd',
-                30, '#8c564b'
-              ],
-              'fill-opacity': 0.6
+              'fill-color': '#000000',
+              'fill-opacity': 0 // Ẩn hoàn toàn màu nền
             }
           },
 
-          // Lớp viền trắng rõ nét
+          // Lớp Viền ranh giới (Tô màu viền đỏ nổi bật)
           {
             id: 'camau-line',
             type: 'line',
             source: 'camau-vector',
             'source-layer': 'Ca-Mau',
             paint: {
-              'line-color': '#ffffff',
-              'line-width': 1
+              'line-color': '#d62728', // Màu đường viền (đỏ) - có thể đổi thành #0066cc (xanh)
+              'line-width': 1.5,       // Độ dày đường viền
+              'line-opacity': 0.85
             }
           }
         ]
@@ -107,9 +97,9 @@
 
     // 3. Xử lý khi bản đồ tải xong
     map.on('load', () => {
-      document.getElementById('status').textContent = 'Đã tải xong bản đồ Cà Mau!';
+      document.getElementById('status').textContent = 'Đã tải xong ranh giới Cà Mau!';
 
-      // Kiểm tra chính xác tên source-layer ngầm bên trong file để liên kết chuẩn
+      // Kiểm tra chính xác tên source-layer ngầm bên trong file
       const p = new pmtiles.PMTiles(PMTILES_URL);
       p.getMetadata().then(meta => {
         if (meta.vector_layers && meta.vector_layers.length > 0) {
@@ -120,15 +110,15 @@
       }).catch(err => console.log(err));
     });
 
-    // Hiện thông tin Popup khi click vào từng vùng
+    // Hiện Popup khi bấm vào bên trong vùng của Xã/Phường
     map.on('click', 'camau-fill', (e) => {
       if (e.features.length > 0) {
         const props = e.features[0].properties;
-        const name = props.ten_phuong || props.TEN_XA || props.ten_xa || props.NAME_2 || props.NAME_1 || props.name || 'Cà Mau';
+        const name = props.ten_phuong || props.TEN_XA || props.ten_xa || props.NAME_2 || props.NAME_1 || props.name || 'Ranh giới Cà Mau';
         
         new maplibregl.Popup()
           .setLngLat(e.lngLat)
-          .setHTML(`<b style="font-size: 14px; color: #0066cc;">${name}</b>`)
+          .setHTML(`<b style="font-size: 14px; color: #d62728;">${name}</b>`)
           .addTo(map);
       }
     });
