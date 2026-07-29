@@ -2,13 +2,18 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bản đồ Vector Việt Nam Siêu Nét</title>
   
   <!-- CSS MapLibre GL -->
   <link href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css" rel="stylesheet" />
   
   <style>
-    html, body, #map { height: 100%; margin: 0; padding: 0; }
+    html, body, #map { 
+      height: 100%; 
+      margin: 0; 
+      padding: 0; 
+    }
     #status {
       position: absolute;
       top: 10px;
@@ -25,7 +30,7 @@
 </head>
 <body>
 
-  <div id="status">Đang tải bản đồ Vector...</div>
+  <div id="status">Đang khởi tạo bản đồ...</div>
   <div id="map"></div>
 
   <!-- Thư viện MapLibre GL & PMTiles -->
@@ -33,87 +38,96 @@
   <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
 
   <script>
-    // 1. Khởi tạo plugin đọc PMTiles
+    // 1. Đăng ký đọc chuẩn PMTiles
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol("pmtiles", protocol.tile);
 
-    // LƯU Ý: Sửa tên "34-Tinh-Thanh.pmtiles" cho đúng chính xác tên file bạn đã upload lên GitHub
-    const PMTILES_URL = "34-Tinh-Thanh.pmtiles"; 
+    // Dùng URL tuyệt đối để bypass lỗi CORS trên GitHub Pages
+    const PMTILES_URL = "https://vinhhungdesign2345-tech.github.io/Ban-do/34-Tinh-Thanh.pmtiles"; 
 
     const p = new pmtiles.PMTiles(PMTILES_URL);
     protocol.add(p);
 
-    // 2. Khởi tạo bản đồ
-    const map = new maplibregl.Map({
-      container: 'map',
-      style: {
-        version: 8,
-        sources: {
-          'osm-tiles': {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '© OpenStreetMap'
+    // 2. Tự động đọc Metadata để lấy tên Source Layer chính xác
+    p.getHeader().then(() => {
+      p.getMetadata().then(meta => {
+        const layerName = (meta.vector_layers && meta.vector_layers.length > 0) 
+          ? meta.vector_layers[0].id 
+          : '34-Tinh-Thanh';
+
+        console.log("Tên Source Layer phát hiện được:", layerName);
+
+        // 3. Khởi tạo bản đồ MapLibre
+        const map = new maplibregl.Map({
+          container: 'map',
+          style: {
+            version: 8,
+            sources: {
+              'osm-tiles': {
+                type: 'raster',
+                tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                tileSize: 256,
+                attribution: '© OpenStreetMap'
+              },
+              'vietnam-vector': {
+                type: 'vector',
+                url: `pmtiles://${PMTILES_URL}`
+              }
+            },
+            layers: [
+              { id: 'osm-layer', type: 'raster', source: 'osm-tiles' },
+              {
+                id: 'vietnam-fill',
+                type: 'fill',
+                source: 'vietnam-vector',
+                'source-layer': layerName,
+                paint: {
+                  'fill-color': '#0066cc',
+                  'fill-opacity': 0.25
+                }
+              },
+              {
+                id: 'vietnam-line',
+                type: 'line',
+                source: 'vietnam-vector',
+                'source-layer': layerName,
+                paint: {
+                  'line-color': '#ff0000',
+                  'line-width': 1.5
+                }
+              }
+            ]
           },
-          'vietnam-vector': {
-            type: 'vector',
-            url: `pmtiles://${PMTILES_URL}`
+          center: [108.0, 16.0],
+          zoom: 5
+        });
+
+        map.on('load', () => {
+          document.getElementById('status').textContent = 'Đã tải xong Vector Tiles!';
+        });
+
+        map.on('click', 'vietnam-fill', (e) => {
+          if (e.features.length > 0) {
+            const props = e.features[0].properties;
+            const name = props.ten_phuong || props.TEN_XA || props.NAME_2 || props.NAME_1 || props.name || props.ten_tinh || 'Ranh giới';
+            
+            new maplibregl.Popup()
+              .setLngLat(e.lngLat)
+              .setHTML(`<b>${name}</b>`)
+              .addTo(map);
           }
-        },
-        layers: [
-          // Nền OSM
-          {
-            id: 'osm-layer',
-            type: 'raster',
-            source: 'osm-tiles'
-          },
-          // Tô màu vùng ranh giới
-          {
-            id: 'vietnam-fill',
-            type: 'fill',
-            source: 'vietnam-vector',
-            'source-layer': '34TinhThanh', 
-            paint: {
-              'fill-color': '#0066cc',
-              'fill-opacity': 0.25
-            }
-          },
-          // Vẽ đường viền ranh giới sắc nét
-          {
-            id: 'vietnam-line',
-            type: 'line',
-            source: 'vietnam-vector',
-            'source-layer': '34TinhThanh',
-            paint: {
-              'line-color': '#ff3300',
-              'line-width': 1.2
-            }
-          }
-        ]
-      },
-      center: [108.0, 16.0],
-      zoom: 5
-    });
+        });
 
-    map.on('load', () => {
-      document.getElementById('status').textContent = 'Đã tải xong Vector Tiles siêu nét!';
+        map.on('mouseenter', 'vietnam-fill', () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', 'vietnam-fill', () => map.getCanvas().style.cursor = '');
+      }).catch(err => {
+        console.error("Lỗi đọc Metadata:", err);
+        document.getElementById('status').textContent = 'Lỗi đọc file PMTiles!';
+      });
+    }).catch(err => {
+      console.error("Lỗi tải PMTiles:", err);
+      document.getElementById('status').textContent = 'Lỗi kết nối file PMTiles!';
     });
-
-    // Hiện Popup tên tỉnh khi bấm vào
-    map.on('click', 'vietnam-fill', (e) => {
-      if (e.features.length > 0) {
-        const props = e.features[0].properties;
-        const name = props.ten_phuong || props.TEN_XA || props.NAME_2 || props.NAME_1 || props.name || 'Ranh giới';
-        
-        new maplibregl.Popup()
-          .setLngLat(e.lngLat)
-          .setHTML(`<b>${name}</b>`)
-          .addTo(map);
-      }
-    });
-
-    map.on('mouseenter', 'vietnam-fill', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'vietnam-fill', () => map.getCanvas().style.cursor = '');
   </script>
 </body>
 </html>
