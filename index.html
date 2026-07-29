@@ -38,21 +38,26 @@
   <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
 
   <script>
-    // 1. Đăng ký đọc chuẩn PMTiles
+    // 1. Đăng ký PMTiles Protocol
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol("pmtiles", protocol.tile);
 
     const PMTILES_URL = "https://vinhhungdesign2345-tech.github.io/Ban-do/34-Tinh-Thanh.pmtiles"; 
 
-    // Bảng màu sắc tươi sáng dành riêng cho các tỉnh
-    const PALETTE = [
-      '#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', 
-      '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabed4', 
-      '#469990', '#dcbeff', '#9A6324', '#fffac8', '#800000', 
-      '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'
-    ];
+    // Hàm tạo màu HSL ngẫu nhiên sinh động từ chuỗi chữ bất kỳ
+    function stringToColor(str) {
+      if (!str) return '#808080';
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      const h = Math.abs(hash) % 360;
+      return `hsl(${h}, 75%, 55%)`; // Màu HSL tươi sáng
+    }
 
-    // Khởi tạo bản đồ trực tiếp
+    // Các tên cột có thể chứa Tên Tỉnh trong file GeoJSON của bạn
+    const PROVINCE_FIELDS = ['ten_tinh', 'NAME_1', 'name_1', 'Tinh', 'province', 'NAME_0'];
+
     const map = new maplibregl.Map({
       container: 'map',
       style: {
@@ -70,43 +75,29 @@
           }
         },
         layers: [
-          // Layer Nền OSM
           { id: 'osm-layer', type: 'raster', source: 'osm-tiles' },
           
-          // Layer Tô màu (dùng match tự động tô ngẫu nhiên các tỉnh)
+          // Layer Fill: Mặc định trong suốt ban đầu
           {
             id: 'vietnam-fill',
             type: 'fill',
             source: 'vietnam-vector',
-            'source-layer': '34-Tinh-Thanh', // Tên mặc định của layer
+            'source-layer': '34-Tinh-Thanh',
             paint: {
-              // Tô màu đa dạng dựa vào id/tọa độ tính năng
-              'fill-color': [
-                'interpolate',
-                ['linear'],
-                ['coalesce', ['id'], 1],
-                0, '#3cb44b',
-                5, '#e6194B',
-                10, '#ffe119',
-                15, '#4363d8',
-                20, '#f58231',
-                25, '#911eb4',
-                30, '#42d4f4',
-                35, '#f032e6'
-              ],
-              'fill-opacity': 0.55
+              'fill-color': '#0066cc',
+              'fill-opacity': 0.5
             }
           },
-
-          // Layer Viền đỏ sắc nét
+          
+          // Layer Viền: Viền xám mỏng nhạt để không bị rối mắt
           {
             id: 'vietnam-line',
             type: 'line',
             source: 'vietnam-vector',
             'source-layer': '34-Tinh-Thanh',
             paint: {
-              'line-color': '#d62728',
-              'line-width': 1.2
+              'line-color': '#555555',
+              'line-width': 0.5
             }
           }
         ]
@@ -115,27 +106,74 @@
       zoom: 5
     });
 
-    // Khi bản đồ sẵn sàng
     map.on('load', () => {
-      document.getElementById('status').textContent = 'Đã tải xong Vector Tiles!';
+      document.getElementById('status').textContent = 'Đang tô màu từng tỉnh...';
 
-      // Tự động kiểm tra tên layer thật bên trong file pmtiles để sửa nếu lỡ lệch
+      // 2. Sửa đúng source-layer từ metadata
       const p = new pmtiles.PMTiles(PMTILES_URL);
       p.getMetadata().then(meta => {
+        let realLayerName = '34-Tinh-Thanh';
         if (meta.vector_layers && meta.vector_layers.length > 0) {
-          const realLayerName = meta.vector_layers[0].id;
-          map.setFilter('vietnam-fill', null);
+          realLayerName = meta.vector_layers[0].id;
           map.setProperty('vietnam-fill', 'source-layer', realLayerName);
           map.setProperty('vietnam-line', 'source-layer', realLayerName);
         }
+
+        // 3. Tự động lấy tất cả tính năng trên màn hình để tạo bảng màu cho TỈNH
+        map.once('idle', () => {
+          const features = map.queryRenderedFeatures({ layers: ['vietnam-fill'] });
+          
+          if (features.length > 0) {
+            // Tìm cột chứa tên tỉnh chuẩn nhất trong dữ liệu của bạn
+            let targetField = null;
+            const sampleProps = features[0].properties;
+            for (const f of PROVINCE_FIELDS) {
+              if (sampleProps[f] !== undefined) {
+                targetField = f;
+                break;
+              }
+            }
+
+            // Nếu không tìm thấy cột tên tỉnh chuẩn, tự động lấy tên từ Popup làm chuẩn
+            if (!targetField) {
+              targetField = Object.keys(sampleProps)[0]; 
+            }
+
+            // Tạo biểu thức match màu cho từng tỉnh
+            const colorMatch = ['match', ['get', targetField]];
+            const provinceColors = {};
+
+            features.forEach(f => {
+              const provName = f.properties[targetField];
+              if (provName && !provinceColors[provName]) {
+                provinceColors[provName] = stringToColor(provName);
+                colorMatch.push(provName, provinceColors[provName]);
+              }
+            });
+
+            // Màu mặc định cho các vùng chưa tô
+            colorMatch.push('#cccccc'); 
+
+            // Áp dụng màu đa dạng từng tỉnh lên bản đồ
+            map.setPaintProperty('vietnam-fill', 'fill-color', colorMatch);
+          }
+
+          document.getElementById('status').textContent = 'Đã hoàn tất tô màu mỗi tỉnh 1 màu!';
+        });
       });
     });
 
-    // Hiện Popup tên tỉnh khi bấm vào
+    // Hiện Popup khi click vào
     map.on('click', 'vietnam-fill', (e) => {
       if (e.features.length > 0) {
         const props = e.features[0].properties;
-        const name = props.ten_phuong || props.TEN_XA || props.NAME_2 || props.NAME_1 || props.name || props.ten_tinh || 'Ranh giới tỉnh';
+        let name = 'Ranh giới';
+        for (const key in props) {
+          if (props[key] && typeof props[key] === 'string' && props[key].length > 1) {
+            name = props[key];
+            break;
+          }
+        }
         
         new maplibregl.Popup()
           .setLngLat(e.lngLat)
