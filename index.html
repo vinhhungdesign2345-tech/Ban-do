@@ -2,136 +2,118 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Bản đồ GeoJSON Việt Nam</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <title>Bản đồ Vector Việt Nam Siêu Nét</title>
+  
+  <!-- CSS MapLibre GL -->
+  <link href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css" rel="stylesheet" />
+  
   <style>
-    html, body, #map { height: 100%; margin: 0; padding: 0; background: #f8f9fa; }
+    html, body, #map { height: 100%; margin: 0; padding: 0; }
     #status {
       position: absolute;
       top: 10px;
       right: 10px;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.95);
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-family: system-ui, -apple-system, sans-serif;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: sans-serif;
       font-size: 13px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      max-width: 300px;
-      line-height: 1.4;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
 
-  <div id="status">Đang tải bản đồ...</div>
+  <div id="status">Đang tải bản đồ Vector...</div>
   <div id="map"></div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Thư viện MapLibre GL & PMTiles -->
+  <script src="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
+
   <script>
-    const GITHUB_OWNER = 'vinhhungdesign2345-tech';
-    const GITHUB_REPO = 'Ban-do';
-    const BRANCH = 'main';
+    // 1. Khởi tạo plugin đọc PMTiles
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
 
-    const statusEl = document.getElementById('status');
+    // Điền ĐÚNG tên file .pmtiles bạn đã upload lên GitHub ở đây
+    const PMTILES_URL = "34-Tinh-Thanh.pmtiles"; 
 
-    // TỐI ƯU 1: preferCanvas giúp vẽ hàng ngàn ranh giới cực mượt bằng Canvas thay vì SVG
-    const map = L.map('map', {
-      preferCanvas: true
-    }).setView([16.047079, 108.206230], 6);
+    const p = new pmtiles.PMTiles(PMTILES_URL);
+    protocol.add(p);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
-
-    const geoGroup = L.featureGroup().addTo(map);
-
-    // Hàm tạo màu ngẫu nhiên dịu mắt cho từng tỉnh
-    function getRandomColor() {
-      const hue = Math.floor(Math.random() * 360);
-      return `hsl(${hue}, 70%, 50%)`;
-    }
-
-    async function loadAllGeoJSON() {
-      try {
-        const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${BRANCH}?recursive=1`;
-        const res = await fetch(apiUrl);
-        if (!res.ok) throw new Error('Không thể kết nối GitHub API');
-        
-        const data = await res.json();
-        const geojsonFiles = data.tree.filter(item => 
-          item.type === 'blob' && item.path.toLowerCase().endsWith('.geojson')
-        );
-
-        if (geojsonFiles.length === 0) {
-          statusEl.textContent = 'Không tìm thấy file GeoJSON nào.';
-          return;
-        }
-
-        statusEl.textContent = `Đang tải ${geojsonFiles.length} tỉnh/thành...`;
-
-        let loadedCount = 0;
-
-        await Promise.all(geojsonFiles.map(async (file) => {
-          try {
-            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${BRANCH}/${file.path}`;
-            const geoRes = await fetch(rawUrl);
-            const geoData = await geoRes.json();
-
-            // Mỗi file tỉnh/thành sẽ có 1 màu riêng biệt
-            const provinceColor = getRandomColor();
-
-            L.geoJSON(geoData, {
-              // TỐI ƯU 2: Bỏ qua hoàn toàn dữ liệu dạng Điểm (Point/MultiPoint) để không hiện Marker ghim
-              filter: (feature) => {
-                const type = feature.geometry ? feature.geometry.type : '';
-                return type === 'Polygon' || type === 'MultiPolygon';
-              },
-              style: {
-                color: '#222222',        // Màu đường viền ranh giới
-                weight: 0.8,             // Độ dày nét vẽ mỏng giúp nhẹ web
-                opacity: 0.6,
-                fillColor: provinceColor,// Màu tô riêng của tỉnh này
-                fillOpacity: 0.5         // Độ trong suốt vừa phải
-              },
-              onEachFeature: (feature, layer) => {
-                // Đổi màu đậm hơn khi di chuột qua (Hover effect)
-                layer.on({
-                  mouseover: (e) => {
-                    e.target.setStyle({ fillOpacity: 0.8, weight: 1.5 });
-                  },
-                  mouseout: (e) => {
-                    e.target.setStyle({ fillOpacity: 0.5, weight: 0.8 });
-                  }
-                });
-
-                if (feature.properties) {
-                  const p = feature.properties;
-                  const name = p.ten_phuong || p.TEN_XA || p.NAME_2 || p.NAME_1 || p.name || file.path.replace('.geojson', '');
-                  layer.bindPopup(`<b>${name}</b>`);
-                }
-              }
-            }).addTo(geoGroup);
-
-            loadedCount++;
-          } catch (e) {
-            console.error('Lỗi file:', file.path, e);
+    // 2. Khởi tạo bản đồ
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: {
+          'osm-tiles': {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap'
+          },
+          'vietnam-vector': {
+            type: 'vector',
+            url: `pmtiles://${PMTILES_URL}`
           }
-        }));
+        },
+        layers: [
+          // Nền OSM
+          {
+            id: 'osm-layer',
+            type: 'raster',
+            source: 'osm-tiles'
+          },
+          // Tô màu vùng ranh giới
+          {
+            id: 'vietnam-fill',
+            type: 'fill',
+            source: 'vietnam-vector',
+            'source-layer': '34TinhThanh', // Tên layer bên trong pmtiles (thường là tên file viết liền)
+            paint: {
+              'fill-color': '#0066cc',
+              'fill-opacity': 0.25
+            }
+          },
+          // Vẽ đường viền ranh giới sắc nét
+          {
+            id: 'vietnam-line',
+            type: 'line',
+            source: 'vietnam-vector',
+            'source-layer': '34TinhThanh',
+            paint: {
+              'line-color': '#ff3300',
+              'line-width': 1.2
+            }
+          }
+        ]
+      },
+      center: [108.0, 16.0],
+      zoom: 5
+    });
 
-        statusEl.innerHTML = `<b>Đã tải xong!</b><br>Hiển thị ${loadedCount}/${geojsonFiles.length} tỉnh/thành.`;
+    map.on('load', () => {
+      document.getElementById('status').textContent = 'Đã tải xong Vector Tiles siêu nét!';
+    });
 
-        if (geoGroup.getLayers().length > 0) {
-          map.fitBounds(geoGroup.getBounds());
-        }
-
-      } catch (err) {
-        statusEl.textContent = `Lỗi: ${err.message}`;
+    // Hiện Popup khi bấm vào tỉnh/thành
+    map.on('click', 'vietnam-fill', (e) => {
+      if (e.features.length > 0) {
+        const props = e.features[0].properties;
+        const name = props.ten_phuong || props.TEN_XA || props.NAME_2 || props.NAME_1 || props.name || 'Ranh giới';
+        
+        new maplibregl.Popup()
+          .setLngLat(e.lngLat)
+          .setHTML(`<b>${name}</b>`)
+          .addTo(map);
       }
-    }
+    });
 
-    loadAllGeoJSON();
+    map.on('mouseenter', 'vietnam-fill', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'vietnam-fill', () => map.getCanvas().style.cursor = '');
   </script>
 </body>
 </html>
