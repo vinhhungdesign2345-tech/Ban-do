@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Bản đồ GeoJSON</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    html, body, #map { height: 100%; margin: 0; }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // 1. Điền các đường dẫn file geojson trong repo vào đây
+    const files = [
+      'data/map1.geojson',
+      'data/map2.geojson',
+      'ranh-gioi.geojson'
+    ];
+
+    // 2. Khởi tạo bản đồ
+    const map = L.map('map').setView([10.7769, 106.7009], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    const group = L.featureGroup().addTo(map);
+
+    // 3. Tải tất cả file và vẽ lên bản đồ
+    files.forEach(filePath => {
+      fetch(filePath)
+        .then(res => res.json())
+        .then(data => {
+          L.geoJSON(data).addTo(group);
+          map.fitBounds(group.getBounds()); // Tự động căn chỉnh zoom
+        })
+        .catch(err => console.error('Lỗi tải file:', filePath));
+    });
+  </script>
+
+</body>
+</html>
