@@ -2,47 +2,40 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Hiển thị Ranh Giới GeoJSON</title>
+  <title>Bản đồ GeoJSON Việt Nam</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     html, body, #map { height: 100%; margin: 0; padding: 0; }
-    #log-panel {
+    #status {
       position: absolute;
       top: 10px;
       right: 10px;
       z-index: 1000;
-      background: white;
+      background: rgba(255,255,255,0.9);
       padding: 10px 15px;
       border-radius: 6px;
+      font-family: sans-serif;
+      font-size: 13px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       max-width: 300px;
-      max-height: 200px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 12px;
     }
   </style>
 </head>
 <body>
 
-  <div id="log-panel"><b>Trạng thái tải file:</b><div id="logs"></div></div>
+  <div id="status">Đang quét danh sách file...</div>
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // 1. Điền danh sách tên file GeoJSON của bạn ở đây
-    const files = [
-      'ranh-gioi.geojson',
-      // 'phuong-xa.geojson', // Thêm các file khác vào đây...
-    ];
+    // Thông tin repo lấy trực tiếp từ hình ảnh của bạn
+    const GITHUB_OWNER = 'vinhhungdesign2345-tech';
+    const GITHUB_REPO = 'Ban-do';
+    const BRANCH = 'main';
 
-    function log(msg, color = 'black') {
-      const logs = document.getElementById('logs');
-      logs.innerHTML += `<div style="color:${color}">${msg}</div>`;
-    }
+    const statusEl = document.getElementById('status');
+    const map = L.map('map').setView([16.047079, 108.206230], 6); // Trung tâm Việt Nam
 
-    // Khởi tạo bản đồ mặc định tại Việt Nam
-    const map = L.map('map').setView([16.0, 108.0], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
@@ -50,58 +43,72 @@
 
     const geoGroup = L.featureGroup().addTo(map);
 
-    // Kiểu dáng cho ranh giới phường xã (Đường viền đỏ, nền trong suốt)
-    const myStyle = {
-      color: "#ff3300",
-      weight: 2,
+    const mapStyle = {
+      color: "#0066cc",
+      weight: 1.5,
       opacity: 0.8,
-      fillColor: "#ff9900",
-      fillOpacity: 0.2
+      fillColor: "#3399ff",
+      fillOpacity: 0.25
     };
 
-    // Tải toàn bộ file
-    Promise.all(files.map(filePath => 
-      fetch(filePath)
-        .then(res => {
-          if (!res.ok) throw new Error(`Không tìm thấy file (${res.status})`);
-          return res.json();
-        })
-        .then(geoData => {
-          // Thêm dữ liệu GeoJSON vào layer group
-          const layer = L.geoJSON(geoData, {
-            style: myStyle,
-            onEachFeature: (feature, layer) => {
-              // Hiển thị tên phường/xã khi click vào (nếu có property tên)
-              if (feature.properties) {
-                const props = feature.properties;
-                const name = props.ten_phuong || props.TEN_XA || props.name || props.NAME || 'Ranh giới';
-                layer.bindPopup(`<b>${name}</b>`);
-              }
-            }
-          });
-          
-          geoGroup.addLayer(layer);
-          log(`✓ Đã tải: ${filePath}`, 'green');
-        })
-        .catch(err => {
-          log(`✗ Lỗi ${filePath}: ${err.message}`, 'red');
-        })
-    )).then(() => {
-      // Sau khi tải xong tất cả file:
-      if (geoGroup.getLayers().length > 0) {
-        // Tự động căn chỉnh bản đồ zoom vừa khít với ranh giới
-        const bounds = geoGroup.getBounds();
-        if (bounds.isValid()) {
-          map.fitBounds(bounds);
-          log(`➜ Đã zoom đến vị trí ranh giới!`, 'blue');
-        } else {
-          log(`⚠️ Dữ liệu không có tọa độ hợp lệ!`, 'orange');
-        }
-      } else {
-        log(`⚠️ Không có file nào được vẽ lên bản đồ.`, 'red');
-      }
-    });
-  </script>
+    async function loadAllGeoJSON() {
+      try {
+        // Tự động gọi API lấy toàn bộ danh sách file trong Repo
+        const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${BRANCH}?recursive=1`;
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error('Không thể lấy danh sách file từ GitHub API');
+        
+        const data = await res.json();
+        const geojsonFiles = data.tree.filter(item => 
+          item.type === 'blob' && item.path.toLowerCase().endsWith('.geojson')
+        );
 
+        if (geojsonFiles.length === 0) {
+          statusEl.textContent = 'Không tìm thấy file .geojson nào!';
+          return;
+        }
+
+        statusEl.textContent = `Tìm thấy ${geojsonFiles.length} file. Đang tải dữ liệu...`;
+
+        let successCount = 0;
+
+        // Tải tất cả các file GeoJSON tìm được
+        await Promise.all(geojsonFiles.map(async (file) => {
+          try {
+            const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${BRANCH}/${file.path}`;
+            const geoRes = await fetch(rawUrl);
+            const geoData = await geoRes.json();
+
+            L.geoJSON(geoData, {
+              style: mapStyle,
+              onEachFeature: (feature, layer) => {
+                if (feature.properties) {
+                  const p = feature.properties;
+                  const name = p.ten_phuong || p.TEN_XA || p.NAME_2 || p.NAME_1 || p.name || file.path;
+                  layer.bindPopup(`<b>${name}</b>`);
+                }
+              }
+            }).addTo(geoGroup);
+
+            successCount++;
+          } catch (e) {
+            console.error('Lỗi tải file:', file.path, e);
+          }
+        }));
+
+        statusEl.textContent = `Hoàn tất! Đã hiển thị ${successCount}/${geojsonFiles.length} tỉnh/thành.`;
+
+        // Tự động zoom bản đồ bao trọn tất cả ranh giới
+        if (geoGroup.getLayers().length > 0) {
+          map.fitBounds(geoGroup.getBounds());
+        }
+
+      } catch (err) {
+        statusEl.textContent = `Lỗi: ${err.message}`;
+      }
+    }
+
+    loadAllGeoJSON();
+  </script>
 </body>
 </html>
