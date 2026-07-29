@@ -5,36 +5,40 @@
   <title>Bản đồ GeoJSON Việt Nam</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    html, body, #map { height: 100%; margin: 0; padding: 0; }
+    html, body, #map { height: 100%; margin: 0; padding: 0; background: #f8f9fa; }
     #status {
       position: absolute;
       top: 10px;
       right: 10px;
       z-index: 1000;
-      background: rgba(255,255,255,0.9);
+      background: rgba(255, 255, 255, 0.95);
       padding: 10px 15px;
-      border-radius: 6px;
-      font-family: sans-serif;
+      border-radius: 8px;
+      font-family: system-ui, -apple-system, sans-serif;
       font-size: 13px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       max-width: 300px;
+      line-height: 1.4;
     }
   </style>
 </head>
 <body>
 
-  <div id="status">Đang quét danh sách file...</div>
+  <div id="status">Đang tải bản đồ...</div>
   <div id="map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // Thông tin repo lấy trực tiếp từ hình ảnh của bạn
     const GITHUB_OWNER = 'vinhhungdesign2345-tech';
     const GITHUB_REPO = 'Ban-do';
     const BRANCH = 'main';
 
     const statusEl = document.getElementById('status');
-    const map = L.map('map').setView([16.047079, 108.206230], 6); // Trung tâm Việt Nam
+
+    // TỐI ƯU 1: preferCanvas giúp vẽ hàng ngàn ranh giới cực mượt bằng Canvas thay vì SVG
+    const map = L.map('map', {
+      preferCanvas: true
+    }).setView([16.047079, 108.206230], 6);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -43,20 +47,17 @@
 
     const geoGroup = L.featureGroup().addTo(map);
 
-    const mapStyle = {
-      color: "#0066cc",
-      weight: 1.5,
-      opacity: 0.8,
-      fillColor: "#3399ff",
-      fillOpacity: 0.25
-    };
+    // Hàm tạo màu ngẫu nhiên dịu mắt cho từng tỉnh
+    function getRandomColor() {
+      const hue = Math.floor(Math.random() * 360);
+      return `hsl(${hue}, 70%, 50%)`;
+    }
 
     async function loadAllGeoJSON() {
       try {
-        // Tự động gọi API lấy toàn bộ danh sách file trong Repo
         const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${BRANCH}?recursive=1`;
         const res = await fetch(apiUrl);
-        if (!res.ok) throw new Error('Không thể lấy danh sách file từ GitHub API');
+        if (!res.ok) throw new Error('Không thể kết nối GitHub API');
         
         const data = await res.json();
         const geojsonFiles = data.tree.filter(item => 
@@ -64,41 +65,63 @@
         );
 
         if (geojsonFiles.length === 0) {
-          statusEl.textContent = 'Không tìm thấy file .geojson nào!';
+          statusEl.textContent = 'Không tìm thấy file GeoJSON nào.';
           return;
         }
 
-        statusEl.textContent = `Tìm thấy ${geojsonFiles.length} file. Đang tải dữ liệu...`;
+        statusEl.textContent = `Đang tải ${geojsonFiles.length} tỉnh/thành...`;
 
-        let successCount = 0;
+        let loadedCount = 0;
 
-        // Tải tất cả các file GeoJSON tìm được
         await Promise.all(geojsonFiles.map(async (file) => {
           try {
             const rawUrl = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${BRANCH}/${file.path}`;
             const geoRes = await fetch(rawUrl);
             const geoData = await geoRes.json();
 
+            // Mỗi file tỉnh/thành sẽ có 1 màu riêng biệt
+            const provinceColor = getRandomColor();
+
             L.geoJSON(geoData, {
-              style: mapStyle,
+              // TỐI ƯU 2: Bỏ qua hoàn toàn dữ liệu dạng Điểm (Point/MultiPoint) để không hiện Marker ghim
+              filter: (feature) => {
+                const type = feature.geometry ? feature.geometry.type : '';
+                return type === 'Polygon' || type === 'MultiPolygon';
+              },
+              style: {
+                color: '#222222',        // Màu đường viền ranh giới
+                weight: 0.8,             // Độ dày nét vẽ mỏng giúp nhẹ web
+                opacity: 0.6,
+                fillColor: provinceColor,// Màu tô riêng của tỉnh này
+                fillOpacity: 0.5         // Độ trong suốt vừa phải
+              },
               onEachFeature: (feature, layer) => {
+                // Đổi màu đậm hơn khi di chuột qua (Hover effect)
+                layer.on({
+                  mouseover: (e) => {
+                    e.target.setStyle({ fillOpacity: 0.8, weight: 1.5 });
+                  },
+                  mouseout: (e) => {
+                    e.target.setStyle({ fillOpacity: 0.5, weight: 0.8 });
+                  }
+                });
+
                 if (feature.properties) {
                   const p = feature.properties;
-                  const name = p.ten_phuong || p.TEN_XA || p.NAME_2 || p.NAME_1 || p.name || file.path;
+                  const name = p.ten_phuong || p.TEN_XA || p.NAME_2 || p.NAME_1 || p.name || file.path.replace('.geojson', '');
                   layer.bindPopup(`<b>${name}</b>`);
                 }
               }
             }).addTo(geoGroup);
 
-            successCount++;
+            loadedCount++;
           } catch (e) {
-            console.error('Lỗi tải file:', file.path, e);
+            console.error('Lỗi file:', file.path, e);
           }
         }));
 
-        statusEl.textContent = `Hoàn tất! Đã hiển thị ${successCount}/${geojsonFiles.length} tỉnh/thành.`;
+        statusEl.innerHTML = `<b>Đã tải xong!</b><br>Hiển thị ${loadedCount}/${geojsonFiles.length} tỉnh/thành.`;
 
-        // Tự động zoom bản đồ bao trọn tất cả ranh giới
         if (geoGroup.getLayers().length > 0) {
           map.fitBounds(geoGroup.getBounds());
         }
