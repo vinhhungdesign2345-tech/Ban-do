@@ -37,7 +37,7 @@
     const protocol = new pmtiles.Protocol();
     maplibregl.addProtocol("pmtiles", protocol.tile);
 
-    // Điền ĐÚNG tên file .pmtiles bạn đã upload lên GitHub ở đây
+    // LƯU Ý: Sửa tên "34-Tinh-Thanh.pmtiles" cho đúng chính xác tên file bạn đã upload lên GitHub
     const PMTILES_URL = "34-Tinh-Thanh.pmtiles"; 
 
     const p = new pmtiles.PMTiles(PMTILES_URL);
@@ -72,7 +72,7 @@
             id: 'vietnam-fill',
             type: 'fill',
             source: 'vietnam-vector',
-            'source-layer': '34TinhThanh', // Tên layer bên trong pmtiles (thường là tên file viết liền)
+            'source-layer': '34TinhThanh', 
             paint: {
               'fill-color': '#0066cc',
               'fill-opacity': 0.25
@@ -99,7 +99,7 @@
       document.getElementById('status').textContent = 'Đã tải xong Vector Tiles siêu nét!';
     });
 
-    // Hiện Popup khi bấm vào tỉnh/thành
+    // Hiện Popup tên tỉnh khi bấm vào
     map.on('click', 'vietnam-fill', (e) => {
       if (e.features.length > 0) {
         const props = e.features[0].properties;
