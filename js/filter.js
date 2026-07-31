@@ -1,6 +1,21 @@
 // js/filter.js
 let currentGeoData = null;
 
+// Hàm khai báo bảng màu quy hoạch chung cho cả Viền và Nền
+const COLOR_MATCH_EXPRESSION = [
+    'match',
+    ['get', 'Loại Đất'],
+    'Đất ở tại đô thị', '#ff007f',         // Đô thị -> Hồng thẫm
+    'Đất ở tại nông thôn', '#ff5400',       // Nông thôn -> Cam đỏ
+    'Đất nuôi trồng thuỷ sản', '#00b4d8',   // Thủy sản -> Xanh dương
+    'Đất nuôi trồng thủy sản', '#00b4d8',   
+    'Đất trồng cây lâu năm', '#70e000',     // Cây lâu năm -> Xanh lá sáng
+    'Đất trồng cây hàng năm khác', '#9ef01a',
+    'Đất trồng lúa', '#ffea00',             // Lúa -> Vàng tươi
+    'Đất chuyên trồng lúa nước', '#ffea00', 
+    '#ff9e00'                              // Khác -> Cam vàng
+];
+
 // Hàm tải dữ liệu thửa đất từ Google Apps Script Web App
 async function loadThuaDatFromSheet(map) {
     if (!CONFIG.SHEET_DATA_URL) return;
@@ -9,42 +24,55 @@ async function loadThuaDatFromSheet(map) {
         const response = await fetch(CONFIG.SHEET_DATA_URL);
         const geojson = await response.json();
 
+        // Nguồn dữ liệu thửa đất
         if (map.getSource('sheet-thua-dat-src')) {
             map.getSource('sheet-thua-dat-src').setData(geojson);
         } else {
             map.addSource('sheet-thua-dat-src', { type: 'geojson', data: geojson });
 
-            // LAYER 1: TÔ MÀU NỀN THEO LOẠI ĐẤT (Chuẩn quy hoạch)
+            // LAYER 1: TÔ MÀU NỀN THEO LOẠI ĐẤT
             map.addLayer({
                 'id': 'sheet-thua-dat-fill',
                 'type': 'fill',
                 'source': 'sheet-thua-dat-src',
                 'paint': {
-                    'fill-color': [
-                        'match',
-                        ['get', 'Loại Đất'],
-                        'Đất ở tại đô thị', '#ff70a6',
-                        'Đất ở tại nông thôn', '#ff9770',
-                        'Đất nuôi trồng thuỷ sản', '#70d6ff',
-                        'Đất nuôi trồng thủy sản', '#70d6ff',
-                        'Đất trồng cây lâu năm', '#c2e812',
-                        'Đất trồng lúa', '#ffee93',
-                        'Đất chuyên trồng lúa nước', '#ffee93',
-                        '#ffbe0b' // Màu mặc định cho các loại đất khác
-                    ],
-                    'fill-opacity': 0.5 // Độ trong suốt 50% để thấy ảnh vệ tinh bên dưới
+                    'fill-color': COLOR_MATCH_EXPRESSION,
+                    'fill-opacity': 0.45 // Nền trong suốt 45% để soi rõ ảnh vệ tinh
                 }
             });
 
-            // LAYER 2: ĐƯỜNG VIỀN THỬA ĐẤT (Đồng bộ màu vàng đậm / cam nét căng)
+            // LAYER 2: ĐƯỜNG VIỀN TRÙNG MÀU VỚI NỀN
             map.addLayer({
                 'id': 'sheet-thua-dat-line',
                 'type': 'line',
                 'source': 'sheet-thua-dat-src',
                 'paint': {
-                    'line-color': '#ff5400', // Đường viền màu cam chuẩn quy hoạch
-                    'line-width': 1.5
+                    'line-color': COLOR_MATCH_EXPRESSION, // Viền cùng màu với màu nền
+                    'line-width': 1.8
                 }
+            });
+
+            // LAYER 3: TẠO HIỆU ỨNG NỔI BẬT DÀNH RIÊNG CHO THỬA ĐẤT ĐƯỢC CLICK CHỌN
+            map.addLayer({
+                'id': 'sheet-thua-dat-highlight-fill',
+                'type': 'fill',
+                'source': 'sheet-thua-dat-src',
+                'paint': {
+                    'fill-color': '#ffff00', // Đổi nền thành màu vàng chói
+                    'fill-opacity': 0.65
+                },
+                'filter': ['==', ['get', 'ID Thửa Đất'], ''] // Mặc định không chọn thửa nào
+            });
+
+            map.addLayer({
+                'id': 'sheet-thua-dat-highlight-line',
+                'type': 'line',
+                'source': 'sheet-thua-dat-src',
+                'paint': {
+                    'line-color': '#00ffff', // Viền sáng màu xanh dạ quang/cyan cực rực
+                    'line-width': 3.5
+                },
+                'filter': ['==', ['get', 'ID Thửa Đất'], '']
             });
         }
     } catch (error) {
@@ -79,7 +107,6 @@ function initFilter(map) {
         const provinceInfo = CONFIG.PROVINCES.find(p => p.id === provinceId);
         if (!provinceInfo) return;
 
-        // Tải dữ liệu GeoJSON ranh giới
         const geoData = await fetchGeoDataByUrl(provinceInfo.file);
         if (!geoData || !geoData.features) {
             alert("Chưa tải được file GeoJSON!");
@@ -89,14 +116,12 @@ function initFilter(map) {
         currentGeoData = geoData;
         const phuongSet = new Set();
 
-        // Lấy danh sách tên Phường/Xã đưa vào dropdown
         geoData.features.forEach(f => {
             const p = f.properties || {};
             const val = p.name || p.dia_chi || p.Phuong || p.Quan || p.Xa || p.NAME_2 || p.NAME_3;
             if (val) phuongSet.add(String(val).trim());
         });
 
-        // Nạp Nguồn dữ liệu ranh giới vào Map
         if (map.getSource('thua-dat-src')) {
             map.getSource('thua-dat-src').setData(geoData);
         } else {
@@ -106,24 +131,17 @@ function initFilter(map) {
                 'id': 'thua-dat-layer',
                 'type': 'fill',
                 'source': 'thua-dat-src',
-                'paint': {
-                    'fill-color': '#000000',
-                    'fill-opacity': 0
-                }
+                'paint': { 'fill-color': '#000000', 'fill-opacity': 0 }
             });
 
             map.addLayer({
                 'id': 'thua-dat-line-layer',
                 'type': 'line',
                 'source': 'thua-dat-src',
-                'paint': {
-                    'line-color': '#ff0000',
-                    'line-width': 2
-                }
+                'paint': { 'line-color': '#ff0000', 'line-width': 2 }
             });
         }
 
-        // Đưa danh sách vào Dropdown Phường/Xã
         phuongSelect.disabled = false;
         Array.from(phuongSet).sort().forEach(pName => {
             const opt = document.createElement('option');
@@ -132,9 +150,7 @@ function initFilter(map) {
             phuongSelect.appendChild(opt);
         });
 
-        // Tải thửa đất từ Google Sheet lên bản đồ
         await loadThuaDatFromSheet(map);
-
         map.flyTo({ center: provinceInfo.center, zoom: 10 });
     });
 
@@ -160,11 +176,9 @@ function initFilter(map) {
             if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
             if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
             
-            // Lọc thửa đất Google Sheet theo Phường/Xã được chọn
             if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
             if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
 
-            // Zoom vừa vặn khu vực Phường/Xã được chọn
             if (currentGeoData) {
                 const filtered = currentGeoData.features.filter(f => {
                     const p = f.properties || {};
