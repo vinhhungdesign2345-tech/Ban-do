@@ -35,3 +35,18 @@ const CONFIG = {
     FILL_OPACITY: 0.3,
     OUTLINE_COLOR: '#ffffff'
 };
+
+// Bảng màu quy hoạch dùng chung cho các lớp dữ liệu
+const COLOR_MATCH_EXPRESSION = [
+    'match',
+    ['get', 'Loại Đất'],
+    'Đất ở tại đô thị', '#ff007f',
+    'Đất ở tại nông thôn', '#ff5400',
+    'Đất nuôi trồng thuỷ sản', '#00b4d8',
+    'Đất nuôi trồng thủy sản', '#00b4d8',
+    'Đất trồng cây lâu năm', '#70e000',
+    'Đất trồng cây hàng năm khác', '#9ef01a',
+    'Đất trồng lúa', '#f5e753',
+    'Đất chuyên trồng lúa nước', '#ffea00',
+    '#ff9e00'
+];
