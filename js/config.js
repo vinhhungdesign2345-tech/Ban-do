@@ -1,11 +1,9 @@
 // js/config.js
 const CONFIG = {
-    // Danh sách Tỉnh/Thành phố hỗ trợ
     PROVINCES: [
-        { id: "CaMau", name: "Cà Mau", file: "./Ca-Mau.geojson", center: [105.15, 9.18] },
-        { id: "AnGiang", name: "An Giang", file: "./An-Giang.geojson", center: [105.12, 10.38] },
-        { id: "KienGiang", name: "Kiên Giang", file: "./Kien-Giang.geojson", center: [105.08, 10.01] }
+        { id: "CaMau", name: "Cà Mau", file: "./geojson/Ca-Mau.geojson", center: [105.15, 9.18] }
     ],
+};
 
     // Nền bản đồ Google Vệ tinh
     MAP_STYLE: {
