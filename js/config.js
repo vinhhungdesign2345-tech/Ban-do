@@ -1,17 +1,19 @@
 // js/config.js
 const CONFIG = {
-    // Đường dẫn đọc file GeoJSON nội bộ trên GitHub
-    GEOJSON_URL: "./Ca-Mau.geojson",
-    
-    // Nền bản đồ Google Vệ tinh (Google Satellite) mới nhất
+    // Danh sách Tỉnh/Thành phố hỗ trợ
+    PROVINCES: [
+        { id: "CaMau", name: "Cà Mau", file: "./Ca-Mau.geojson", center: [105.15, 9.18] },
+        { id: "AnGiang", name: "An Giang", file: "./An-Giang.geojson", center: [105.12, 10.38] },
+        { id: "KienGiang", name: "Kiên Giang", file: "./Kien-Giang.geojson", center: [105.08, 10.01] }
+    ],
+
+    // Nền bản đồ Google Vệ tinh
     MAP_STYLE: {
         'version': 8,
         'sources': {
             'google-satellite': {
                 'type': 'raster',
-                'tiles': [
-                    'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'
-                ],
+                'tiles': ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
                 'tileSize': 256
             }
         },
@@ -26,11 +28,8 @@ const CONFIG = {
         ]
     },
 
-    // Tọa độ trung tâm Cà Mau & Zoom mặc định
     MAP_CENTER: [105.15, 9.18],
     MAP_ZOOM: 12,
-    
-    // Viền thửa đất màu vàng chanh nổi bật trên nền Vệ tinh
     FILL_COLOR: '#00ffcc',
     FILL_OPACITY: 0.3,
     OUTLINE_COLOR: '#ffffff'
