@@ -55,7 +55,8 @@ function initMap() {
             const rawDienTich = props['dientichm2'] || props['dientich'] || '-';
             const dienTich = formatNumberVN(rawDienTich);
 
-            const loaiDat = props['loaidat'] || '-';
+            // 🎯 Hỗ trợ bắt nhiều biến thể của trường Loại Đất sau khi làm sạch key
+            const loaiDat = props['loaidat'] || props['loaidatnongnghiep'] || '-';
             const tenChu = props['tenchu'] || '-';
             const soDinhDanh = props['sodinhdanhchudat'] || props['sodinhdanh'] || 'Không có';
             const ghiChu = props['ghichu'] || 'Không có';
