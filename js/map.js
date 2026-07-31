@@ -38,14 +38,13 @@ function initMap() {
             const selectedFeature = e.features[0];
             const rawProps = selectedFeature.properties || {};
 
-            // 🎯 Lấy trực tiếp các trường chính xác từ thuộc tính gốc (không qua hàm cleanKey để tránh mất dấu)
+            // 🎯 Lấy trực tiếp các trường chính xác từ thuộc tính gốc
             const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
             const soThua = rawProps['Số thửa'] || rawProps['So thua'] || '-';
             
             const rawDienTich = rawProps['Diện tích'] || rawProps['Dien tich'] || '-';
             const dienTich = formatNumberVN(rawDienTich);
 
-            // Bắt trực tiếp chữ "Loại Đất" (chú ý chữ Đ viết hoa hoặc viết thường)
             const loaiDat = rawProps['Loại Đất'] || rawProps['Loại Đất:'] || rawProps['Loại đất'] || rawProps['loai_dat'] || '-';
             const tenChu = rawProps['Tên Chủ'] || rawProps['Tên chủ'] || '-';
             const soDinhDanh = rawProps['Số định danh chủ đất'] || rawProps['Số định danh'] || 'Không có';
@@ -92,50 +91,19 @@ function initMap() {
         map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = 'default');
     });
 
-    // 🔴 SỰ KIỆN CLICK VÙNG TRỐNG TRÊN MAP
-map.on('click', (e) => {
-    if (!isFeatureClicked) {
-        // 1. Reset highlight thửa đất như cũ
-        if (map.getLayer('sheet-thua-dat-highlight-fill')) {
-            map.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
-        }
-        if (map.getLayer('sheet-thua-dat-highlight-line')) {
-            map.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
-        }
-
-        // 2. Xử lý hiển thị ranh giới phường ngay lập tức tại điểm click (Nhánh 2)
-        // Lấy các feature phường/xã nằm ngay tại tọa độ người dùng vừa click chuột
-        const features = map.queryRenderedFeatures(e.point, {
-            layers: ['ten-layer-ranh-gioi-phuong'] // Thay bằng tên layer ranh giới phường của ông
-        });
-
-        if (features && features.length > 0) {
-            const clickedPhuong = features[0].properties['ten_phuong']; // Thay bằng tên thuộc tính chứa tên/mã phường trong geojson
-
-            if (clickedPhuong) {
-                // 🎯 Ép bộ lọc hiển thị ĐÚNG VÀ NGAY LẬP TỤC phường được click, bỏ qua hoàn toàn bước load cả tỉnh
-                map.setFilter('ten-layer-ranh-gioi-phuong', ['==', ['get', 'ten_phuong'], clickedPhuong]);
-
-                // Đồng thời đồng bộ luôn giá trị lên Dropdown (nếu có)
-                const dropdown = document.getElementById('select-phuong'); // Thay bằng ID của thẻ select chọn phường
-                if (dropdown) {
-                    dropdown.value = clickedPhuong;
-                    // Kích hoạt sự kiện change của dropdown nếu cần đồng bộ logic khác
-                    dropdown.dispatchEvent(new Event('change'));
-                }
+    // 🔴 SỰ KIỆN CLICK VÙNG TRỐNG TRÊN MAP (Xử lý Nhánh 2 trực tiếp)
+    map.on('click', (e) => {
+        if (!isFeatureClicked) {
+            // 1. Reset highlight thửa đất
+            if (map.getLayer('sheet-thua-dat-highlight-fill')) {
+                map.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
             }
-        } else {
-            // Nếu click ra ngoài vùng đất/phường hợp lệ thì ẩn ranh giới phường đi hoặc reset về rỗng
-            map.setFilter('ten-layer-ranh-gioi-phuong', ['==', ['get', 'ten_phuong'], '']);
+            if (map.getLayer('sheet-thua-dat-highlight-line')) {
+                map.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
+            }
         }
-
-        // Gọi hàm phụ trợ khác nếu ông vẫn muốn giữ cấu trúc cũ
-        if (typeof selectPhuongFromPoint === 'function') {
-            // Hoặc truyền thẳng thông tin nếu hàm đó viết ở file khác
-        }
-    }
-    isFeatureClicked = false; // Reset trạng thái
-});
+        isFeatureClicked = false; // Reset trạng thái
+    });
 }
 
 document.addEventListener('DOMContentLoaded', initMap);
