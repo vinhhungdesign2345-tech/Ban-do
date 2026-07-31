@@ -1,10 +1,17 @@
 // js/province.js
+
+// Biến toàn cục lưu trữ dữ liệu GeoJSON ranh giới của tỉnh đang được chọn
 let currentGeoData = null;
 
+/**
+ * 1. HÀM CHỌN PHƯỜNG/XÃ TỪ TỌA ĐỘ CLICK TRÊN BẢN ĐỒ
+ * Dùng thư viện Turf.js để kiểm tra xem tọa độ (lng, lat) có nằm trong polygon của Phường/Xã nào không.
+ */
 async function selectPhuongFromPoint(lng, lat, map) {
     const tinhSelect = document.getElementById('tinhFilter');
     const phuongSelect = document.getElementById('phuongFilter');
 
+    // Nếu chưa chọn tỉnh mà người dùng click bản đồ, tự động chọn tỉnh mặc định đầu tiên
     if (!tinhSelect.value && CONFIG.PROVINCES.length > 0) {
         const defaultProvince = CONFIG.PROVINCES[0];
         tinhSelect.value = defaultProvince.id;
@@ -16,6 +23,7 @@ async function selectPhuongFromPoint(lng, lat, map) {
     const point = turf.point([lng, lat]);
     let matchedPhuong = null;
 
+    // Duyệt qua tất cả các polygon phường/xã để tìm điểm click nằm bên trong
     for (const feature of currentGeoData.features) {
         if (turf.booleanPointInPolygon(point, feature)) {
             const p = feature.properties || {};
@@ -24,6 +32,7 @@ async function selectPhuongFromPoint(lng, lat, map) {
         }
     }
 
+    // Nếu tìm thấy phường/xã khớp, tự động cập nhật select box và lọc lớp dữ liệu tương ứng
     if (matchedPhuong && phuongSelect) {
         if (phuongSelect.value !== matchedPhuong) {
             phuongSelect.value = matchedPhuong;
@@ -48,10 +57,14 @@ async function selectPhuongFromPoint(lng, lat, map) {
     }
 }
 
+/**
+ * 2. HÀM TẢI DỮ LIỆU RANH GIỚI TỈNH (GEOJSON) VÀ ĐỔ VÀO DROPDOWN PHƯỜNG/XÃ
+ */
 async function loadProvinceData(provinceId, map) {
     const phuongSelect = document.getElementById('phuongFilter');
     phuongSelect.innerHTML = '<option value="">-- Phường / Xã --</option>';
 
+    // Ẩn dữ liệu thửa đất cũ khi đổi tỉnh
     hideThuaDat(map);
 
     if (!provinceId) {
@@ -63,6 +76,7 @@ async function loadProvinceData(provinceId, map) {
     const provinceInfo = CONFIG.PROVINCES.find(p => p.id === provinceId);
     if (!provinceInfo) return;
 
+    // Tải file GeoJSON ranh giới của tỉnh
     const geoData = await fetchGeoDataByUrl(provinceInfo.file);
     if (!geoData || !geoData.features) {
         alert("Chưa tải được file GeoJSON!");
@@ -72,12 +86,14 @@ async function loadProvinceData(provinceId, map) {
     currentGeoData = geoData;
     const phuongSet = new Set();
 
+    // Thu thập danh sách các Phường/Xã có trong file GeoJSON để đưa vào dropdown
     geoData.features.forEach(f => {
         const p = f.properties || {};
         const val = p.name || p.dia_chi || p.Phuong || p.Quan || p.Xa || p.NAME_2 || p.NAME_3;
         if (val) phuongSet.add(String(val).trim());
     });
 
+    // Thêm hoặc cập nhật nguồn dữ liệu bản đồ ranh giới lên MapLibre
     if (map.getSource('thua-dat-src')) {
         map.getSource('thua-dat-src').setData(geoData);
     } else {
@@ -104,6 +120,7 @@ async function loadProvinceData(provinceId, map) {
     if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
     if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
 
+    // Kích hoạt dropdown chọn Phường/Xã và sắp xếp tên theo bảng chữ cái
     phuongSelect.disabled = false;
     Array.from(phuongSet).sort().forEach(pName => {
         const opt = document.createElement('option');
@@ -112,13 +129,18 @@ async function loadProvinceData(provinceId, map) {
         phuongSelect.appendChild(opt);
     });
 
+    // Gọi tải dữ liệu thửa đất từ Google Sheet tương ứng với tỉnh
     await loadThuaDatFromSheet(map);
 }
 
+/**
+ * 3. HÀM KHỞI TẠO BỘ LỌC (GẮN SỰ KIỆN CHO CÁC DROPDOWN TỈNH & XÃ)
+ */
 function initFilter(map) {
     const tinhSelect = document.getElementById('tinhFilter');
     const phuongSelect = document.getElementById('phuongFilter');
 
+    // Đổ danh sách Tỉnh/Thành vào dropdown ban đầu
     tinhSelect.innerHTML = '<option value="">-- Tỉnh / TP --</option>';
     CONFIG.PROVINCES.forEach(p => {
         const opt = document.createElement('option');
@@ -127,6 +149,7 @@ function initFilter(map) {
         tinhSelect.appendChild(opt);
     });
 
+    // Sự kiện khi thay đổi lựa chọn Tỉnh/Thành phố
     tinhSelect.addEventListener('change', async (e) => {
         const selectedTinh = e.target.value;
         if (!selectedTinh) {
@@ -139,6 +162,7 @@ function initFilter(map) {
         }
     });
 
+    // Sự kiện khi thay đổi lựa chọn Phường/Xã để lọc bản đồ và zoom đến khu vực được chọn
     phuongSelect.addEventListener('change', (e) => {
         const selectedPhuong = e.target.value;
 
@@ -168,6 +192,7 @@ function initFilter(map) {
             if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
             if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
 
+            // Tự động tính toán khung bao (bbox) và zoom sát vào Phường/Xã được chọn
             if (currentGeoData) {
                 const filtered = currentGeoData.features.filter(f => {
                     const p = f.properties || {};
