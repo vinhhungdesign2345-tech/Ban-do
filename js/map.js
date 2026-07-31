@@ -1,23 +1,18 @@
 // js/map.js
+
 function initMap() {
-    const map = new maplibregl.Map({
-        container: 'map',
-        style: CONFIG.MAP_STYLE,
-        center: CONFIG.MAP_CENTER,
-        zoom: CONFIG.MAP_ZOOM
-    });
-
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
-
-    map.on('load', () => {
-        initFilter(map);
-    });
+    // ... Khởi tạo map của ông ...
 
     const sheetLayers = ['sheet-thua-dat-fill', 'sheet-thua-dat-line'];
+
+    // Variable theo dõi xem lượt click có trúng thửa đất nào không
+    let isFeatureClicked = false;
 
     sheetLayers.forEach(layerId => {
         map.on('click', layerId, (e) => {
             if (!e.features || !e.features.length) return;
+
+            isFeatureClicked = true; // Đánh dấu đã click vào thửa đất
 
             const selectedFeature = e.features[0];
             const rawProps = selectedFeature.properties || {};
@@ -33,17 +28,10 @@ function initMap() {
                 props[cleanKey] = rawProps[key];
             });
 
-            const soTo = props['soto'] || props['to'] || '-';
-            const soThua = props['sothua'] || props['thua'] || '-';
-            const dienTich = props['dientichm2'] || props['dientich'] || '-';
-            const loaiDat = props['loaidat'] || '-';
-            const tenChu = props['tenchu'] || '-';
-            const soDinhDanh = props['sodinhdanhchudat'] || props['sodinhdanh'] || 'Không có';
-            const ghiChu = props['ghichu'] || 'Không có';
-
             const parcelId = props['idthuadat'] || props['id'];
+            const tenChu = props['tenchu'] || '-';
 
-            // Highlight thửa
+            // HIGHLIGHT THỬA ĐẤT ĐƯỢC CHỌN
             let selectFilter;
             if (parcelId) {
                 selectFilter = ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId];
@@ -58,30 +46,23 @@ function initMap() {
                 map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
             }
 
-            // POPUP SIÊU NHỎ GỌN - 1 CỘT SÁT LỀ TRÁI
-            const popupContent = `
-                <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.5; color: #1a1a1a; width: 150px; text-align: left;">
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <div><b>Số tờ:</b> ${soTo}</div>
-                        <div><b>Số thửa:</b> ${soThua}</div>
-                        <div><b>Diện tích:</b> ${dienTich} m²</div>
-                        <div><b>Loại đất:</b> ${loaiDat}</div>
-                        <div><b>Tên chủ:</b> ${tenChu}</div>
-                        <div><b>Số định danh:</b> ${soDinhDanh}</div>
-                        <div><b>Ghi chú:</b> ${ghiChu}</div>
-                    </div>
-                </div>
-            `;
-
-            new maplibregl.Popup({ offset: [0, -5], maxWidth: "170px" })
-                .setLngLat(e.lngLat)
-                .setHTML(popupContent)
-                .addTo(map);
+            // POPUP... (Đoạn popup giữ nguyên như của ông)
         });
+    });
 
-        map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'pointer');
-        map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = '');
+    // 🔴 SỰ KIỆN CLICK RA NGOÀI THỬA ĐẤT (BẮT SỰ KIỆN TOÀN MAP)
+    map.on('click', (e) => {
+        // Nếu click không trúng bất kỳ thửa đất nào
+        if (!isFeatureClicked) {
+            // Reset filter highlight về rỗng để thửa đất trở về màu ban đầu
+            if (map.getLayer('sheet-thua-dat-highlight-fill')) {
+                map.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
+            }
+            if (map.getLayer('sheet-thua-dat-highlight-line')) {
+                map.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
+            }
+        }
+        // Đặt lại trạng thái cho lượt click tiếp theo
+        isFeatureClicked = false;
     });
 }
-
-document.addEventListener('DOMContentLoaded', initMap);
