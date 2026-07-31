@@ -81,8 +81,8 @@ function initMap() {
                 .addTo(map);
         });
 
-        map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'pointer');
-        map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = '');
+       map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'default');
+       map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = 'default');
     });
 
     // 🔴 SỰ KIỆN CLICK VÙNG TRỐNG TRÊN MAP
