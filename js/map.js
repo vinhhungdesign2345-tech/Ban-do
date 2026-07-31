@@ -22,29 +22,28 @@ function initMap() {
             const selectedFeature = e.features[0];
             const rawProps = selectedFeature.properties || {};
 
-            // 🔥 DIỆT SẠCH KÝ TỰ XUỐNG DÒNG \n, CHUẨN HÓA KEY VỀ CHỮ THƯỜNG KHÔNG DẤU
+            // Chuẩn hóa key, diệt sạch \n và ký tự đặc biệt
             const props = {};
             Object.keys(rawProps).forEach(key => {
-                const cleanKey = key.replace(/[\r\n\t]/g, '') // Xóa sạch xuống dòng \n và tab
+                const cleanKey = key.replace(/[\r\n\t]/g, '')
                                     .normalize("NFD")
                                     .replace(/[\u0300-\u036f]/g, "")
                                     .toLowerCase()
-                                    .replace(/[^a-z0-9]/g, ""); // Chỉ giữ lại chữ và số
+                                    .replace(/[^a-z0-9]/g, "");
                 props[cleanKey] = rawProps[key];
             });
 
-            // 🎯 LẤY CHÍNH XÁC CÁC TRƯỜNG DỮ LIỆU CỦA BẠN
             const soTo = props['soto'] || props['to'] || '-';
             const soThua = props['sothua'] || props['thua'] || '-';
             const dienTich = props['dientichm2'] || props['dientich'] || '-';
             const loaiDat = props['loaidat'] || '-';
             const tenChu = props['tenchu'] || '-';
             const soDinhDanh = props['sodinhdanhchudat'] || props['sodinhdanh'] || 'Không có';
-            const ghiChu = props['ghichu'] || '';
+            const ghiChu = props['ghichu'] || 'Không có';
 
             const parcelId = props['idthuadat'] || props['id'];
 
-            // 1. HIGHLIGHT THỬA ĐẤT ĐƯỢC CHỌN
+            // 1. Highlight thửa đất
             let selectFilter;
             if (parcelId) {
                 selectFilter = ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId];
@@ -59,19 +58,23 @@ function initMap() {
                 map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
             }
 
-            // 2. TẠO POPUP
+            // 2. POPUP DẠNG 1 CỘT - THẨM MỸ, GỌN GÀNG
             const popupContent = `
-                <div style="font-weight:bold; color:#d90429; font-size:14px; border-bottom:1px solid #ccc; padding-bottom:3px; margin-bottom:5px;">
-                    Tờ: ${soTo} | Thửa: ${soThua}
+                <div style="font-family: Arial, sans-serif; font-size: 13px; line-height: 1.5; color: #2b2d42; max-width: 220px; padding: 2px;">
+                    <div style="background: #d90429; color: #fff; font-weight: bold; padding: 4px 8px; border-radius: 4px; text-align: center; margin-bottom: 8px; font-size: 13px;">
+                        Tờ: ${soTo} &nbsp;|&nbsp; Thửa: ${soThua}
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div><span style="color: #8d99ae; font-weight: 600;">Diện tích:</span> <b>${dienTich} m²</b></div>
+                        <div><span style="color: #8d99ae; font-weight: 600;">Loại đất:</span> ${loaiDat}</div>
+                        <div><span style="color: #8d99ae; font-weight: 600;">Tên chủ:</span> ${tenChu}</div>
+                        <div><span style="color: #8d99ae; font-weight: 600;">Số định danh:</span> ${soDinhDanh}</div>
+                        <div><span style="color: #8d99ae; font-weight: 600;">Ghi chú:</span> ${ghiChu}</div>
+                    </div>
                 </div>
-                <b>Diện tích:</b> ${dienTich} m²<br>
-                <b>Loại đất:</b> ${loaiDat}<br>
-                <b>Tên chủ:</b> ${tenChu}<br>
-                <b>Số định danh:</b> ${soDinhDanh}<br>
-                <b>Ghi chú:</b> ${ghiChu}
             `;
 
-            new maplibregl.Popup()
+            new maplibregl.Popup({ offset: [0, -5] })
                 .setLngLat(e.lngLat)
                 .setHTML(popupContent)
                 .addTo(map);
