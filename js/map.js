@@ -38,30 +38,20 @@ function initMap() {
             const selectedFeature = e.features[0];
             const rawProps = selectedFeature.properties || {};
 
-            const props = {};
-            Object.keys(rawProps).forEach(key => {
-                const cleanKey = key.replace(/[\r\n\t]/g, '')
-                                    .normalize("NFD")
-                                    .replace(/[\u0300-\u036f]/g, "")
-                                    .toLowerCase()
-                                    .replace(/[^a-z0-9]/g, "");
-                props[cleanKey] = rawProps[key];
-            });
-
-            const soTo = props['soto'] || props['to'] || '-';
-            const soThua = props['sothua'] || props['thua'] || '-';
+            // 🎯 Lấy trực tiếp các trường chính xác từ thuộc tính gốc (không qua hàm cleanKey để tránh mất dấu)
+            const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
+            const soThua = rawProps['Số thửa'] || rawProps['So thua'] || '-';
             
-            // 🎯 Lấy diện tích và ép định dạng kiểu Việt Nam (15.348,7 m²)
-            const rawDienTich = props['dientichm2'] || props['dientich'] || '-';
+            const rawDienTich = rawProps['Diện tích'] || rawProps['Dien tich'] || '-';
             const dienTich = formatNumberVN(rawDienTich);
 
-            // 🎯 Hỗ trợ bắt nhiều biến thể của trường Loại Đất sau khi làm sạch key
-            const loaiDat = props['loaidat'] || props['loaidatnongnghiep'] || '-';
-            const tenChu = props['tenchu'] || '-';
-            const soDinhDanh = props['sodinhdanhchudat'] || props['sodinhdanh'] || 'Không có';
-            const ghiChu = props['ghichu'] || 'Không có';
+            // Bắt trực tiếp chữ "Loại Đất" (chú ý chữ Đ viết hoa hoặc viết thường)
+            const loaiDat = rawProps['Loại Đất'] || rawProps['Loại Đất:'] || rawProps['Loại đất'] || rawProps['loai_dat'] || '-';
+            const tenChu = rawProps['Tên Chủ'] || rawProps['Tên chủ'] || '-';
+            const soDinhDanh = rawProps['Số định danh chủ đất'] || rawProps['Số định danh'] || 'Không có';
+            const ghiChu = rawProps['Ghi Chú'] || rawProps['Ghi chú'] || 'Không có';
 
-            const parcelId = props['idthuadat'] || props['id'];
+            const parcelId = rawProps['ID Thửa Đất'] || rawProps['id'];
 
             let selectFilter;
             if (parcelId) {
