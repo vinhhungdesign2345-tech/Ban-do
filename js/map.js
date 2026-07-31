@@ -93,23 +93,49 @@ function initMap() {
     });
 
     // 🔴 SỰ KIỆN CLICK VÙNG TRỐNG TRÊN MAP
-    map.on('click', (e) => {
-        if (!isFeatureClicked) {
-            // 1. Reset highlight về màu cũ
-            if (map.getLayer('sheet-thua-dat-highlight-fill')) {
-                map.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
-            }
-            if (map.getLayer('sheet-thua-dat-highlight-line')) {
-                map.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
-            }
-
-            // 2. Chọn Phường/Xã tương ứng vị trí vừa click
-            if (typeof selectPhuongFromPoint === 'function') {
-                selectPhuongFromPoint(e.lngLat.lng, e.lngLat.lat, map);
-            }
+map.on('click', (e) => {
+    if (!isFeatureClicked) {
+        // 1. Reset highlight thửa đất như cũ
+        if (map.getLayer('sheet-thua-dat-highlight-fill')) {
+            map.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
         }
-        isFeatureClicked = false; // Reset trạng thái
-    });
+        if (map.getLayer('sheet-thua-dat-highlight-line')) {
+            map.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
+        }
+
+        // 2. Xử lý hiển thị ranh giới phường ngay lập tức tại điểm click (Nhánh 2)
+        // Lấy các feature phường/xã nằm ngay tại tọa độ người dùng vừa click chuột
+        const features = map.queryRenderedFeatures(e.point, {
+            layers: ['ten-layer-ranh-gioi-phuong'] // Thay bằng tên layer ranh giới phường của ông
+        });
+
+        if (features && features.length > 0) {
+            const clickedPhuong = features[0].properties['ten_phuong']; // Thay bằng tên thuộc tính chứa tên/mã phường trong geojson
+
+            if (clickedPhuong) {
+                // 🎯 Ép bộ lọc hiển thị ĐÚNG VÀ NGAY LẬP TỤC phường được click, bỏ qua hoàn toàn bước load cả tỉnh
+                map.setFilter('ten-layer-ranh-gioi-phuong', ['==', ['get', 'ten_phuong'], clickedPhuong]);
+
+                // Đồng thời đồng bộ luôn giá trị lên Dropdown (nếu có)
+                const dropdown = document.getElementById('select-phuong'); // Thay bằng ID của thẻ select chọn phường
+                if (dropdown) {
+                    dropdown.value = clickedPhuong;
+                    // Kích hoạt sự kiện change của dropdown nếu cần đồng bộ logic khác
+                    dropdown.dispatchEvent(new Event('change'));
+                }
+            }
+        } else {
+            // Nếu click ra ngoài vùng đất/phường hợp lệ thì ẩn ranh giới phường đi hoặc reset về rỗng
+            map.setFilter('ten-layer-ranh-gioi-phuong', ['==', ['get', 'ten_phuong'], '']);
+        }
+
+        // Gọi hàm phụ trợ khác nếu ông vẫn muốn giữ cấu trúc cũ
+        if (typeof selectPhuongFromPoint === 'function') {
+            // Hoặc truyền thẳng thông tin nếu hàm đó viết ở file khác
+        }
+    }
+    isFeatureClicked = false; // Reset trạng thái
+});
 }
 
 document.addEventListener('DOMContentLoaded', initMap);
