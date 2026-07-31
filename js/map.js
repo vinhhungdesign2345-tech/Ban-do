@@ -20,36 +20,36 @@ function initMap() {
             if (!e.features || !e.features.length) return;
 
             const selectedFeature = e.features[0];
-            const props = selectedFeature.properties || {};
+            const rawProps = selectedFeature.properties || {};
 
-            // 🔍 LẤY CHÍNH XÁC THEO TÊN CỘT TRÊN GOOGLE SHEET CỦA BẠN:
-            // Cột B: Số Tờ
-            const soTo = props['Số Tờ'] ?? props['so_to'] ?? '-';
-            // Cột C: Số Thửa
-            const soThua = props['Số Thửa'] ?? props['so_thua'] ?? '-';
-            // Cột D: Diện Tích (m²)
-            const dienTich = props['Diện Tích (m²)'] ?? props['dien_tich'] ?? '-';
-            // Cột E: Loại Đất
-            const loaiDat = props['Loại Đất'] ?? props['loai_dat'] ?? '-';
-            // Cột F: Tên Chủ
-            const tenChu = props['Tên Chủ'] ?? props['ten_chu'] ?? '-';
-            // Cột G: Số Định Danh chủ đất
-            const soDinhDanh = props['Số Định Danh chủ đất'] ?? props['so_dinh_danh'] ?? 'Không có';
-            // Cột N: Ghi Chú
-            const ghiChu = props['Ghi Chú'] ?? props['ghi_chu'] ?? 'Không có';
+            // 🔥 DIỆT SẠCH KÝ TỰ XUỐNG DÒNG \n, CHUẨN HÓA KEY VỀ CHỮ THƯỜNG KHÔNG DẤU
+            const props = {};
+            Object.keys(rawProps).forEach(key => {
+                const cleanKey = key.replace(/[\r\n\t]/g, '') // Xóa sạch xuống dòng \n và tab
+                                    .normalize("NFD")
+                                    .replace(/[\u0300-\u036f]/g, "")
+                                    .toLowerCase()
+                                    .replace(/[^a-z0-9]/g, ""); // Chỉ giữ lại chữ và số
+                props[cleanKey] = rawProps[key];
+            });
 
-            const parcelId = props['ID Thửa Đất'] ?? props['id_thua_dat'];
+            // 🎯 LẤY CHÍNH XÁC CÁC TRƯỜNG DỮ LIỆU CỦA BẠN
+            const soTo = props['soto'] || props['to'] || '-';
+            const soThua = props['sothua'] || props['thua'] || '-';
+            const dienTich = props['dientichm2'] || props['dientich'] || '-';
+            const loaiDat = props['loaidat'] || '-';
+            const tenChu = props['tenchu'] || '-';
+            const soDinhDanh = props['sodinhdanhchudat'] || props['sodinhdanh'] || 'Không có';
+            const ghiChu = props['ghichu'] || '';
 
-            // 1. KÍCH HOẠT HIỆU ỨNG PHÁT SÁNG THỬA ĐẤT ĐƯỢC CHỌN
+            const parcelId = props['idthuadat'] || props['id'];
+
+            // 1. HIGHLIGHT THỬA ĐẤT ĐƯỢC CHỌN
             let selectFilter;
             if (parcelId) {
-                selectFilter = ['==', ['get', 'ID Thửa Đất'], parcelId];
+                selectFilter = ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId];
             } else {
-                selectFilter = [
-                    'all',
-                    ['==', ['get', 'Số Tờ'], soTo],
-                    ['==', ['get', 'Số Thửa'], soThua]
-                ];
+                selectFilter = ['==', ['get', 'Tên Chủ'], rawProps['Tên Chủ'] || tenChu];
             }
 
             if (map.getLayer('sheet-thua-dat-highlight-fill')) {
@@ -59,7 +59,7 @@ function initMap() {
                 map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
             }
 
-            // 2. TẠO POPUP THEO ĐÚNG CÁC TRƯỜNG BẠN YÊU CẦU
+            // 2. TẠO POPUP
             const popupContent = `
                 <div style="font-weight:bold; color:#d90429; font-size:14px; border-bottom:1px solid #ccc; padding-bottom:3px; margin-bottom:5px;">
                     Tờ: ${soTo} | Thửa: ${soThua}
