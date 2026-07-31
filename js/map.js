@@ -14,20 +14,18 @@ function initMap() {
         initFilter(map);
     });
 
-    // 🎯 DANH SÁCH BẮT SỰ KIỆN CLICK TRÊN THỬA ĐẤT
     const sheetLayers = ['sheet-thua-dat-fill', 'sheet-thua-dat-line'];
-    let isFeatureClicked = false;
+    let isFeatureClicked = false; // Cờ kiểm tra click trúng thửa đất
 
     sheetLayers.forEach(layerId => {
         map.on('click', layerId, (e) => {
             if (!e.features || !e.features.length) return;
 
-            isFeatureClicked = true; // Đánh dấu là vừa click trúng thửa đất
+            isFeatureClicked = true; // Đánh dấu đã click trúng thửa đất
 
             const selectedFeature = e.features[0];
             const rawProps = selectedFeature.properties || {};
 
-            // 🧹 XÓA KÝ TỰ XUỐNG DÒNG \n & CHUẨN HÓA KEY
             const props = {};
             Object.keys(rawProps).forEach(key => {
                 const cleanKey = key.replace(/[\r\n\t]/g, '')
@@ -48,7 +46,6 @@ function initMap() {
 
             const parcelId = props['idthuadat'] || props['id'];
 
-            // 1. HIGHLIGHT THỬA ĐẤT ĐƯỢC CHỌN (SÁNG LÊN)
             let selectFilter;
             if (parcelId) {
                 selectFilter = ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId];
@@ -63,7 +60,7 @@ function initMap() {
                 map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
             }
 
-            // 2. POPUP DẠNG 1 CỘT - GỌN GÀNG SÁT LỀ TRÁI
+            // POPUP GỌN SÁT LỀ TRÁI
             const popupContent = `
                 <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.5; color: #1a1a1a; width: 170px; text-align: left;">
                     <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -88,17 +85,23 @@ function initMap() {
         map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = '');
     });
 
-    // 🔴 CLICK RA NGOÀI THỬA ĐẤT -> BỎ HIGHLIGHT (THỬA ĐẤT TRỞ VỀ MÀU CŨ)
+    // 🔴 SỰ KIỆN CLICK VÙNG TRỐNG TRÊN MAP
     map.on('click', (e) => {
         if (!isFeatureClicked) {
+            // 1. Reset highlight về màu cũ
             if (map.getLayer('sheet-thua-dat-highlight-fill')) {
                 map.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
             }
             if (map.getLayer('sheet-thua-dat-highlight-line')) {
                 map.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
             }
+
+            // 2. Chọn Phường/Xã tương ứng vị trí vừa click
+            if (typeof selectPhuongFromPoint === 'function') {
+                selectPhuongFromPoint(e.lngLat.lng, e.lngLat.lat, map);
+            }
         }
-        isFeatureClicked = false;
+        isFeatureClicked = false; // Reset trạng thái
     });
 }
 
