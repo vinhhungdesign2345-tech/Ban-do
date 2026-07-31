@@ -9,37 +9,15 @@ function initMap() {
 
     map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
-    map.on('load', async () => {
-        const geoData = await fetchGeoData();
-        if (!geoData) return;
-
-        map.addSource('thua-dat-src', {
-            type: 'geojson',
-            data: geoData
-        });
-
-        // Thêm Layer hiển thị Thửa Đất
-        map.addLayer({
-            'id': 'thua-dat-layer',
-            'type': 'fill',
-            'source': 'thua-dat-src',
-            // MẶC ĐỊNH ẨN HOÀN TOÀN KHI MỚI TẢI MAP
-            'filter': ['==', '$type', 'Point'], 
-            'paint': {
-                'fill-color': CONFIG.FILL_COLOR,
-                'fill-opacity': CONFIG.FILL_OPACITY,
-                'fill-outline-color': CONFIG.OUTLINE_COLOR
-            }
-        });
-
-        // Khởi tạo Bộ Lọc Tỉnh/Phường
-        initFilter(map, geoData);
+    map.on('load', () => {
+        // Khởi tạo bộ lọc động Tỉnh -> Phường/Xã
+        initFilter(map);
     });
 
     // SỰ KIỆN CLICK VÀO THỬA ĐẤT
     map.on('click', 'thua-dat-layer', (e) => {
         const props = e.features[0].properties;
-        const clickedAddress = props.dia_chi || props.Phuong || props.Quan || props.Xa;
+        const clickedAddress = props.dia_chi || props.Phuong || props.Quan || props.Xa || props.NAME_2 || props.NAME_3;
 
         if (clickedAddress) {
             syncDropdownOnly(clickedAddress);
