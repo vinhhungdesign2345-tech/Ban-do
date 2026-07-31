@@ -2,7 +2,7 @@
 function initMap() {
     const map = new maplibregl.Map({
         container: 'map',
-        style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+        style: CONFIG.MAP_STYLE, // Đã đổi sang ảnh Vệ tinh Google
         center: CONFIG.MAP_CENTER,
         zoom: CONFIG.MAP_ZOOM
     });
@@ -31,7 +31,7 @@ function initMap() {
 
         initFilter(map, geoData);
 
-        if (geoData.features.length > 0) {
+        if (geoData.features && geoData.features.length > 0) {
             const bbox = turf.bbox(geoData);
             map.fitBounds(bbox, { padding: 50 });
         }
@@ -40,22 +40,20 @@ function initMap() {
     // SỰ KIỆN CLICK VÀO THỬA ĐẤT
     map.on('click', 'thua-dat-layer', (e) => {
         const props = e.features[0].properties;
-        const clickedAddress = props.dia_chi;
+        const clickedAddress = props.dia_chi || props.Phuong || props.Quan;
 
-        // 1. Chỉ nhảy tên Phường/Xã ở Dropdown (KHÔNG ZOOM)
         if (clickedAddress) {
             syncDropdownOnly(clickedAddress);
         }
 
-        // 2. Mở Popup thông tin chi tiết
         const popupContent = `
             <div style="font-weight:bold; color:#007bff; border-bottom:1px solid #ccc; padding-bottom:3px; margin-bottom:5px;">
-                Tờ: ${props.so_to || '-'} | Thửa: ${props.so_thua || '-'}
+                Tờ: ${props.so_to || props.SoTo || '-'} | Thửa: ${props.so_thua || props.SoThua || '-'}
             </div>
-            <b>Địa chỉ:</b> ${props.dia_chi || 'Chưa cập nhật'}<br>
-            <b>Diện tích:</b> ${props.dien_tich || '-'} m²<br>
-            <b>Loại đất:</b> ${props.loai_dat || '-'}<br>
-            <b>Tên chủ:</b> ${props.ten_chu || '-'}<br>
+            <b>Địa chỉ:</b> ${clickedAddress || 'Chưa cập nhật'}<br>
+            <b>Diện tích:</b> ${props.dien_tich || props.DienTich || '-'} m²<br>
+            <b>Loại đất:</b> ${props.loai_dat || props.LoaiDat || '-'}<br>
+            <b>Tên chủ:</b> ${props.ten_chu || props.TenChu || '-'}<br>
             <b>Cập nhật:</b> ${props.ngay_cap_nhat || '-'}
         `;
 
