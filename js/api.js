@@ -1,11 +1,11 @@
 // js/api.js
-async function fetchGeoData() {
+async function fetchGeoDataByUrl(fileUrl) {
     try {
-        const response = await fetch(CONFIG.GEOJSON_URL);
+        const response = await fetch(fileUrl);
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error("❌ Lỗi khi tải file Ca-Mau.geojson:", error);
+        console.error("❌ Lỗi khi tải file GeoJSON:", fileUrl, error);
         return null;
     }
 }
