@@ -1,5 +1,17 @@
 // js/map.js
 
+// 🎯 Hàm định dạng số chuẩn Việt Nam: 15348.7 -> 15.348,7
+function formatNumberVN(val) {
+    if (val === null || val === undefined || val === '' || val === '-') return '-';
+    
+    // Chuyển dấu phẩy (nếu có) thành dấu chấm để parse số
+    const num = parseFloat(String(val).replace(',', '.'));
+    if (isNaN(num)) return val;
+
+    // Định dạng theo chuẩn Việt Nam (dấu . phân cách ngàn, dấu , phân cách thập phân)
+    return num.toLocaleString('vi-VN');
+}
+
 function initMap() {
     const map = new maplibregl.Map({
         container: 'map',
@@ -38,7 +50,11 @@ function initMap() {
 
             const soTo = props['soto'] || props['to'] || '-';
             const soThua = props['sothua'] || props['thua'] || '-';
-            const dienTich = props['dientichm2'] || props['dientich'] || '-';
+            
+            // 🎯 Lấy diện tích và ép định dạng kiểu Việt Nam (15.348,7 m²)
+            const rawDienTich = props['dientichm2'] || props['dientich'] || '-';
+            const dienTich = formatNumberVN(rawDienTich);
+
             const loaiDat = props['loaidat'] || '-';
             const tenChu = props['tenchu'] || '-';
             const soDinhDanh = props['sodinhdanhchudat'] || props['sodinhdanh'] || 'Không có';
@@ -81,8 +97,8 @@ function initMap() {
                 .addTo(map);
         });
 
-       map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'default');
-       map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = 'default');
+        map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'default');
+        map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = 'default');
     });
 
     // 🔴 SỰ KIỆN CLICK VÙNG TRỐNG TRÊN MAP
