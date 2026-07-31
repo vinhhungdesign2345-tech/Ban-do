@@ -49,7 +49,7 @@ async function loadThuaDatFromSheet(map) {
                 'source': 'sheet-thua-dat-src',
                 'paint': {
                     'line-color': COLOR_MATCH_EXPRESSION, // Viền cùng màu với màu nền
-                    'line-width': 1.8
+                    'line-width': 0.8
                 },
                 'filter': ['==', '$type', 'Point'] // 🔴 MẶC ĐỊNH ẨN HẾT KHI MỚI TẢI XONG
             });
