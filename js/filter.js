@@ -38,7 +38,7 @@ function initFilter(map) {
         currentGeoData = geoData;
         const phuongSet = new Set();
 
-        // LẤY TÊN ĐỊA PHƯƠNG (Thêm props.name để đọc đúng file của bạn)
+        // Lấy danh sách tên Phường/Xã đưa vào dropdown
         geoData.features.forEach(f => {
             const p = f.properties || {};
             const val = p.name || p.dia_chi || p.Phuong || p.Quan || p.Xa || p.NAME_2 || p.NAME_3;
@@ -50,20 +50,31 @@ function initFilter(map) {
             map.getSource('thua-dat-src').setData(geoData);
         } else {
             map.addSource('thua-dat-src', { type: 'geojson', data: geoData });
+
+            // Layer KHÔNG TÔ NỀN (chỉ tô nền trong suốt 0%)
             map.addLayer({
                 'id': 'thua-dat-layer',
                 'type': 'fill',
                 'source': 'thua-dat-src',
-                'filter': ['==', '$type', 'Point'], // Mặc định ẩn
                 'paint': {
-                    'fill-color': CONFIG.FILL_COLOR,
-                    'fill-opacity': CONFIG.FILL_OPACITY,
-                    'fill-outline-color': CONFIG.OUTLINE_COLOR
+                    'fill-color': '#000000',
+                    'fill-opacity': 0 // KHÔNG TÔ NỀN
+                }
+            });
+
+            // Layer HIỆN VIỀN ĐẤT
+            map.addLayer({
+                'id': 'thua-dat-line-layer',
+                'type': 'line',
+                'source': 'thua-dat-src',
+                'paint': {
+                    'line-color': '#ff0000', // Mặc định đường viền màu ĐỎ (Bạn có thể đổi màu tùy thích)
+                    'line-width': 2         // Độ dày nét vẽ viền
                 }
             });
         }
 
-        // Đưa tên vào Dropdown Phường/Xã
+        // Đưa danh sách vào Dropdown
         phuongSelect.disabled = false;
         Array.from(phuongSet).sort().forEach(pName => {
             const opt = document.createElement('option');
@@ -75,21 +86,24 @@ function initFilter(map) {
         map.flyTo({ center: provinceInfo.center, zoom: 10 });
     });
 
-    // 3. Sự kiện CHỌN PHƯỜNG/XÃ (Khớp dữ liệu theo cột name)
+    // 3. Sự kiện CHỌN PHƯỜNG/XÃ
     phuongSelect.addEventListener('change', (e) => {
         const selectedPhuong = e.target.value;
 
         if (!selectedPhuong) {
             hideThuaDat(map);
         } else {
-            // Hiển thị thửa/vùng đất được chọn
-            map.setFilter('thua-dat-layer', [
+            // Lọc để hiện đúng đối tượng trên cả 2 layer (không tô nền và viền)
+            const filterExpr = [
                 'any',
                 ['==', ['get', 'name'], selectedPhuong],
                 ['==', ['get', 'dia_chi'], selectedPhuong],
                 ['==', ['get', 'Phuong'], selectedPhuong],
                 ['==', ['get', 'Xa'], selectedPhuong]
-            ]);
+            ];
+
+            if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
+            if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
 
             // Zoom vừa vặn khu vực đó
             if (currentGeoData) {
@@ -109,9 +123,9 @@ function initFilter(map) {
 }
 
 function hideThuaDat(map) {
-    if (map.getLayer('thua-dat-layer')) {
-        map.setFilter('thua-dat-layer', ['==', '$type', 'Point']);
-    }
+    const emptyFilter = ['==', '$type', 'Point']; // Ẩn Polygon
+    if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', emptyFilter);
+    if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', emptyFilter);
 }
 
 function syncDropdownOnly(addressValue) {
