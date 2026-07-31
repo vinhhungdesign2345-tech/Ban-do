@@ -2,7 +2,7 @@
 function initMap() {
     const map = new maplibregl.Map({
         container: 'map',
-        style: CONFIG.MAP_STYLE, // Đã đổi sang ảnh Vệ tinh Google
+        style: CONFIG.MAP_STYLE,
         center: CONFIG.MAP_CENTER,
         zoom: CONFIG.MAP_ZOOM
     });
@@ -18,10 +18,13 @@ function initMap() {
             data: geoData
         });
 
+        // Thêm Layer hiển thị Thửa Đất
         map.addLayer({
             'id': 'thua-dat-layer',
             'type': 'fill',
             'source': 'thua-dat-src',
+            // MẶC ĐỊNH ẨN HOÀN TOÀN KHI MỚI TẢI MAP
+            'filter': ['==', '$type', 'Point'], 
             'paint': {
                 'fill-color': CONFIG.FILL_COLOR,
                 'fill-opacity': CONFIG.FILL_OPACITY,
@@ -29,18 +32,14 @@ function initMap() {
             }
         });
 
+        // Khởi tạo Bộ Lọc Tỉnh/Phường
         initFilter(map, geoData);
-
-        if (geoData.features && geoData.features.length > 0) {
-            const bbox = turf.bbox(geoData);
-            map.fitBounds(bbox, { padding: 50 });
-        }
     });
 
     // SỰ KIỆN CLICK VÀO THỬA ĐẤT
     map.on('click', 'thua-dat-layer', (e) => {
         const props = e.features[0].properties;
-        const clickedAddress = props.dia_chi || props.Phuong || props.Quan;
+        const clickedAddress = props.dia_chi || props.Phuong || props.Quan || props.Xa;
 
         if (clickedAddress) {
             syncDropdownOnly(clickedAddress);
