@@ -106,13 +106,30 @@ async function selectPhuongFromPoint(lng, lat, map) {
         }
     }
 
-    // Nếu tìm thấy -> Chọn trên dropdown và trigger sự kiện thay đổi
-    if (matchedPhuong && phuongSelect) {
-        if (phuongSelect.value !== matchedPhuong) {
-            phuongSelect.value = matchedPhuong;
-            phuongSelect.dispatchEvent(new Event('change'));
-        }
+    // Nếu tìm thấy -> Chọn trên dropdown và lọc dữ liệu nhưng KHÔNG trigger 'change' để tránh bị zoom
+if (matchedPhuong && phuongSelect) {
+    if (phuongSelect.value !== matchedPhuong) {
+        phuongSelect.value = matchedPhuong;
+        
+        // 🔴 Cập nhật bộ lọc hiển thị thửa đất nhưng GIỮ NGUYÊN ZOOM
+        const filterExpr = [
+            'any',
+            ['==', ['get', 'name'], matchedPhuong],
+            ['==', ['get', 'dia_chi'], matchedPhuong],
+            ['==', ['get', 'Phuong'], matchedPhuong],
+            ['==', ['get', 'Xa'], matchedPhuong]
+        ];
+
+        const sheetFilterExpr = [
+            '==', ['get', 'Địa Chỉ Thửa Đất'], matchedPhuong
+        ];
+
+        if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
+        if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
+        if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
+        if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
     }
+}
 }
 
 // Hàm tải dữ liệu Tỉnh tách riêng để dùng chung
