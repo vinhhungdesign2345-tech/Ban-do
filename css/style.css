@@ -12,92 +12,77 @@ body {
     width: 100%; 
 }
 
-/* --- BẢNG ĐIỀU KHIỂN MAC ĐỊNH (MÁY TÍNH) --- */
+/* --- BẢNG ĐIỀU KHIỂN GỌN GÀNG --- */
 .map-control {
     position: absolute;
-    top: 15px;
-    left: 15px;
+    top: 12px;
+    left: 12px;
     z-index: 10;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px);
-    padding: 14px 18px;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    min-width: 240px;
-    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 6px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
+    max-width: 380px;
+    width: calc(100% - 24px); /* Tự co giãn sát lề */
+    box-sizing: border-box;
 }
 
-.map-control h4 { 
-    margin: 0 0 10px 0; 
-    font-size: 13px; 
-    color: #007bff; 
-    font-weight: 700; 
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 5px;
+/* Xếp 2 ô select trên cùng 1 hàng */
+.filter-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
 }
 
-.map-control label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #666;
-    display: block;
-    margin-top: 6px;
+.filter-item {
+    flex: 1; /* Chia đều 50-50 cho 2 ô select */
+    min-width: 0; /* Tránh tràn layout */
 }
 
 .map-control select {
     width: 100%;
-    padding: 8px 10px;
-    margin-top: 4px;
+    padding: 6px 8px;
     border-radius: 6px;
-    border: 1px solid #e0e0e0;
-    font-size: 13px;
+    border: 1px solid #d0d0d0;
+    font-size: 12px;
+    font-weight: 500;
     outline: none;
     background-color: #fff;
-    color: #333;
+    color: #222;
+    height: 34px;
     box-sizing: border-box;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .map-control select:disabled {
-    background-color: #f5f5f5;
-    color: #aaa;
+    background-color: #f0f0f0;
+    color: #888;
     cursor: not-allowed;
 }
 
-/* --- TỐI ƯU GIAO DIỆN MÀN HÌNH ĐIỆN THOẠI (DƯỚI 768px) --- */
+/* --- TỐI ƯU TRÊN ĐIỆN THOẠI (MOBILE) --- */
 @media screen and (max-width: 768px) {
     .map-control {
         top: 10px;
         left: 10px;
-        right: 10px; /* Kéo dài vừa vặn lề màn hình */
-        min-width: unset;
-        padding: 10px 12px;
-        border-radius: 10px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-    }
-
-    .map-control h4 {
-        font-size: 11px;
-        margin-bottom: 6px;
-        padding-bottom: 3px;
-    }
-
-    .map-control label {
-        font-size: 10px;
-        margin-top: 4px;
+        width: calc(100% - 20px);
+        padding: 5px;
     }
 
     .map-control select {
-        padding: 6px 8px;
-        font-size: 12px;
-        height: 34px; /* Vừa ngón tay bấm */
+        font-size: 11px;
+        padding: 4px 6px;
+        height: 32px;
     }
 
-    /* Đẩy nút Zoom Maplibregl xuống góc dưới bên phải cho dễ thao tác tay */
+    /* Đẩy nút Zoom Maplibregl (+/-) xuống góc dưới bên phải */
     .maplibregl-ctrl-top-right {
         top: auto !important;
-        bottom: 25px !important;
+        bottom: 20px !important;
         right: 10px !important;
     }
 }
