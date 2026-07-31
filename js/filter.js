@@ -13,7 +13,7 @@ const COLOR_MATCH_EXPRESSION = [
     'Đất trồng cây hàng năm khác', '#9ef01a',
     'Đất trồng lúa', '#ffea00',             // Lúa -> Vàng tươi
     'Đất chuyên trồng lúa nước', '#ffea00', 
-    '#ff9e00'                              // Khác -> Cam vàng
+    '#ff9e00'                               // Khác -> Cam vàng
 ];
 
 // Hàm tải dữ liệu thửa đất từ Google Apps Script Web App
@@ -38,7 +38,8 @@ async function loadThuaDatFromSheet(map) {
                 'paint': {
                     'fill-color': COLOR_MATCH_EXPRESSION,
                     'fill-opacity': 0.45 // Nền trong suốt 45% để soi rõ ảnh vệ tinh
-                }
+                },
+                'filter': ['==', '$type', 'Point'] // 🔴 MẶC ĐỊNH ẨN HẾT KHI MỚI TẢI XONG
             });
 
             // LAYER 2: ĐƯỜNG VIỀN TRÙNG MÀU VỚI NỀN
@@ -49,7 +50,8 @@ async function loadThuaDatFromSheet(map) {
                 'paint': {
                     'line-color': COLOR_MATCH_EXPRESSION, // Viền cùng màu với màu nền
                     'line-width': 1.8
-                }
+                },
+                'filter': ['==', '$type', 'Point'] // 🔴 MẶC ĐỊNH ẨN HẾT KHI MỚI TẢI XONG
             });
 
             // LAYER 3: TẠO HIỆU ỨNG NỔI BẬT DÀNH RIÊNG CHO THỬA ĐẤT ĐƯỢC CLICK CHỌN
@@ -98,9 +100,11 @@ function initFilter(map) {
         const provinceId = e.target.value;
         phuongSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
 
+        // Khi chọn Tỉnh mới -> Luôn ẩn các thửa đất cũ đi
+        hideThuaDat(map);
+
         if (!provinceId) {
             phuongSelect.disabled = true;
-            hideThuaDat(map);
             return;
         }
 
@@ -131,14 +135,16 @@ function initFilter(map) {
                 'id': 'thua-dat-layer',
                 'type': 'fill',
                 'source': 'thua-dat-src',
-                'paint': { 'fill-color': '#000000', 'fill-opacity': 0 }
+                'paint': { 'fill-color': '#000000', 'fill-opacity': 0 },
+                'filter': ['==', '$type', 'Point'] // Mặc định ẩn
             });
 
             map.addLayer({
                 'id': 'thua-dat-line-layer',
                 'type': 'line',
                 'source': 'thua-dat-src',
-                'paint': { 'line-color': '#ff0000', 'line-width': 2 }
+                'paint': { 'line-color': '#ff0000', 'line-width': 2 },
+                'filter': ['==', '$type', 'Point'] // Mặc định ẩn
             });
         }
 
@@ -151,10 +157,11 @@ function initFilter(map) {
         });
 
         await loadThuaDatFromSheet(map);
-        map.flyTo({ center: provinceInfo.center, zoom: 10 });
+
+        // 🔴 ĐÃ BỎ LỆNH map.flyTo ĐỂ GIỮ NGUYÊN MỨC ZOOM VÀ VỊ TRÍ HIỆN TẠI
     });
 
-    // 3. Sự kiện CHỌN PHƯỜNG/XÃ
+    // 3. Sự kiện CHỌN PHƯỜNG/XÃ (Lúc này mới lọc và hiện các thửa đất)
     phuongSelect.addEventListener('change', (e) => {
         const selectedPhuong = e.target.value;
 
@@ -176,9 +183,11 @@ function initFilter(map) {
             if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
             if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
             
+            // Hiện các thửa đất của Phường/Xã được chọn (Vẫn áp dụng nguyên màu COLOR_MATCH_EXPRESSION)
             if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
             if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
 
+            // Tự động khuyếch đại zoom tới Phường/Xã được chọn
             if (currentGeoData) {
                 const filtered = currentGeoData.features.filter(f => {
                     const p = f.properties || {};
