@@ -1,4 +1,5 @@
 // js/map.js
+
 function initMap() {
     const map = new maplibregl.Map({
         container: 'map',
@@ -13,43 +14,46 @@ function initMap() {
         initFilter(map);
     });
 
+    // 🎯 DANH SÁCH BẮT SỰ KIỆN CLICK TRÊN THỬA ĐẤT
     const sheetLayers = ['sheet-thua-dat-fill', 'sheet-thua-dat-line'];
+    let isFeatureClicked = false;
 
     sheetLayers.forEach(layerId => {
         map.on('click', layerId, (e) => {
             if (!e.features || !e.features.length) return;
 
+            isFeatureClicked = true; // Đánh dấu là vừa click trúng thửa đất
+
             const selectedFeature = e.features[0];
             const rawProps = selectedFeature.properties || {};
 
-            // ?? DI?T S?CH KÝ T? XU?NG DÒNG \n, CHU?N HÓA KEY V? CH? TH??NG KHÔNG D?U
+            // 🧹 XÓA KÝ TỰ XUỐNG DÒNG \n & CHUẨN HÓA KEY
             const props = {};
             Object.keys(rawProps).forEach(key => {
-                const cleanKey = key.replace(/[\r\n\t]/g, '') // Xóa s?ch xu?ng dòng \n và tab
+                const cleanKey = key.replace(/[\r\n\t]/g, '')
                                     .normalize("NFD")
                                     .replace(/[\u0300-\u036f]/g, "")
                                     .toLowerCase()
-                                    .replace(/[^a-z0-9]/g, ""); // Ch? gi? l?i ch? và s?
+                                    .replace(/[^a-z0-9]/g, "");
                 props[cleanKey] = rawProps[key];
             });
 
-            // ?? L?Y CHÍNH XÁC CÁC TR??NG D? LI?U C?A B?N
             const soTo = props['soto'] || props['to'] || '-';
             const soThua = props['sothua'] || props['thua'] || '-';
             const dienTich = props['dientichm2'] || props['dientich'] || '-';
             const loaiDat = props['loaidat'] || '-';
             const tenChu = props['tenchu'] || '-';
             const soDinhDanh = props['sodinhdanhchudat'] || props['sodinhdanh'] || 'Không có';
-            const ghiChu = props['ghichu'] || '';
+            const ghiChu = props['ghichu'] || 'Không có';
 
             const parcelId = props['idthuadat'] || props['id'];
 
-            // 1. HIGHLIGHT TH?A ??T ???C CH?N
+            // 1. HIGHLIGHT THỬA ĐẤT ĐƯỢC CHỌN (SÁNG LÊN)
             let selectFilter;
             if (parcelId) {
-                selectFilter = ['==', ['get', 'ID Th?a ??t'], rawProps['ID Th?a ??t'] || parcelId];
+                selectFilter = ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId];
             } else {
-                selectFilter = ['==', ['get', 'Tên Ch?'], rawProps['Tên Ch?'] || tenChu];
+                selectFilter = ['==', ['get', 'Tên Chủ'], rawProps['Tên Chủ'] || tenChu];
             }
 
             if (map.getLayer('sheet-thua-dat-highlight-fill')) {
@@ -59,19 +63,22 @@ function initMap() {
                 map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
             }
 
-            // 2. T?O POPUP
+            // 2. POPUP DẠNG 1 CỘT - GỌN GÀNG SÁT LỀ TRÁI
             const popupContent = `
-                <div style="font-weight:bold; color:#d90429; font-size:14px; border-bottom:1px solid #ccc; padding-bottom:3px; margin-bottom:5px;">
-                    T?: ${soTo} | Th?a: ${soThua}
+                <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.5; color: #1a1a1a; width: 170px; text-align: left;">
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <div><b>Số tờ:</b> ${soTo}</div>
+                        <div><b>Số thửa:</b> ${soThua}</div>
+                        <div><b>Diện tích:</b> ${dienTich} m²</div>
+                        <div><b>Loại đất:</b> ${loaiDat}</div>
+                        <div><b>Tên chủ:</b> ${tenChu}</div>
+                        <div><b>Số định danh:</b> ${soDinhDanh}</div>
+                        <div><b>Ghi chú:</b> ${ghiChu}</div>
+                    </div>
                 </div>
-                <b>Di?n tích:</b> ${dienTich} m²<br>
-                <b>Lo?i ??t:</b> ${loaiDat}<br>
-                <b>Tên ch?:</b> ${tenChu}<br>
-                <b>S? ??nh danh:</b> ${soDinhDanh}<br>
-                <b>Ghi chú:</b> ${ghiChu}
             `;
 
-            new maplibregl.Popup()
+            new maplibregl.Popup({ offset: [0, -5], maxWidth: "190px" })
                 .setLngLat(e.lngLat)
                 .setHTML(popupContent)
                 .addTo(map);
@@ -79,6 +86,19 @@ function initMap() {
 
         map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'pointer');
         map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = '');
+    });
+
+    // 🔴 CLICK RA NGOÀI THỬA ĐẤT -> BỎ HIGHLIGHT (THỬA ĐẤT TRỞ VỀ MÀU CŨ)
+    map.on('click', (e) => {
+        if (!isFeatureClicked) {
+            if (map.getLayer('sheet-thua-dat-highlight-fill')) {
+                map.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
+            }
+            if (map.getLayer('sheet-thua-dat-highlight-line')) {
+                map.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
+            }
+        }
+        isFeatureClicked = false;
     });
 }
 
