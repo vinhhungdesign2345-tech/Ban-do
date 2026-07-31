@@ -219,11 +219,7 @@ function initFilter(map) {
         tinhSelect.appendChild(opt);
     });
 
-    // Tự động nạp trước dữ liệu tỉnh mặc định (Cà Mau) khi vừa load xong map
-    if (CONFIG.PROVINCES.length > 0) {
-        const defaultProvince = CONFIG.PROVINCES[0];
-        loadProvinceData(defaultProvince.id, map);
-    }
+    // Để trống Map khi khởi động
 
     // Sự kiện CHỌN TỈNH
     tinhSelect.addEventListener('change', async (e) => {
