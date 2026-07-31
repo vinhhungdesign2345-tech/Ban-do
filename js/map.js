@@ -20,17 +20,20 @@ function initMap() {
             if (!e.features || !e.features.length) return;
 
             const selectedFeature = e.features[0];
-            const props = selectedFeature.properties;
+            const props = selectedFeature.properties || {};
 
-            // Bắt chính xác từng tên cột đúng theo ảnh Google Sheet của bạn
-            const soTo = props['Số Tờ'] ?? props['so_to'] ?? '-';
-            const soThua = props['Số Thửa'] ?? props['so_thua'] ?? '-';
-            const diaChi = props['Địa Chỉ Thửa Đất'] ?? props['dia_chi'] ?? 'Chưa cập nhật';
-            const dienTich = props['Diện Tích (m²)'] ?? props['dien_tich'] ?? '-';
-            const loaiDat = props['Loại Đất'] ?? props['loai_dat'] ?? '-';
-            const tenChu = props['Tên Chủ'] ?? props['ten_chu'] ?? '-';
-            const ngayCapNhat = props['Ngày Cập Nhật'] ?? props['ngay_cap_nhat'] ?? '-';
-            const parcelId = props['ID Thửa Đất'] ?? props['id_thua_dat'];
+            // 🔍 LOG OUT ĐỂ BẠN THẤY TOÀN BỘ TÊN CỘT THỰC TẾ TRONG CONSOLE (F12)
+            console.log("DỮ LIỆU THỰC TẾ NHẬN ĐƯỢC TỪ GOOGLE SHEET:", props);
+
+            // Bắt tất cả các kiểu tên cột (Có dấu, Không dấu, Chữ hoa, Chữ thường, Có khoảng trắng)
+            const soTo = props['Số Tờ'] || props['so_to'] || props['soto'] || props['Số tờ'] || props['SoTo'] || props['So_To'] || '-';
+            const soThua = props['Số Thửa'] || props['so_thua'] || props['sothua'] || props['Số thửa'] || props['SoThua'] || props['So_Thua'] || '-';
+            const dienTich = props['Diện Tích (m²)'] || props['dien_tich'] || props['dientich'] || props['Diện tích'] || props['DienTich'] || props['Dien_Tich'] || '-';
+            const diaChi = props['Địa Chỉ Thửa Đất'] || props['dia_chi'] || props['diachi'] || props['Địa chỉ'] || props['DiaChi'] || 'Chưa cập nhật';
+            const loaiDat = props['Loại Đất'] || props['loai_dat'] || props['loaidat'] || props['Loại đất'] || props['LoaiDat'] || '-';
+            const tenChu = props['Tên Chủ'] || props['ten_chu'] || props['tenchu'] || props['Tên chủ'] || props['TenChu'] || '-';
+            const ngayCapNhat = props['Ngày Cập Nhật'] || props['ngay_cap_nhat'] || props['ngaycapnhat'] || props['Ngày cập nhật'] || props['NgayCapNhat'] || '-';
+            const parcelId = props['ID Thửa Đất'] || props['id_thua_dat'] || props['id'];
 
             // 1. Kích hoạt hiệu ứng phát sáng cho thửa đất được chọn
             let selectFilter;
