@@ -135,8 +135,9 @@ if (matchedPhuong && phuongSelect) {
 // Hàm tải dữ liệu Tỉnh tách riêng để dùng chung
 async function loadProvinceData(provinceId, map) {
     const phuongSelect = document.getElementById('phuongFilter');
-    phuongSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+    phuongSelect.innerHTML = '<option value="">-- Tất cả Phường/Xã --</option>';
 
+    // Ẩn tất cả thửa đất quy hoạch
     hideThuaDat(map);
 
     if (!provinceId) {
@@ -168,22 +169,26 @@ async function loadProvinceData(provinceId, map) {
     } else {
         map.addSource('thua-dat-src', { type: 'geojson', data: geoData });
 
-        map.addLayer({
-            'id': 'thua-dat-layer',
-            'type': 'fill',
-            'source': 'thua-dat-src',
-            'paint': { 'fill-color': '#000000', 'fill-opacity': 0 },
-            'filter': ['==', '$type', 'Point']
-        });
-
+        // Layer viền ranh giới tất cả Phường / Xã
         map.addLayer({
             'id': 'thua-dat-line-layer',
             'type': 'line',
             'source': 'thua-dat-src',
-            'paint': { 'line-color': '#ff0000', 'line-width': 2 },
-            'filter': ['==', '$type', 'Point']
+            'paint': { 'line-color': '#ff0000', 'line-width': 1.5 }
+        });
+
+        // Layer nền tương tác Phường / Xã (màu trong suốt để bắt sự kiện click)
+        map.addLayer({
+            'id': 'thua-dat-layer',
+            'type': 'fill',
+            'source': 'thua-dat-src',
+            'paint': { 'fill-color': '#000000', 'fill-opacity': 0.01 }
         });
     }
+
+    // 🔴 HIỂN THỊ TOÀN BỘ RANH GIỚI PHƯỜNG/XÃ THUỘC TỈNH
+    if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', null);
+    if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', null);
 
     phuongSelect.disabled = false;
     Array.from(phuongSet).sort().forEach(pName => {
@@ -192,6 +197,12 @@ async function loadProvinceData(provinceId, map) {
         opt.textContent = pName;
         phuongSelect.appendChild(opt);
     });
+
+    // Fit bản đồ bao quát toàn Tỉnh
+    if (currentGeoData && currentGeoData.features.length > 0) {
+        const bbox = turf.bbox(currentGeoData);
+        map.fitBounds(bbox, { padding: 30 });
+    }
 
     await loadThuaDatFromSheet(map);
 }
@@ -224,8 +235,17 @@ function initFilter(map) {
         const selectedPhuong = e.target.value;
 
         if (!selectedPhuong) {
+            // Nếu chọn "-- Tất cả Phường/Xã --": Hiển thị ranh giới toàn tỉnh & ẩn thửa đất
+            if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', null);
+            if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', null);
             hideThuaDat(map);
+
+            if (currentGeoData && currentGeoData.features.length > 0) {
+                const bbox = turf.bbox(currentGeoData);
+                map.fitBounds(bbox, { padding: 30 });
+            }
         } else {
+            // Khi chọn 1 Phường/Xã cụ thể: Lọc ranh giới + Lọc thửa đất Google Sheet
             const filterExpr = [
                 'any',
                 ['==', ['get', 'name'], selectedPhuong],
