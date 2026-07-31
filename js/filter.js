@@ -5,7 +5,7 @@ function initFilter(map) {
     const tinhSelect = document.getElementById('tinhFilter');
     const phuongSelect = document.getElementById('phuongFilter');
 
-    // 1. Tải danh sách Tỉnh từ CONFIG vào Dropdown
+    // 1. Tải danh sách Tỉnh từ CONFIG
     tinhSelect.innerHTML = '<option value="">-- Chọn Tỉnh --</option>';
     CONFIG.PROVINCES.forEach(p => {
         const opt = document.createElement('option');
@@ -28,24 +28,24 @@ function initFilter(map) {
         const provinceInfo = CONFIG.PROVINCES.find(p => p.id === provinceId);
         if (!provinceInfo) return;
 
-        // Tải dữ liệu GeoJSON của Tỉnh được chọn
+        // Tải dữ liệu GeoJSON
         const geoData = await fetchGeoDataByUrl(provinceInfo.file);
         if (!geoData || !geoData.features) {
-            alert("Chưa tải được dữ liệu file GeoJSON của tỉnh này!");
+            alert("Chưa tải được file GeoJSON!");
             return;
         }
 
         currentGeoData = geoData;
-
-        // Thu thập danh sách Phường/Xã từ các cột dữ liệu phổ biến
         const phuongSet = new Set();
+
+        // LẤY TÊN ĐỊA PHƯƠNG (Thêm props.name để đọc đúng file của bạn)
         geoData.features.forEach(f => {
             const p = f.properties || {};
-            const val = p.dia_chi || p.Phuong || p.Quan || p.Xa || p.NAME_2 || p.NAME_3 || p.TenPhuong;
+            const val = p.name || p.dia_chi || p.Phuong || p.Quan || p.Xa || p.NAME_2 || p.NAME_3;
             if (val) phuongSet.add(String(val).trim());
         });
 
-        // Đưa nguồn dữ liệu vào Map (Nếu chưa có thì tạo mới)
+        // Nạp Nguồn dữ liệu vào Map
         if (map.getSource('thua-dat-src')) {
             map.getSource('thua-dat-src').setData(geoData);
         } else {
@@ -54,7 +54,7 @@ function initFilter(map) {
                 'id': 'thua-dat-layer',
                 'type': 'fill',
                 'source': 'thua-dat-src',
-                'filter': ['==', '$type', 'Point'], // Mặc định ẩn hoàn toàn thửa đất
+                'filter': ['==', '$type', 'Point'], // Mặc định ẩn
                 'paint': {
                     'fill-color': CONFIG.FILL_COLOR,
                     'fill-opacity': CONFIG.FILL_OPACITY,
@@ -63,7 +63,7 @@ function initFilter(map) {
             });
         }
 
-        // Nạp danh sách Phường/Xã vào Dropdown thứ 2
+        // Đưa tên vào Dropdown Phường/Xã
         phuongSelect.disabled = false;
         Array.from(phuongSet).sort().forEach(pName => {
             const opt = document.createElement('option');
@@ -72,35 +72,30 @@ function initFilter(map) {
             phuongSelect.appendChild(opt);
         });
 
-        // Bay tới trung tâm Tỉnh được chọn
         map.flyTo({ center: provinceInfo.center, zoom: 10 });
     });
 
-    // 3. Sự kiện CHỌN PHƯỜNG/XÃ (Mới bắt đầu hiện Thửa đất)
+    // 3. Sự kiện CHỌN PHƯỜNG/XÃ (Khớp dữ liệu theo cột name)
     phuongSelect.addEventListener('change', (e) => {
         const selectedPhuong = e.target.value;
 
         if (!selectedPhuong) {
             hideThuaDat(map);
         } else {
-            // Lọc hiển thị thửa đất thuộc Phường/Xã trên bản đồ
+            // Hiển thị thửa/vùng đất được chọn
             map.setFilter('thua-dat-layer', [
                 'any',
+                ['==', ['get', 'name'], selectedPhuong],
                 ['==', ['get', 'dia_chi'], selectedPhuong],
                 ['==', ['get', 'Phuong'], selectedPhuong],
-                ['==', ['get', 'Quan'], selectedPhuong],
-                ['==', ['get', 'Xa'], selectedPhuong],
-                ['==', ['get', 'NAME_2'], selectedPhuong],
-                ['==', ['get', 'NAME_3'], selectedPhuong]
+                ['==', ['get', 'Xa'], selectedPhuong]
             ]);
 
-            // Zoom tới các thửa đất của Phường/Xã đó
+            // Zoom vừa vặn khu vực đó
             if (currentGeoData) {
                 const filtered = currentGeoData.features.filter(f => {
                     const p = f.properties || {};
-                    return p.dia_chi === selectedPhuong || p.Phuong === selectedPhuong || 
-                           p.Quan === selectedPhuong || p.Xa === selectedPhuong || 
-                           p.NAME_2 === selectedPhuong || p.NAME_3 === selectedPhuong;
+                    return p.name === selectedPhuong || p.dia_chi === selectedPhuong || p.Phuong === selectedPhuong || p.Xa === selectedPhuong;
                 });
 
                 if (filtered.length > 0) {
