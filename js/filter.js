@@ -1,22 +1,22 @@
 // js/filter.js
 let currentGeoData = null;
 
-// Hàm khai báo bảng màu quy hoạch chung cho cả Viền và Nền
+// Hàm khai báo bảng màu quy hoạch
 const COLOR_MATCH_EXPRESSION = [
     'match',
     ['get', 'Loại Đất'],
-    'Đất ở tại đô thị', '#ff007f',         // Đô thị -> Hồng thẫm
-    'Đất ở tại nông thôn', '#ff5400',       // Nông thôn -> Cam đỏ
-    'Đất nuôi trồng thuỷ sản', '#00b4d8',   // Thủy sản -> Xanh dương
-    'Đất nuôi trồng thủy sản', '#00b4d8',   
-    'Đất trồng cây lâu năm', '#70e000',     // Cây lâu năm -> Xanh lá sáng
+    'Đất ở tại đô thị', '#ff007f',
+    'Đất ở tại nông thôn', '#ff5400',
+    'Đất nuôi trồng thuỷ sản', '#00b4d8',
+    'Đất nuôi trồng thủy sản', '#00b4d8',
+    'Đất trồng cây lâu năm', '#70e000',
     'Đất trồng cây hàng năm khác', '#9ef01a',
-    'Đất trồng lúa', '#ffea00',             // Lúa -> Vàng tươi
-    'Đất chuyên trồng lúa nước', '#ffea00', 
-    '#ff9e00'                               // Khác -> Cam vàng
+    'Đất trồng lúa', '#ffea00',
+    'Đất chuyên trồng lúa nước', '#ffea00',
+    '#ff9e00'
 ];
 
-// Hàm tải dữ liệu thửa đất từ Google Apps Script Web App
+// Hàm tải dữ liệu từ Google Sheet
 async function loadThuaDatFromSheet(map) {
     if (!CONFIG.SHEET_DATA_URL) return;
 
@@ -24,46 +24,45 @@ async function loadThuaDatFromSheet(map) {
         const response = await fetch(CONFIG.SHEET_DATA_URL);
         const geojson = await response.json();
 
-        // Nguồn dữ liệu thửa đất
         if (map.getSource('sheet-thua-dat-src')) {
             map.getSource('sheet-thua-dat-src').setData(geojson);
         } else {
             map.addSource('sheet-thua-dat-src', { type: 'geojson', data: geojson });
 
-            // LAYER 1: TÔ MÀU NỀN THEO LOẠI ĐẤT
+            // Layer Tô màu nền
             map.addLayer({
                 'id': 'sheet-thua-dat-fill',
                 'type': 'fill',
                 'source': 'sheet-thua-dat-src',
                 'paint': {
                     'fill-color': COLOR_MATCH_EXPRESSION,
-                    'fill-opacity': 0.45 // Nền trong suốt 45% để soi rõ ảnh vệ tinh
+                    'fill-opacity': 0.45
                 },
-                'filter': ['==', '$type', 'Point'] // 🔴 MẶC ĐỊNH ẨN HẾT KHI MỚI TẢI XONG
+                'filter': ['==', '$type', 'Point'] // Mặc định ẩn
             });
 
-            // LAYER 2: ĐƯỜNG VIỀN TRÙNG MÀU VỚI NỀN
+            // Layer Đường viền mảnh
             map.addLayer({
                 'id': 'sheet-thua-dat-line',
                 'type': 'line',
                 'source': 'sheet-thua-dat-src',
                 'paint': {
-                    'line-color': COLOR_MATCH_EXPRESSION, // Viền cùng màu với màu nền
+                    'line-color': COLOR_MATCH_EXPRESSION,
                     'line-width': 0.8
                 },
-                'filter': ['==', '$type', 'Point'] // 🔴 MẶC ĐỊNH ẨN HẾT KHI MỚI TẢI XONG
+                'filter': ['==', '$type', 'Point'] // Mặc định ẩn
             });
 
-            // LAYER 3: TẠO HIỆU ỨNG NỔI BẬT DÀNH RIÊNG CHO THỬA ĐẤT ĐƯỢC CLICK CHỌN
+            // Layer Highlight khi Click
             map.addLayer({
                 'id': 'sheet-thua-dat-highlight-fill',
                 'type': 'fill',
                 'source': 'sheet-thua-dat-src',
                 'paint': {
-                    'fill-color': '#ffff00', // Đổi nền thành màu vàng chói
+                    'fill-color': '#ffff00',
                     'fill-opacity': 0.65
                 },
-                'filter': ['==', ['get', 'ID Thửa Đất'], ''] // Mặc định không chọn thửa nào
+                'filter': ['==', ['get', 'ID Thửa Đất'], '']
             });
 
             map.addLayer({
@@ -71,8 +70,8 @@ async function loadThuaDatFromSheet(map) {
                 'type': 'line',
                 'source': 'sheet-thua-dat-src',
                 'paint': {
-                    'line-color': '#00ffff', // Viền sáng màu xanh dạ quang/cyan cực rực
-                    'line-width': 3.5
+                    'line-color': '#00ffff',
+                    'line-width': 1.8
                 },
                 'filter': ['==', ['get', 'ID Thửa Đất'], '']
             });
@@ -82,11 +81,36 @@ async function loadThuaDatFromSheet(map) {
     }
 }
 
+// 🔴 HÀM XÁC ĐỊNH PHƯỜNG/XÃ KHI CLICK NGUYÊN BẢN ĐỒ
+function selectPhuongFromPoint(lng, lat, map) {
+    if (!currentGeoData || !currentGeoData.features) return;
+
+    const point = turf.point([lng, lat]);
+    let matchedPhuong = null;
+
+    // Quét từng Polygon Phường/Xã xem điểm click có nằm bên trong không
+    for (const feature of currentGeoData.features) {
+        if (turf.booleanPointInPolygon(point, feature)) {
+            const p = feature.properties || {};
+            matchedPhuong = p.name || p.dia_chi || p.Phuong || p.Xa || p.NAME_2 || p.NAME_3;
+            if (matchedPhuong) break;
+        }
+    }
+
+    // Nếu tìm thấy -> Chọn tự động trên dropdown và trigger sự kiện 'change'
+    if (matchedPhuong) {
+        const phuongSelect = document.getElementById('phuongFilter');
+        if (phuongSelect && phuongSelect.value !== matchedPhuong) {
+            phuongSelect.value = matchedPhuong;
+            phuongSelect.dispatchEvent(new Event('change'));
+        }
+    }
+}
+
 function initFilter(map) {
     const tinhSelect = document.getElementById('tinhFilter');
     const phuongSelect = document.getElementById('phuongFilter');
 
-    // 1. Tải danh sách Tỉnh từ CONFIG
     tinhSelect.innerHTML = '<option value="">-- Chọn Tỉnh --</option>';
     CONFIG.PROVINCES.forEach(p => {
         const opt = document.createElement('option');
@@ -95,12 +119,11 @@ function initFilter(map) {
         tinhSelect.appendChild(opt);
     });
 
-    // 2. Sự kiện CHỌN TỈNH
+    // Sự kiện CHỌN TỈNH
     tinhSelect.addEventListener('change', async (e) => {
         const provinceId = e.target.value;
         phuongSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
 
-        // Khi chọn Tỉnh mới -> Luôn ẩn các thửa đất cũ đi
         hideThuaDat(map);
 
         if (!provinceId) {
@@ -136,7 +159,7 @@ function initFilter(map) {
                 'type': 'fill',
                 'source': 'thua-dat-src',
                 'paint': { 'fill-color': '#000000', 'fill-opacity': 0 },
-                'filter': ['==', '$type', 'Point'] // Mặc định ẩn
+                'filter': ['==', '$type', 'Point']
             });
 
             map.addLayer({
@@ -144,7 +167,7 @@ function initFilter(map) {
                 'type': 'line',
                 'source': 'thua-dat-src',
                 'paint': { 'line-color': '#ff0000', 'line-width': 2 },
-                'filter': ['==', '$type', 'Point'] // Mặc định ẩn
+                'filter': ['==', '$type', 'Point']
             });
         }
 
@@ -157,11 +180,10 @@ function initFilter(map) {
         });
 
         await loadThuaDatFromSheet(map);
-
-        // 🔴 ĐÃ BỎ LỆNH map.flyTo ĐỂ GIỮ NGUYÊN MỨC ZOOM VÀ VỊ TRÍ HIỆN TẠI
+        // GIỮ NGUYÊN MỨC ZOOM
     });
 
-    // 3. Sự kiện CHỌN PHƯỜNG/XÃ (Lúc này mới lọc và hiện các thửa đất)
+    // Sự kiện CHỌN PHƯỜNG/XÃ
     phuongSelect.addEventListener('change', (e) => {
         const selectedPhuong = e.target.value;
 
@@ -183,11 +205,9 @@ function initFilter(map) {
             if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
             if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
             
-            // Hiện các thửa đất của Phường/Xã được chọn (Vẫn áp dụng nguyên màu COLOR_MATCH_EXPRESSION)
             if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
             if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
 
-            // Tự động khuyếch đại zoom tới Phường/Xã được chọn
             if (currentGeoData) {
                 const filtered = currentGeoData.features.filter(f => {
                     const p = f.properties || {};
@@ -210,11 +230,4 @@ function hideThuaDat(map) {
     if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', emptyFilter);
     if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', emptyFilter);
     if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', emptyFilter);
-}
-
-function syncDropdownOnly(addressValue) {
-    const phuongSelect = document.getElementById('phuongFilter');
-    if (phuongSelect && addressValue) {
-        phuongSelect.value = addressValue;
-    }
 }
