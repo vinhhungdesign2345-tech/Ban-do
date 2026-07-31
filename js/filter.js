@@ -83,7 +83,7 @@ async function selectPhuongFromPoint(lng, lat, map) {
     const tinhSelect = document.getElementById('tinhFilter');
     const phuongSelect = document.getElementById('phuongFilter');
 
-    // Nếu chưa chọn Tỉnh, tự động chọn Tỉnh đầu tiên trong danh sách (vd: Cà Mau) và tải dữ liệu GeoJSON
+    // Nếu chưa chọn Tỉnh, tự động chọn Tỉnh đầu tiên trong danh sách và tải dữ liệu GeoJSON
     if (!tinhSelect.value && CONFIG.PROVINCES.length > 0) {
         const defaultProvince = CONFIG.PROVINCES[0];
         tinhSelect.value = defaultProvince.id;
@@ -107,29 +107,29 @@ async function selectPhuongFromPoint(lng, lat, map) {
     }
 
     // Nếu tìm thấy -> Chọn trên dropdown và lọc dữ liệu nhưng KHÔNG trigger 'change' để tránh bị zoom
-if (matchedPhuong && phuongSelect) {
-    if (phuongSelect.value !== matchedPhuong) {
-        phuongSelect.value = matchedPhuong;
-        
-        // 🔴 Cập nhật bộ lọc hiển thị thửa đất nhưng GIỮ NGUYÊN ZOOM
-        const filterExpr = [
-            'any',
-            ['==', ['get', 'name'], matchedPhuong],
-            ['==', ['get', 'dia_chi'], matchedPhuong],
-            ['==', ['get', 'Phuong'], matchedPhuong],
-            ['==', ['get', 'Xa'], matchedPhuong]
-        ];
+    if (matchedPhuong && phuongSelect) {
+        if (phuongSelect.value !== matchedPhuong) {
+            phuongSelect.value = matchedPhuong;
+            
+            // 🔴 Cập nhật bộ lọc hiển thị thửa đất nhưng GIỮ NGUYÊN ZOOM
+            const filterExpr = [
+                'any',
+                ['==', ['get', 'name'], matchedPhuong],
+                ['==', ['get', 'dia_chi'], matchedPhuong],
+                ['==', ['get', 'Phuong'], matchedPhuong],
+                ['==', ['get', 'Xa'], matchedPhuong]
+            ];
 
-        const sheetFilterExpr = [
-            '==', ['get', 'Địa Chỉ Thửa Đất'], matchedPhuong
-        ];
+            const sheetFilterExpr = [
+                '==', ['get', 'Địa Chỉ Thửa Đất'], matchedPhuong
+            ];
 
-        if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
-        if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
-        if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
-        if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
+            if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
+            if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
+            if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
+            if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
+        }
     }
-}
 }
 
 // Hàm tải dữ liệu Tỉnh tách riêng để dùng chung
@@ -185,6 +185,11 @@ async function loadProvinceData(provinceId, map) {
         });
     }
 
+    // 🔴 HIỂN THỊ TOÀN BỘ RANH GIỚI CỦA TỈNH LÊN BẢN ĐỒ NGAY KHI TẢI XONG
+    const showAllProvinceFilter = ['!=', '$type', 'Point']; 
+    if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
+    if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
+
     phuongSelect.disabled = false;
     Array.from(phuongSet).sort().forEach(pName => {
         const opt = document.createElement('option');
@@ -208,9 +213,10 @@ function initFilter(map) {
         tinhSelect.appendChild(opt);
     });
 
-    // Tự động nạp trước dữ liệu tỉnh mặc định (Cà Mau) khi vừa load xong map
+    // Tự động nạp trước dữ liệu tỉnh mặc định khi vừa load xong map
     if (CONFIG.PROVINCES.length > 0) {
         const defaultProvince = CONFIG.PROVINCES[0];
+        tinhSelect.value = defaultProvince.id; // Gán giá trị vào dropdown để đồng bộ giao diện
         loadProvinceData(defaultProvince.id, map);
     }
 
@@ -224,7 +230,14 @@ function initFilter(map) {
         const selectedPhuong = e.target.value;
 
         if (!selectedPhuong) {
-            hideThuaDat(map);
+            // Nếu bỏ chọn phường (chọn "-- Chọn Phường/Xã --"), quay lại hiển thị toàn bộ tỉnh
+            const showAllProvinceFilter = ['!=', '$type', 'Point'];
+            if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
+            if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
+            
+            // Ẩn sheet thửa đất hoặc reset tùy ý ông (ở đây giữ logic ẩn sheet thửa đất cũ)
+            if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', ['==', '$type', 'Point']);
+            if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', ['==', '$type', 'Point']);
         } else {
             const filterExpr = [
                 'any',
@@ -239,7 +252,7 @@ function initFilter(map) {
             ];
 
             if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
-            if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
+            if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-layer', filterExpr);
             
             if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
             if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
