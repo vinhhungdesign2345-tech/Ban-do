@@ -5,8 +5,8 @@ const CONFIG = {
         { id: "CaMau", name: "Cà Mau", file: "./geojson/Ca-Mau.geojson", center: [105.15, 9.18] }
     ],
 
-    SHEET_DATA_URL: 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec'
-};
+    // URL Google Apps Script Web App
+    SHEET_DATA_URL: 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec',
 
     // Nền bản đồ Google Vệ tinh
     MAP_STYLE: {
