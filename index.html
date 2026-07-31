@@ -1,134 +1,33 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bản đồ Vệ tinh Cà Mau - Viền Ranh Giới</title>
-  
-  <!-- CSS MapLibre GL -->
-  <link href="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css" rel="stylesheet" />
-  
-  <style>
-    html, body, #map { 
-      height: 100%; 
-      margin: 0; 
-      padding: 0; 
-    }
-    #status {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.7);
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-family: sans-serif;
-      font-size: 13px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bản Đồ Quy Hoạch Cà Mau</title>
+
+    <!-- MapLibre GL & TurfJS -->
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+    <!-- CSS Nội bộ -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <div id="status">Đang tải bản đồ vệ tinh Cà Mau...</div>
-  <div id="map"></div>
+    <div class="map-control">
+        <h4>LỌC THEO KHU VỰC</h4>
+        <select id="phuongFilter">
+            <option value="ALL">-- Tất cả khu vực --</option>
+        </select>
+    </div>
 
-  <!-- Thư viện MapLibre GL & PMTiles -->
-  <script src="https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js"></script>
-  <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
+    <div id="map"></div>
 
-  <script>
-    // 1. Đăng ký protocol PMTiles
-    const protocol = new pmtiles.Protocol();
-    maplibregl.addProtocol("pmtiles", protocol.tile);
-
-    const PMTILES_URL = "https://vinhhungdesign2345-tech.github.io/Ban-do/Ca-Mau.pmtiles"; 
-
-    // 2. Khởi tạo bản đồ với nền Vệ tinh ESRI
-    const map = new maplibregl.Map({
-      container: 'map',
-      style: {
-        version: 8,
-        sources: {
-          // Nguồn ảnh Vệ tinh ESRI World Imagery (Miễn phí, chất lượng cao)
-          'satellite-tiles': {
-            type: 'raster',
-            tiles: [
-              'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-            ],
-            tileSize: 256,
-            attribution: 'Esri, Maxar, Earthstar Geographics'
-          },
-          'camau-vector': {
-            type: 'vector',
-            url: `pmtiles://${PMTILES_URL}`
-          }
-        },
-        layers: [
-          // Lớp nền Vệ tinh
-          { id: 'satellite-layer', type: 'raster', source: 'satellite-tiles' },
-          
-          // Lớp Fill trong suốt (để click/hover)
-          {
-            id: 'camau-fill',
-            type: 'fill',
-            source: 'camau-vector',
-            'source-layer': 'Ca-Mau',
-            paint: {
-              'fill-color': '#000000',
-              'fill-opacity': 0 // Không tô màu nền
-            }
-          },
-
-          // Lớp Viền ranh giới (Màu vàng/đỏ rực rỡ nổi bật trên ảnh vệ tinh)
-          {
-            id: 'camau-line',
-            type: 'line',
-            source: 'camau-vector',
-            'source-layer': 'Ca-Mau',
-            paint: {
-              'line-color': '#ffcc00', // Màu vàng chanh cực kỳ nổi bật trên nền vệ tinh tối
-              'line-width': 1.5,       // Độ dầy đường viền
-              'line-opacity': 0.9
-            }
-          }
-        ]
-      },
-      center: [105.15, 9.18], // Tọa độ trung tâm Cà Mau
-      zoom: 9.5
-    });
-
-    // 3. Xử lý khi bản đồ tải xong
-    map.on('load', () => {
-      document.getElementById('status').textContent = 'Đã tải xong vệ tinh & ranh giới Cà Mau!';
-
-      // Cập nhật source-layer chính xác từ metadata
-      const p = new pmtiles.PMTiles(PMTILES_URL);
-      p.getMetadata().then(meta => {
-        if (meta.vector_layers && meta.vector_layers.length > 0) {
-          const realLayerName = meta.vector_layers[0].id;
-          map.setProperty('camau-fill', 'source-layer', realLayerName);
-          map.setProperty('camau-line', 'source-layer', realLayerName);
-        }
-      }).catch(err => console.log(err));
-    });
-
-    // Popup khi bấm vào
-    map.on('click', 'camau-fill', (e) => {
-      if (e.features.length > 0) {
-        const props = e.features[0].properties;
-        const name = props.ten_phuong || props.TEN_XA || props.ten_xa || props.NAME_2 || props.NAME_1 || props.name || 'Ranh giới Cà Mau';
-        
-        new maplibregl.Popup()
-          .setLngLat(e.lngLat)
-          .setHTML(`<b style="font-size: 14px; color: #d62728;">${name}</b>`)
-          .addTo(map);
-      }
-    });
-
-    map.on('mouseenter', 'camau-fill', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'camau-fill', () => map.getCanvas().style.cursor = '');
-  </script>
+    <!-- JS Mô-đun -->
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/filter.js"></script>
+    <script src="js/map.js"></script>
 </body>
 </html>
