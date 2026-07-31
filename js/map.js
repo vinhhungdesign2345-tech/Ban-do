@@ -13,7 +13,6 @@ function initMap() {
         initFilter(map);
     });
 
-    // Lắng nghe click ở cả 2 layer Lót nền & Đường viền của Google Sheet
     const sheetLayers = ['sheet-thua-dat-fill', 'sheet-thua-dat-line'];
 
     sheetLayers.forEach(layerId => {
@@ -23,24 +22,28 @@ function initMap() {
             const selectedFeature = e.features[0];
             const props = selectedFeature.properties;
 
-            // 1. KÍCH HOẠT HIỆU ỨNG PHÁT SÁNG CHO THỬA ĐẤT ĐƯỢC CHỌN
-            const parcelId = props['ID Thửa Đất'] || props.id_thua_dat;
-            const soTo = props['Số Tờ'] || '-';
-            const soThua = props['Số Thửa'] || '-';
+            // Bắt chính xác từng tên cột đúng theo ảnh Google Sheet của bạn
+            const soTo = props['Số Tờ'] ?? props['so_to'] ?? '-';
+            const soThua = props['Số Thửa'] ?? props['so_thua'] ?? '-';
+            const diaChi = props['Địa Chỉ Thửa Đất'] ?? props['dia_chi'] ?? 'Chưa cập nhật';
+            const dienTich = props['Diện Tích (m²)'] ?? props['dien_tich'] ?? '-';
+            const loaiDat = props['Loại Đất'] ?? props['loai_dat'] ?? '-';
+            const tenChu = props['Tên Chủ'] ?? props['ten_chu'] ?? '-';
+            const ngayCapNhat = props['Ngày Cập Nhật'] ?? props['ngay_cap_nhat'] ?? '-';
+            const parcelId = props['ID Thửa Đất'] ?? props['id_thua_dat'];
 
-            // Tạo bộ lọc theo ID Thửa Đất hoặc theo Tờ + Thửa
+            // 1. Kích hoạt hiệu ứng phát sáng cho thửa đất được chọn
             let selectFilter;
             if (parcelId) {
                 selectFilter = ['==', ['get', 'ID Thửa Đất'], parcelId];
             } else {
                 selectFilter = [
                     'all',
-                    ['==', ['get', 'Số Tờ'], props['Số Tờ']],
-                    ['==', ['get', 'Số Thửa'], props['Số Thửa']]
+                    ['==', ['get', 'Số Tờ'], soTo],
+                    ['==', ['get', 'Số Thửa'], soThua]
                 ];
             }
 
-            // Áp bộ lọc highlight lên layer phát sáng
             if (map.getLayer('sheet-thua-dat-highlight-fill')) {
                 map.setFilter('sheet-thua-dat-highlight-fill', selectFilter);
             }
@@ -48,13 +51,7 @@ function initMap() {
                 map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
             }
 
-            // 2. LẤY THÔNG TIN ĐƯA VÀO POPUP
-            const diaChi = props['Địa Chỉ Thửa Đất'] || 'Chưa cập nhật';
-            const dienTich = props['Diện Tích (m²)'] || '-';
-            const loaiDat = props['Loại Đất'] || '-';
-            const tenChu = props['Tên Chủ'] || '-';
-            const ngayCapNhat = props['Ngày Cập Nhật'] || '-';
-
+            // 2. Hiển thị Popup
             const popupContent = `
                 <div style="font-weight:bold; color:#d90429; font-size:14px; border-bottom:1px solid #ccc; padding-bottom:3px; margin-bottom:5px;">
                     Tờ: ${soTo} | Thửa: ${soThua}
@@ -72,7 +69,6 @@ function initMap() {
                 .addTo(map);
         });
 
-        // Đổi con trỏ chuột khi rê qua thửa đất
         map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'pointer');
         map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = '');
     });
