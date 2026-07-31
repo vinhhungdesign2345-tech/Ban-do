@@ -17,8 +17,17 @@
 
     <div class="map-control">
         <h4>LỌC THEO KHU VỰC</h4>
-        <select id="phuongFilter">
-            <option value="ALL">-- Tất cả khu vực --</option>
+        
+        <!-- Dropdown 1: Tỉnh/Thành -->
+        <label for="tinhFilter">Tỉnh / Thành phố:</label>
+        <select id="tinhFilter">
+            <option value="">-- Chọn Tỉnh --</option>
+        </select>
+
+        <!-- Dropdown 2: Phường/Xã -->
+        <label for="phuongFilter" style="margin-top: 8px; display: block;">Phường / Xã / Thị trấn:</label>
+        <select id="phuongFilter" disabled>
+            <option value="">-- Chọn Phường/Xã --</option>
         </select>
     </div>
 
