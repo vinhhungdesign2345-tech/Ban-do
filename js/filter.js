@@ -1,6 +1,35 @@
 // js/filter.js
 let currentGeoData = null;
 
+// Hàm tải dữ liệu thửa đất từ Google Apps Script Web App
+async function loadThuaDatFromSheet(map) {
+    if (!CONFIG.SHEET_DATA_URL) return;
+
+    try {
+        const response = await fetch(CONFIG.SHEET_DATA_URL);
+        const geojson = await response.json();
+
+        if (map.getSource('sheet-thua-dat-src')) {
+            map.getSource('sheet-thua-dat-src').setData(geojson);
+        } else {
+            map.addSource('sheet-thua-dat-src', { type: 'geojson', data: geojson });
+
+            // Layer vẽ đường viền thửa đất từ Sheet (Màu xanh lá)
+            map.addLayer({
+                'id': 'sheet-thua-dat-line',
+                'type': 'line',
+                'source': 'sheet-thua-dat-src',
+                'paint': {
+                    'line-color': '#00ff00', 
+                    'line-width': 2
+                }
+            });
+        }
+    } catch (error) {
+        console.error("Lỗi khi tải dữ liệu từ Google Sheet:", error);
+    }
+}
+
 function initFilter(map) {
     const tinhSelect = document.getElementById('tinhFilter');
     const phuongSelect = document.getElementById('phuongFilter');
@@ -28,7 +57,7 @@ function initFilter(map) {
         const provinceInfo = CONFIG.PROVINCES.find(p => p.id === provinceId);
         if (!provinceInfo) return;
 
-        // Tải dữ liệu GeoJSON
+        // Tải dữ liệu GeoJSON ranh giới
         const geoData = await fetchGeoDataByUrl(provinceInfo.file);
         if (!geoData || !geoData.features) {
             alert("Chưa tải được file GeoJSON!");
@@ -45,36 +74,34 @@ function initFilter(map) {
             if (val) phuongSet.add(String(val).trim());
         });
 
-        // Nạp Nguồn dữ liệu vào Map
+        // Nạp Nguồn dữ liệu ranh giới vào Map
         if (map.getSource('thua-dat-src')) {
             map.getSource('thua-dat-src').setData(geoData);
         } else {
             map.addSource('thua-dat-src', { type: 'geojson', data: geoData });
 
-            // Layer KHÔNG TÔ NỀN (chỉ tô nền trong suốt 0%)
             map.addLayer({
                 'id': 'thua-dat-layer',
                 'type': 'fill',
                 'source': 'thua-dat-src',
                 'paint': {
                     'fill-color': '#000000',
-                    'fill-opacity': 0 // KHÔNG TÔ NỀN
+                    'fill-opacity': 0
                 }
             });
 
-            // Layer HIỆN VIỀN ĐẤT
             map.addLayer({
                 'id': 'thua-dat-line-layer',
                 'type': 'line',
                 'source': 'thua-dat-src',
                 'paint': {
-                    'line-color': '#ff0000', // Mặc định đường viền màu ĐỎ (Bạn có thể đổi màu tùy thích)
-                    'line-width': 2         // Độ dày nét vẽ viền
+                    'line-color': '#ff0000',
+                    'line-width': 2
                 }
             });
         }
 
-        // Đưa danh sách vào Dropdown
+        // Đưa danh sách vào Dropdown Phường/Xã
         phuongSelect.disabled = false;
         Array.from(phuongSet).sort().forEach(pName => {
             const opt = document.createElement('option');
@@ -82,6 +109,9 @@ function initFilter(map) {
             opt.textContent = pName;
             phuongSelect.appendChild(opt);
         });
+
+        // Tải thêm thửa đất từ Google Sheet lên bản đồ
+        await loadThuaDatFromSheet(map);
 
         map.flyTo({ center: provinceInfo.center, zoom: 10 });
     });
@@ -93,7 +123,6 @@ function initFilter(map) {
         if (!selectedPhuong) {
             hideThuaDat(map);
         } else {
-            // Lọc để hiện đúng đối tượng trên cả 2 layer (không tô nền và viền)
             const filterExpr = [
                 'any',
                 ['==', ['get', 'name'], selectedPhuong],
@@ -105,7 +134,7 @@ function initFilter(map) {
             if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
             if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
 
-            // Zoom vừa vặn khu vực đó
+            // Zoom vừa vặn khu vực Phường/Xã được chọn
             if (currentGeoData) {
                 const filtered = currentGeoData.features.filter(f => {
                     const p = f.properties || {};
@@ -123,7 +152,7 @@ function initFilter(map) {
 }
 
 function hideThuaDat(map) {
-    const emptyFilter = ['==', '$type', 'Point']; // Ẩn Polygon
+    const emptyFilter = ['==', '$type', 'Point'];
     if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', emptyFilter);
     if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', emptyFilter);
 }
