@@ -14,14 +14,36 @@ async function loadThuaDatFromSheet(map) {
         } else {
             map.addSource('sheet-thua-dat-src', { type: 'geojson', data: geojson });
 
-            // Layer vẽ đường viền thửa đất từ Sheet (Màu xanh lá)
+            // LAYER 1: TÔ MÀU NỀN THEO LOẠI ĐẤT (Chuẩn quy hoạch)
+            map.addLayer({
+                'id': 'sheet-thua-dat-fill',
+                'type': 'fill',
+                'source': 'sheet-thua-dat-src',
+                'paint': {
+                    'fill-color': [
+                        'match',
+                        ['get', 'Loại Đất'],
+                        'Đất ở tại đô thị', '#ff70a6',
+                        'Đất ở tại nông thôn', '#ff9770',
+                        'Đất nuôi trồng thuỷ sản', '#70d6ff',
+                        'Đất nuôi trồng thủy sản', '#70d6ff',
+                        'Đất trồng cây lâu năm', '#c2e812',
+                        'Đất trồng lúa', '#ffee93',
+                        'Đất chuyên trồng lúa nước', '#ffee93',
+                        '#ffbe0b' // Màu mặc định cho các loại đất khác
+                    ],
+                    'fill-opacity': 0.5 // Độ trong suốt 50% để thấy ảnh vệ tinh bên dưới
+                }
+            });
+
+            // LAYER 2: ĐƯỜNG VIỀN THỬA ĐẤT (Đồng bộ màu vàng đậm / cam nét căng)
             map.addLayer({
                 'id': 'sheet-thua-dat-line',
                 'type': 'line',
                 'source': 'sheet-thua-dat-src',
                 'paint': {
-                    'line-color': '#00ff00', 
-                    'line-width': 2
+                    'line-color': '#ff5400', // Đường viền màu cam chuẩn quy hoạch
+                    'line-width': 1.5
                 }
             });
         }
@@ -110,7 +132,7 @@ function initFilter(map) {
             phuongSelect.appendChild(opt);
         });
 
-        // Tải thêm thửa đất từ Google Sheet lên bản đồ
+        // Tải thửa đất từ Google Sheet lên bản đồ
         await loadThuaDatFromSheet(map);
 
         map.flyTo({ center: provinceInfo.center, zoom: 10 });
@@ -131,10 +153,16 @@ function initFilter(map) {
                 ['==', ['get', 'Xa'], selectedPhuong]
             ];
 
-            // Áp dụng bộ lọc cho cả layer GeoJSON và layer Google Sheet
+            const sheetFilterExpr = [
+                '==', ['get', 'Địa Chỉ Thửa Đất'], selectedPhuong
+            ];
+
             if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
             if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
-            if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', filterExpr);
+            
+            // Lọc thửa đất Google Sheet theo Phường/Xã được chọn
+            if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
+            if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
 
             // Zoom vừa vặn khu vực Phường/Xã được chọn
             if (currentGeoData) {
@@ -153,11 +181,11 @@ function initFilter(map) {
     });
 }
 
-// Ẩn tất cả các layer thửa đất (bao gồm cả Google Sheet)
 function hideThuaDat(map) {
     const emptyFilter = ['==', '$type', 'Point'];
     if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', emptyFilter);
     if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', emptyFilter);
+    if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', emptyFilter);
     if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', emptyFilter);
 }
 
