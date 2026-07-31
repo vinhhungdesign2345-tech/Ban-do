@@ -131,8 +131,10 @@ function initFilter(map) {
                 ['==', ['get', 'Xa'], selectedPhuong]
             ];
 
+            // Áp dụng bộ lọc cho cả layer GeoJSON và layer Google Sheet
             if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
             if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
+            if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', filterExpr);
 
             // Zoom vừa vặn khu vực Phường/Xã được chọn
             if (currentGeoData) {
@@ -151,10 +153,12 @@ function initFilter(map) {
     });
 }
 
+// Ẩn tất cả các layer thửa đất (bao gồm cả Google Sheet)
 function hideThuaDat(map) {
     const emptyFilter = ['==', '$type', 'Point'];
     if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', emptyFilter);
     if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', emptyFilter);
+    if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', emptyFilter);
 }
 
 function syncDropdownOnly(addressValue) {
