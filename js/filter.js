@@ -11,7 +11,7 @@ const COLOR_MATCH_EXPRESSION = [
     'Đất nuôi trồng thủy sản', '#00b4d8',
     'Đất trồng cây lâu năm', '#70e000',
     'Đất trồng cây hàng năm khác', '#9ef01a',
-    'Đất trồng lúa', '#ffea00',
+    'Đất trồng lúa', '#f5e753',
     'Đất chuyên trồng lúa nước', '#ffea00',
     '#ff9e00'
 ];
