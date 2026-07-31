@@ -40,3 +40,14 @@ body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
     background-color: #f2f2f2;
     cursor: not-allowed;
 }
+/* Ép con trỏ chuột thành hình mũi tên mặc định trên toàn bản đồ */
+#map, 
+.maplibregl-canvas-container, 
+.maplibregl-canvas {
+    cursor: default !important;
+}
+
+/* Ép luôn các phần tử tương tác khác nếu muốn giữ hình mũi tên */
+button, select, input, .maplibregl-popup {
+    cursor: default !important;
+}
