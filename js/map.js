@@ -38,13 +38,14 @@ function initMap() {
             const selectedFeature = e.features[0];
             const rawProps = selectedFeature.properties || {};
 
-            // 🎯 Lấy trực tiếp các trường chính xác từ thuộc tính gốc
+            // 🎯 Lấy trực tiếp các trường chính xác từ thuộc tính gốc (không qua hàm cleanKey để tránh mất dấu)
             const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
             const soThua = rawProps['Số thửa'] || rawProps['So thua'] || '-';
             
             const rawDienTich = rawProps['Diện tích'] || rawProps['Dien tich'] || '-';
             const dienTich = formatNumberVN(rawDienTich);
 
+            // Bắt trực tiếp chữ "Loại Đất" (chú ý chữ Đ viết hoa hoặc viết thường)
             const loaiDat = rawProps['Loại Đất'] || rawProps['Loại Đất:'] || rawProps['Loại đất'] || rawProps['loai_dat'] || '-';
             const tenChu = rawProps['Tên Chủ'] || rawProps['Tên chủ'] || '-';
             const soDinhDanh = rawProps['Số định danh chủ đất'] || rawProps['Số định danh'] || 'Không có';
@@ -91,19 +92,39 @@ function initMap() {
         map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = 'default');
     });
 
-    // 🔴 SỰ KIỆN CLICK VÙNG TRỐNG TRÊN MAP (Xử lý Nhánh 2 trực tiếp)
-    map.on('click', (e) => {
-        if (!isFeatureClicked) {
-            // 1. Reset highlight thửa đất
-            if (map.getLayer('sheet-thua-dat-highlight-fill')) {
-                map.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
-            }
-            if (map.getLayer('sheet-thua-dat-highlight-line')) {
-                map.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
+    // 🔴 SỰ KIỆN CLICK VÙNG TRỐNG TRÊN MAP
+map.on('click', (e) => {
+    if (!isFeatureClicked) {
+        // 1. Reset highlight về màu cũ
+        if (map.getLayer('sheet-thua-dat-highlight-fill')) {
+            map.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
+        }
+        if (map.getLayer('sheet-thua-dat-highlight-line')) {
+            map.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
+        }
+
+        // 2. Click trúng vùng trống -> Lọc và hiển thị ngay ranh giới phường tại điểm đó
+        const features = map.queryRenderedFeatures(e.point);
+        for (let feature of features) {
+            // Kiểm tra xem layer nào chứa ranh giới phường/xã của ông (dựa theo tên layer hoặc thuộc tính)
+            if (feature.layer && feature.layer.id.includes('phuong')) { // Thay từ khóa nhận diện layer phường của ông vào đây nếu cần
+                const phuongName = feature.properties['Ten_Phuong'] || feature.properties['ten_phuong'] || feature.properties['Name'];
+                if (phuongName) {
+                    // Ép bộ lọc hiển thị ngay lập tức đúng phường đó, bỏ qua hoàn toàn bước load cả tỉnh
+                    map.setFilter(feature.layer.id, ['==', ['get', feature.layer.id.includes('Ten_Phuong') ? 'Ten_Phuong' : 'ten_phuong'], phuongName]);
+                    
+                    // Đồng bộ lên dropdown nếu có
+                    const dropdown = document.getElementById('select-phuong');
+                    if (dropdown) {
+                        dropdown.value = phuongName;
+                    }
+                    break;
+                }
             }
         }
-        isFeatureClicked = false; // Reset trạng thái
-    });
+    }
+    isFeatureClicked = false; // Reset trạng thái
+});
 }
 
 document.addEventListener('DOMContentLoaded', initMap);
