@@ -1,56 +1,93 @@
 // js/filter.js
 let globalGeoData = null;
 
-// Khởi tạo bộ lọc Dropdown
 function initFilter(map, geoData) {
     globalGeoData = geoData;
-    const select = document.getElementById('phuongFilter');
-    const locations = new Set();
+    const tinhSelect = document.getElementById('tinhFilter');
+    const phuongSelect = document.getElementById('phuongFilter');
 
-    // Thu thập các Địa chỉ/Phường Xã duy nhất từ Cột K
+    const tinhMap = new Map(); // Luu tru quan he Tinh -> Phuong/Xa
+
+    // Bóc tách thuộc tính từ file GeoJSON (Hỗ trợ nhiều kiểu tên thuộc tính: Tinh/Quan/Phuong)
     geoData.features.forEach(f => {
-        const diaChi = f.properties.dia_chi;
-        if (diaChi) locations.add(diaChi);
+        const props = f.properties;
+        const tenTinh = props.tinh || props.Tinh || props.TinhThanh || "Cà Mau";
+        const tenPhuong = props.dia_chi || props.Phuong || props.Quan || props.Xa;
+
+        if (tenPhuong) {
+            if (!tinhMap.has(tenTinh)) {
+                tinhMap.set(tenTinh, new Set());
+            }
+            tinhMap.get(tenTinh).add(tenPhuong);
+        }
     });
 
-    // Nạp vào Dropdown
-    locations.forEach(loc => {
+    // 1. Nạp danh sách Tỉnh vào Dropdown Tỉnh
+    tinhMap.forEach((phuongSet, tinhName) => {
         const opt = document.createElement('option');
-        opt.value = loc;
-        opt.textContent = loc;
-        select.appendChild(opt);
+        opt.value = tinhName;
+        opt.textContent = tinhName;
+        tinhSelect.appendChild(opt);
     });
 
-    // Khi bạn CHỦ ĐỘNG CHỌN từ Dropdown -> Mới lọc & Zoom
-    select.addEventListener('change', (e) => {
-        applyFilterAndZoom(map, e.target.value);
+    // Sự kiện CHỌN TỈNH
+    tinhSelect.addEventListener('change', (e) => {
+        const selectedTinh = e.target.value;
+        phuongSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+
+        if (!selectedTinh) {
+            phuongSelect.disabled = true;
+            map.setFilter('thua-dat-layer', ['==', '$type', 'Point']); // Filter vô lý để ẨN HOÀN TOÀN
+        } else {
+            phuongSelect.disabled = false;
+            const listPhuong = tinhMap.get(selectedTinh);
+            if (listPhuong) {
+                listPhuong.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p;
+                    opt.textContent = p;
+                    phuongSelect.appendChild(opt);
+                });
+            }
+        }
+    });
+
+    // Sự kiện CHỌN PHƯỜNG/XÃ (Bắt đầu hiển thị thửa đất)
+    phuongSelect.addEventListener('change', (e) => {
+        const selectedPhuong = e.target.value;
+
+        if (!selectedPhuong) {
+            // Ẩn hoàn toàn nếu bỏ chọn
+            map.setFilter('thua-dat-layer', ['==', '$type', 'Point']);
+        } else {
+            // Chỉ hiển thị các thửa đất thuộc Phường/Xã được chọn
+            map.setFilter('thua-dat-layer', [
+                'any',
+                ['==', ['get', 'dia_chi'], selectedPhuong],
+                ['==', ['get', 'Phuong'], selectedPhuong],
+                ['==', ['get', 'Quan'], selectedPhuong],
+                ['==', ['get', 'Xa'], selectedPhuong]
+            ]);
+
+            // Zoom vừa vặn khu vực Phường/Xã đó
+            const filteredFeatures = globalGeoData.features.filter(f => {
+                const p = f.properties;
+                return p.dia_chi === selectedPhuong || p.Phuong === selectedPhuong || p.Quan === selectedPhuong || p.Xa === selectedPhuong;
+            });
+
+            if (filteredFeatures.length > 0) {
+                const fc = turf.featureCollection(filteredFeatures);
+                const bbox = turf.bbox(fc);
+                map.fitBounds(bbox, { padding: 50 });
+            }
+        }
     });
 }
 
-// Hàm Lọc & Zoom khu vực (Chỉ gọi khi chọn Dropdown)
-function applyFilterAndZoom(map, addressValue) {
-    if (addressValue === 'ALL' || !addressValue) {
-        map.setFilter('thua-dat-layer', null);
-        if (globalGeoData && globalGeoData.features.length > 0) {
-            const bbox = turf.bbox(globalGeoData);
-            map.fitBounds(bbox, { padding: 50 });
-        }
-    } else {
-        map.setFilter('thua-dat-layer', ['==', ['get', 'dia_chi'], addressValue]);
-
-        const filteredFeatures = globalGeoData.features.filter(f => f.properties.dia_chi === addressValue);
-        if (filteredFeatures.length > 0) {
-            const fc = turf.featureCollection(filteredFeatures);
-            const bbox = turf.bbox(fc);
-            map.fitBounds(bbox, { padding: 50 });
-        }
-    }
-}
-
-// Hàm CHỈ CẬP NHẬT TÊN DROPDOWN (Khi Click thửa đất - Không Zoom/Không Lọc)
+// Đồng bộ Dropdown khi nhấp vào thửa đất (không zoom lại)
 function syncDropdownOnly(addressValue) {
-    const select = document.getElementById('phuongFilter');
-    if (select && addressValue) {
-        select.value = addressValue;
+    const phuongSelect = document.getElementById('phuongFilter');
+    if (phuongSelect && addressValue) {
+        phuongSelect.value = addressValue;
     }
 }
