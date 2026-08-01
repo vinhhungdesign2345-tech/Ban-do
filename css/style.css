@@ -146,3 +146,31 @@ button, select, input, .maplibregl-popup {
     border: none !important;
     box-shadow: none !important;
 }
+/* --- TRỊ DỨT ĐIỂM 2 LỚP NỀN (GỘP LÀM MỘT) --- */
+
+/* 1. Xóa toàn bộ nền, padding và khung của lớp trung gian MapLibre */
+.mapboxgl-popup-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* 2. Ẩn luôn đuôi nhọn (nếu không muốn nó chĩa vào thửa đất) */
+.mapboxgl-popup-tip {
+    display: none !important;
+}
+
+/* 3. Chỉ giữ lại DUY NHẤT 1 lớp khung trắng chứa nội dung này của ông */
+.custom-parcel-popup {
+    background: #ffffff !important;
+    padding: 8px 12px !important; /* Khoảng trống trên/dưới và trái/phải bên trong */
+    border-radius: 8px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important; /* Hoặc sửa thành none nếu không thích bóng */
+    width: 170px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #1a1a1a;
+    text-align: left;
+}
