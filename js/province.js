@@ -11,11 +11,57 @@ async function selectPhuongFromPoint(lng, lat, map) {
  const tinhSelect = document.getElementById('tinhFilter');
  const phuongSelect = document.getElementById('phuongFilter');
 
- // Nếu chưa chọn tỉnh, tự động chọn tỉnh mặc định đầu tiên và đảm bảo đã load xong dữ liệu
+ // Nếu chưa chọn tỉnh trên dropdown mà người dùng click trực tiếp lên map,
+ // tự động chọn ngầm tỉnh đầu tiên trong CONFIG để lấy dữ liệu ranh giới phục vụ việc check tọa độ
  if (!tinhSelect.value && CONFIG.PROVINCES.length > 0) {
  const defaultProvince = CONFIG.PROVINCES[0];
  tinhSelect.value = defaultProvince.id;
- await loadProvinceData(defaultProvince.id, map);
+ 
+ // Chỉ tải dữ liệu ngầm vào biến và đổ vào dropdown, KHÔNG bật hiển thị ranh giới cả tỉnh
+ const provinceInfo = CONFIG.PROVINCES.find(p => p.id === defaultProvince.id);
+ if (provinceInfo) {
+ const geoData = await fetchGeoDataByUrl(provinceInfo.file);
+ if (geoData && geoData.features) {
+ currentGeoData = geoData;
+ const phuongSet = new Set();
+ geoData.features.forEach(f => {
+ const p = f.properties || {};
+ const val = p.name || p.dia_chi || p.Phuong || p.Quan || p.Xa || p.NAME_2 || p.NAME_3;
+ if (val) phuongSet.add(String(val).trim());
+ });
+
+ if (map.getSource('thua-dat-src')) {
+ map.getSource('thua-dat-src').setData(geoData);
+ } else {
+ map.addSource('thua-dat-src', { type: 'geojson', data: geoData });
+ map.addLayer({
+ 'id': 'thua-dat-layer',
+ 'type': 'fill',
+ 'source': 'thua-dat-src',
+ 'paint': { 'fill-color': '#000000', 'fill-opacity': 0 },
+ 'filter': ['==', '$type', 'Point']
+ });
+ map.addLayer({
+ 'id': 'thua-dat-line-layer',
+ 'type': 'line',
+ 'source': 'thua-dat-src',
+ 'paint': { 'line-color': '#ff0000', 'line-width': 2 },
+ 'filter': ['==', '$type', 'Point']
+ });
+ }
+
+ phuongSelect.disabled = false;
+ phuongSelect.innerHTML = '<option value="">-- Phường / Xã --</option>';
+ Array.from(phuongSet).sort().forEach(pName => {
+ const opt = document.createElement('option');
+ opt.value = pName;
+ opt.textContent = pName;
+ phuongSelect.appendChild(opt);
+ });
+
+ await loadThuaDatFromSheet(map);
+ }
+ }
  }
 
  if (!currentGeoData || !currentGeoData.features) return;
@@ -32,7 +78,7 @@ async function selectPhuongFromPoint(lng, lat, map) {
  }
  }
 
- // Nếu tìm thấy phường/xã khớp khi click, lập tức chỉ hiển thị ĐÚNG ranh giới phường đó
+ // Nếu tìm thấy phường/xã khớp, lập tức chỉ hiển thị ĐÚNG ranh giới phường đó
  if (matchedPhuong && phuongSelect) {
  if (phuongSelect.value !== matchedPhuong) {
  phuongSelect.value = matchedPhuong;
@@ -58,7 +104,7 @@ async function selectPhuongFromPoint(lng, lat, map) {
 }
 
 /**
- * 2. HÀM TẢI DỮ LIỆU RANH GIỚI TỈNH (GEOJSON) VÀ ĐỔ VÀO DROPDOWN PHƯỜNG/XÃ
+ * 2. HÀM TẢI DỮ LIỆU RANH GIỚI TỈNH KHI CHỌN TỪ DROPDOWN
  */
 async function loadProvinceData(provinceId, map) {
  const phuongSelect = document.getElementById('phuongFilter');
@@ -112,7 +158,7 @@ async function loadProvinceData(provinceId, map) {
  });
  }
 
- // 🎯 Khi vừa chọn tỉnh từ dropdown: Hiển thị ranh giới toàn bộ tỉnh
+ // 🎯 Khi chọn tỉnh từ DROPDOWN: Hiển thị ranh giới toàn bộ tỉnh
  const showAllProvinceFilter = ['!=', '$type', 'Point']; 
  if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
  if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
@@ -131,7 +177,7 @@ async function loadProvinceData(provinceId, map) {
 /**
  * 3. HÀM KHỞI TẠO BỘ LỌC (GẮN SỰ KIỆN CHO CÁC DROPDOWN TỈNH & XÃ)
  */
-async function initFilter(map) {
+function initFilter(map) {
  const tinhSelect = document.getElementById('tinhFilter');
  const phuongSelect = document.getElementById('phuongFilter');
 
@@ -143,12 +189,7 @@ async function initFilter(map) {
  tinhSelect.appendChild(opt);
  });
 
- // Tự động nạp sẵn tỉnh đầu tiên khi mở map để có thể click ngay lập tức
- if (CONFIG.PROVINCES.length > 0) {
- const defaultProvince = CONFIG.PROVINCES[0];
- tinhSelect.value = defaultProvince.id;
- await loadProvinceData(defaultProvince.id, map);
- }
+ // 🛑 KHÔNG tự động gọi loadProvinceData lúc mới mở trang để map hoàn toàn trống, chỉ có nền vệ tinh.
 
  tinhSelect.addEventListener('change', async (e) => {
  const selectedTinh = e.target.value;
@@ -166,7 +207,6 @@ async function initFilter(map) {
  const selectedPhuong = e.target.value;
 
  if (!selectedPhuong) {
- // Nếu bỏ chọn phường (chỉ chọn tỉnh): Hiển thị lại toàn bộ ranh giới tỉnh
  const showAllProvinceFilter = ['!=', '$type', 'Point'];
  if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
  if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
