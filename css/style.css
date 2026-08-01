@@ -103,7 +103,7 @@ button, select, input, .maplibregl-popup {
 }
 
 .mapboxgl-popup-content {
-    padding: 5px 6px !important; /* Khoảng cách lề bên trong popup */
-    border-radius: 8px !important; /* Bo tròn góc popup cho đẹp */
+    padding: 2px 2px !important; /* Khoảng cách lề bên trong popup */
+    border-radius: 10px !important; /* Bo tròn góc popup cho đẹp */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
