@@ -153,3 +153,24 @@ input {
     text-overflow: ellipsis;    /* Tự động thêm dấu ba chấm (...) nếu nội dung chữ quá dài không hiển thị hết */
     white-space: nowrap;        /* Ép nội dung chữ hiển thị trên một dòng duy nhất, không cho tự xuống dòng */
 }
+/* --- TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI (ANDROID / MOBILE) --- */
+@media screen and (max-width: 768px) {
+    .parcel-panel {
+        width: 95% !important;           /* Phủ gần kín bề ngang màn hình điện thoại */
+        max-width: none !important;      /* Bỏ giới hạn chiều rộng tối đa */
+        bottom: 10px !important;         /* Neo sát đáy màn hình hơn một chút */
+        padding: 10px 12px !important;
+    }
+
+    .panel-body {
+        display: flex !important;        /* Chuyển từ dạng lưới 2 cột sang dạng khối dọc */
+        flex-direction: column !important;
+        gap: 6px !important;             /* Khoảng cách giữa các dòng */
+    }
+
+    .panel-body div {
+        width: 100% !important;
+        white-space: normal !important;  /* Cho phép chữ dài tự động xuống dòng không bị cắt cụt */
+        overflow: visible !important;
+    }
+}
