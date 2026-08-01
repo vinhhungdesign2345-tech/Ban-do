@@ -81,8 +81,8 @@ button, select, input, .maplibregl-popup {
 }
 
 .map-control select {
-    width: 100%;
-    padding: 6px 8px;
+    width: 90%;
+    padding: 3px 8px;
     border-radius: 6px;
     border: 1px solid #d0d0d0;
     font-size: 12px;
@@ -90,7 +90,7 @@ button, select, input, .maplibregl-popup {
     outline: none;
     background-color: #fff;
     color: #222;
-    height: 34px;
+    height: 30px;
     box-sizing: border-box;
     text-overflow: ellipsis;
     white-space: nowrap;
