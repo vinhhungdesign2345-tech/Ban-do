@@ -111,7 +111,7 @@ input {
     border-radius: 12px;        /* Độ bo tròn 4 góc của khung bảng (số càng lớn góc càng cong tròn nhiều) */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); /* Độ sâu và độ mờ của bóng đổ xung quanh khung bảng */
     width: 60%;                 /* Chiều rộng chiếm 90% màn hình (thường dùng cho điện thoại hoặc màn nhỏ) */
-    max-width: 300px;           /* Chiều rộng tối đa của bảng không vượt quá 400px (muốn bảng to hay nhỏ ngang thì chỉnh số này) */
+    max-width: 400px;           /* Chiều rộng tối đa của bảng không vượt quá 400px (muốn bảng to hay nhỏ ngang thì chỉnh số này) */
     font-family: Arial, sans-serif; /* Kiểu font chữ hiển thị trong bảng */
     font-size: 9px;            /* Kích thước chữ bên trong bảng (số nhỏ thì chữ nhỏ, tăng lên 11px hoặc 12px nếu thấy khó đọc) */
     color: #1a1a1a;             /* Màu chữ mặc định (màu đen đậm) */
