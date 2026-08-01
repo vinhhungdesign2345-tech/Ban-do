@@ -136,3 +136,12 @@ button, select, input, .maplibregl-popup {
 button, select, input, .maplibregl-popup {
     cursor: default !important;
 }
+/* Ép khung popup của MapLibre nhỏ lại theo ý muốn */
+.mapboxgl-popup {
+    max-width: 100px !important; /* <--- Chỉnh con số này để bóp độ rộng tối đa của popup (VD: 150px, 180px...) */
+}
+
+.mapboxgl-popup-content {
+    padding: 10px !important;
+    font-size: 11px !important;
+}
