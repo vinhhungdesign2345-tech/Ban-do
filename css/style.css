@@ -107,7 +107,7 @@ input {
     background: rgba(255, 255, 255, 0.95); /* Màu nền trắng với độ trong suốt 95% */
     backdrop-filter: blur(10px);/* Hiệu ứng làm mờ lớp nền phía sau bảng (hiệu ứng kính mờ hiện đại) */
     -webkit-backdrop-filter: blur(10px); /* Hỗ trợ hiệu ứng kính mờ cho các trình duyệt Safari/WebKit */
-    padding: 50px 50px;         /* Khoảng cách đệm bên trong: số đầu tiên là trên/dưới, số thứ hai là trái/phải */
+    padding: 90px 90px;         /* Khoảng cách đệm bên trong: số đầu tiên là trên/dưới, số thứ hai là trái/phải */
     border-radius: 12px;        /* Độ bo tròn 4 góc của khung bảng (số càng lớn góc càng cong tròn nhiều) */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); /* Độ sâu và độ mờ của bóng đổ xung quanh khung bảng */
     width: 60%;                 /* Chiều rộng chiếm 90% màn hình (thường dùng cho điện thoại hoặc màn nhỏ) */
