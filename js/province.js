@@ -18,7 +18,6 @@ async function selectPhuongFromPoint(lng, lat, map) {
  await loadProvinceData(defaultProvince.id, map);
  }
 
- // Chờ nếu dữ liệu đang được tải ngầm
  if (!currentGeoData || !currentGeoData.features) return;
 
  const point = turf.point([lng, lat]);
@@ -33,7 +32,7 @@ async function selectPhuongFromPoint(lng, lat, map) {
  }
  }
 
- // Nếu tìm thấy phường/xã khớp, lập tức chỉ hiển thị ĐÚNG ranh giới phường đó
+ // Nếu tìm thấy phường/xã khớp khi click, lập tức chỉ hiển thị ĐÚNG ranh giới phường đó
  if (matchedPhuong && phuongSelect) {
  if (phuongSelect.value !== matchedPhuong) {
  phuongSelect.value = matchedPhuong;
@@ -113,10 +112,10 @@ async function loadProvinceData(provinceId, map) {
  });
  }
 
- // Mặc định ẩn toàn bộ ranh giới tỉnh
- const hideAllFilter = ['==', '$type', 'Point']; 
- if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', hideAllFilter);
- if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', hideAllFilter);
+ // 🎯 Khi vừa chọn tỉnh từ dropdown: Hiển thị ranh giới toàn bộ tỉnh
+ const showAllProvinceFilter = ['!=', '$type', 'Point']; 
+ if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
+ if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
 
  phuongSelect.disabled = false;
  Array.from(phuongSet).sort().forEach(pName => {
@@ -144,7 +143,7 @@ async function initFilter(map) {
  tinhSelect.appendChild(opt);
  });
 
- // 🚀 TỰ ĐỘNG NẠP SẴN TỈNH ĐẦU TIÊN NGAY KHI MỞ MAP ĐỂ CÓ THỂ CLICK NGAY LẬP TỨC
+ // Tự động nạp sẵn tỉnh đầu tiên khi mở map để có thể click ngay lập tức
  if (CONFIG.PROVINCES.length > 0) {
  const defaultProvince = CONFIG.PROVINCES[0];
  tinhSelect.value = defaultProvince.id;
@@ -167,12 +166,13 @@ async function initFilter(map) {
  const selectedPhuong = e.target.value;
 
  if (!selectedPhuong) {
- const hideAllFilter = ['==', '$type', 'Point'];
- if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', hideAllFilter);
- if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', hideAllFilter);
+ // Nếu bỏ chọn phường (chỉ chọn tỉnh): Hiển thị lại toàn bộ ranh giới tỉnh
+ const showAllProvinceFilter = ['!=', '$type', 'Point'];
+ if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
+ if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
  
- if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', hideAllFilter);
- if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', hideAllFilter);
+ if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', ['==', '$type', 'Point']);
+ if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', ['==', '$type', 'Point']);
  } else {
  const filterExpr = [
  'any',
