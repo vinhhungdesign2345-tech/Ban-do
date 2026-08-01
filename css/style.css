@@ -1,56 +1,17 @@
 /* css/style.css */
-body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-#map { position: absolute; top: 0; bottom: 0; width: 100%; }
-
-.map-control {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 14px 18px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
-    min-width: 240px;
-}
-.map-control h4 { 
-    margin: 0 0 10px 0; 
-    font-size: 14px; 
-    color: #333; 
-    font-weight: bold; 
-    border-bottom: 2px solid #007bff;
-    padding-bottom: 4px;
-}
-.map-control label {
-    font-size: 12px;
-    font-weight: bold;
-    color: #555;
-}
-.map-control select {
-    width: 100%;
-    padding: 8px;
-    margin-top: 4px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-size: 13px;
-    outline: none;
-    background-color: #fff;
-}
-.map-control select:disabled {
-    background-color: #f2f2f2;
-    cursor: not-allowed;
-}
-/* Ép con trỏ chuột thành hình mũi tên mặc định trên toàn bản đồ */
-#map, 
-.maplibregl-canvas-container, 
-.maplibregl-canvas {
-    cursor: default !important;
+body { 
+    margin: 0; 
+    padding: 0; 
+    font-family: Arial, sans-serif; 
 }
 
-/* Ép luôn các phần tử tương tác khác nếu muốn giữ hình mũi tên */
-button, select, input, .maplibregl-popup {
-    cursor: default !important;
+#map { 
+    position: absolute; 
+    top: 0; 
+    bottom: 0; 
+    width: 100%; 
 }
+
 /* --- BẢNG ĐIỀU KHIỂN GỌN GÀNG --- */
 .map-control {
     position: absolute;
@@ -129,44 +90,13 @@ button, select, input, .maplibregl-popup {
 /* --- ÉP CON TRỎ CHUỘT MẶC ĐỊNH (MŨI TÊN) --- */
 #map, 
 .maplibregl-canvas-container, 
-.maplibregl-canvas {
+.maplibregl-canvas,
+button, 
+select, 
+input {
     cursor: default !important;
 }
 
-button, select, input, .maplibregl-popup {
-    cursor: default !important;
-}
-
-/* --- TÙY CHỈNH TOÀN DIỆN POPUP THỬA ĐẤT --- */
-.mapboxgl-popup {
-    background: transparent !important;
-}
-
-.mapboxgl-popup-content {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-.mapboxgl-popup-tip {
-    display: none !important;
-}
-
-/* Khung custom của chính chúng ta */
-.custom-parcel-popup {
-    background: #ffffff !important;
-    padding: 8px 12px !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
-    width: 170px !important;
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    line-height: 1.5;
-    color: #1a1a1a;
-    text-align: left;
-}
 /* --- KHUNG THÔNG TIN THỬA ĐẤT DƯỚI MÀN HÌNH --- */
 .parcel-panel {
     position: fixed;
