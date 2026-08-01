@@ -68,7 +68,7 @@ function initMap() {
 
  // POPUP GỌN SÁT LỀ TRÁI
  const popupContent = `
- <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.5; color: #1a1a1a; width: 170px; text-align: left;">
+ <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.5; color: #1a1a1a; width: 150px; text-align: left;">
  <div style="display: flex; flex-direction: column; gap: 2px;">
  <div><b>Số tờ:</b> ${soTo}</div>
  <div><b>Số thửa:</b> ${soThua}</div>
@@ -81,7 +81,7 @@ function initMap() {
  </div>
  `;
 
- new maplibregl.Popup({ offset: [0, -5], maxWidth: "190px" })
+ new maplibregl.Popup({ offset: [0, -5], maxWidth: "170px" })
  .setLngLat(e.lngLat)
  .setHTML(popupContent)
  .addTo(map);
