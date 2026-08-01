@@ -4,62 +4,17 @@
 let currentGeoData = null;
 
 /**
- * 1. HÀM CHỌN PHƯỜNG/XÃ TỪ TỌA ĐỘ CLICK TRÊN BẢN ĐỒ
- * Dùng thư viện Turf.js để kiểm tra xem tọa độ (lng, lat) có nằm trong polygon của Phường/Xã nào không.
+ * 1. HÀM CHỌN PHƯỜNG/XÃ TỪ TỌA ĐỘ CLICK TRÊN BẢN ĐỒ (ĐÃ TỐI ƯU SIÊU NHANH)
  */
 async function selectPhuongFromPoint(lng, lat, map) {
     const tinhSelect = document.getElementById('tinhFilter');
     const phuongSelect = document.getElementById('phuongFilter');
 
-    // Nếu chưa chọn tỉnh mà click bừa lên map, tự động kích hoạt lấy dữ liệu tỉnh đầu tiên và NẠP LUÔN THỬA ĐẤT
+    // Nếu người dùng chưa chọn tỉnh mà click bừa lên map, gán mặc định tỉnh đầu tiên và load 1 LẦN DUY NHẤT
     if (!tinhSelect.value && CONFIG.PROVINCES.length > 0) {
         const defaultProvince = CONFIG.PROVINCES[0];
         tinhSelect.value = defaultProvince.id;
-        
-        const provinceInfo = CONFIG.PROVINCES.find(p => p.id === defaultProvince.id);
-        if (provinceInfo) {
-            const geoData = await fetchGeoDataByUrl(provinceInfo.file);
-            if (geoData && geoData.features) {
-                currentGeoData = geoData;
-                const phuongSet = new Set();
-                geoData.features.forEach(f => {
-                    const p = f.properties || {};
-                    const val = p.name || p.dia_chi || p.Phuong || p.Quan || p.Xa || p.NAME_2 || p.NAME_3;
-                    if (val) phuongSet.add(String(val).trim());
-                });
-
-                if (map.getSource('thua-dat-src')) {
-                    map.getSource('thua-dat-src').setData(geoData);
-                } else {
-                    map.addSource('thua-dat-src', { type: 'geojson', data: geoData });
-                    map.addLayer({
-                        'id': 'thua-dat-layer',
-                        'type': 'fill',
-                        'source': 'thua-dat-src',
-                        'paint': { 'fill-color': '#000000', 'fill-opacity': 0 },
-                        'filter': ['==', '$type', 'Point']
-                    });
-                    map.addLayer({
-                        'id': 'thua-dat-line-layer',
-                        'type': 'line',
-                        'source': 'thua-dat-src',
-                        'paint': { 'line-color': '#ff0000', 'line-width': 2 },
-                        'filter': ['==', '$type', 'Point']
-                    });
-                }
-
-                phuongSelect.disabled = false;
-                phuongSelect.innerHTML = '<option value="">-- Phường / Xã --</option>';
-                Array.from(phuongSet).sort().forEach(pName => {
-                    const opt = document.createElement('option');
-                    opt.value = pName;
-                    opt.textContent = pName;
-                    phuongSelect.appendChild(opt);
-                });
-
-                await loadThuaDatFromSheet(map);
-            }
-        }
+        await loadProvinceData(defaultProvince.id, map);
     }
 
     if (!currentGeoData || !currentGeoData.features) return;
@@ -67,7 +22,7 @@ async function selectPhuongFromPoint(lng, lat, map) {
     const point = turf.point([lng, lat]);
     let matchedPhuong = null;
 
-    // Duyệt qua tất cả các polygon phường/xã để tìm điểm click nằm bên trong
+    // Duyệt nhanh qua các polygon để tìm phường tương ứng với điểm click
     for (const feature of currentGeoData.features) {
         if (turf.booleanPointInPolygon(point, feature)) {
             const p = feature.properties || {};
@@ -76,7 +31,7 @@ async function selectPhuongFromPoint(lng, lat, map) {
         }
     }
 
-    // Nếu tìm thấy phường/xã khớp, lập tức chỉ hiển thị ĐÚNG ranh giới phường đó và nạp thửa đất
+    // Nếu tìm thấy phường, cập nhật giao diện dropdown và lọc lớp thửa đất TỨC THÌ
     if (matchedPhuong && phuongSelect) {
         if (phuongSelect.value !== matchedPhuong) {
             phuongSelect.value = matchedPhuong;
@@ -93,6 +48,7 @@ async function selectPhuongFromPoint(lng, lat, map) {
                 '==', ['get', 'Địa Chỉ Thửa Đất'], matchedPhuong
             ];
 
+            // Cập nhật bộ lọc ngay lập tức không qua mạng
             if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
             if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
             if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
