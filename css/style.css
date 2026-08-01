@@ -1,176 +1,53 @@
 /* css/style.css */
-body { 
-    margin: 0; 
-    padding: 0; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-}
+body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
 
-#map { 
-    position: absolute; 
-    top: 0; 
-    bottom: 0; 
-    width: 100%; 
-}
-
-/* --- BẢNG ĐIỀU KHIỂN GỌN GÀNG --- */
 .map-control {
     position: absolute;
-    top: 12px;
-    left: 12px;
+    top: 15px;
+    left: 15px;
     z-index: 10;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 6px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
-    max-width: 380px;
-    width: calc(100% - 24px); /* Tự co giãn sát lề */
-    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 14px 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    min-width: 240px;
 }
-
-/* Xếp 2 ô select trên cùng 1 hàng */
-.filter-row {
-    display: flex;
-    gap: 6px;
-    width: 100%;
+.map-control h4 { 
+    margin: 0 0 10px 0; 
+    font-size: 14px; 
+    color: #333; 
+    font-weight: bold; 
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 4px;
 }
-
-.filter-item {
-    flex: 1; /* Chia đều 50-50 cho 2 ô select */
-    min-width: 0; /* Tránh tràn layout */
+.map-control label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #555;
 }
-
 .map-control select {
     width: 100%;
-    padding: 6px 8px;
-    border-radius: 6px;
-    border: 1px solid #d0d0d0;
-    font-size: 12px;
-    font-weight: 500;
+    padding: 8px;
+    margin-top: 4px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 13px;
     outline: none;
     background-color: #fff;
-    color: #222;
-    height: 34px;
-    box-sizing: border-box;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
 }
-
 .map-control select:disabled {
-    background-color: #f0f0f0;
-    color: #888;
+    background-color: #f2f2f2;
     cursor: not-allowed;
 }
-
-/* --- TỐI ƯU TRÊN ĐIỆN THOẠI (MOBILE) --- */
-@media screen and (max-width: 768px) {
-    .map-control {
-        top: 10px;
-        left: 10px;
-        width: calc(100% - 20px);
-        padding: 5px;
-    }
-
-    .map-control select {
-        font-size: 11px;
-        padding: 4px 6px;
-        height: 32px;
-    }
-
-    /* Đẩy nút Zoom Maplibregl (+/-) xuống góc dưới bên phải */
-    .maplibregl-ctrl-top-right {
-        top: auto !important;
-        bottom: 20px !important;
-        right: 10px !important;
-    }
-}
-
-/* --- ÉP CON TRỎ CHUỘT MẶC ĐỊNH (MŨI TÊN) --- */
+/* Ép con trỏ chuột thành hình mũi tên mặc định trên toàn bản đồ */
 #map, 
 .maplibregl-canvas-container, 
 .maplibregl-canvas {
     cursor: default !important;
 }
 
+/* Ép luôn các phần tử tương tác khác nếu muốn giữ hình mũi tên */
 button, select, input, .maplibregl-popup {
     cursor: default !important;
-}
-/* --- TÙY CHỈNH TOÀN DIỆN POPUP THỬA ĐẤT --- */
-.mapboxgl-popup-content {
-    padding: 0 !important; /* Xóa khoảng trống mặc định cứng đầu của thư viện */
-    background: transparent !important;
-    box-shadow: none !important;
-}
-
-/* Khung custom của chính chúng ta */
-.custom-parcel-popup {
-    background: #ffffff;
-    padding: 5px 6px; /* Khoảng trống bên trong: số đầu là trên/dưới, số sau là trái/phải */
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 150px; /* Chiều rộng tổng thể của popup */
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    line-height: 1.5;
-    color: #1a1a1a;
-    text-align: left;
-}
-/* --- XÓA VIỀN NGOÀI VÀ NỀN MẶC ĐỊNH CỦA POPUP --- */
-.mapboxgl-popup-content {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-}
-
-.mapboxgl-popup-tip {
-    display: none !important; /* Ẩn luôn cái đuôi nhọn chỉ vị trí nếu không thích */
-}
-/* --- TRẤN ÁP HOÀN TOÀN KHUNG NGOÀI CỦA MAPLIBRE --- */
-.mapboxgl-popup {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-.mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
-.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
-.mapboxgl-popup-anchor-left .mapboxgl-popup-tip,
-.mapboxgl-popup-anchor-right .mapboxgl-popup-tip,
-.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
-.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip,
-.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
-.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
-    border: none !important;
-    box-shadow: none !important;
-}
-/* --- TRỊ DỨT ĐIỂM 2 LỚP NỀN (GỘP LÀM MỘT) --- */
-
-/* 1. Xóa toàn bộ nền, padding và khung của lớp trung gian MapLibre */
-.mapboxgl-popup-content {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-}
-
-/* 2. Ẩn luôn đuôi nhọn (nếu không muốn nó chĩa vào thửa đất) */
-.mapboxgl-popup-tip {
-    display: none !important;
-}
-
-/* 3. Chỉ giữ lại DUY NHẤT 1 lớp khung trắng chứa nội dung này của ông */
-.custom-parcel-popup {
-    background: #ffffff !important;
-    padding: 8px 12px !important; /* Khoảng trống trên/dưới và trái/phải bên trong */
-    border-radius: 8px !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important; /* Hoặc sửa thành none nếu không thích bóng */
-    width: 170px;
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    line-height: 1.5;
-    color: #1a1a1a;
-    text-align: left;
 }
