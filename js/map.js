@@ -12,6 +12,22 @@ function formatNumberVN(val) {
  return num.toLocaleString('vi-VN');
 }
 
+// Hàm đóng bảng thông tin phía dưới
+function closeParcelPanel() {
+ const panel = document.getElementById('parcel-info-panel');
+ if (panel) panel.style.display = 'none';
+
+ const mapInstance = window.currentMapInstance;
+ if (mapInstance) {
+ if (mapInstance.getLayer('sheet-thua-dat-highlight-fill')) {
+ mapInstance.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
+ }
+ if (mapInstance.getLayer('sheet-thua-dat-highlight-line')) {
+ mapInstance.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
+ }
+ }
+}
+
 function initMap() {
  const map = new maplibregl.Map({
  container: 'map',
@@ -19,6 +35,8 @@ function initMap() {
  center: CONFIG.MAP_CENTER,
  zoom: CONFIG.MAP_ZOOM
  });
+
+ window.currentMapInstance = map;
 
  map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
@@ -66,25 +84,21 @@ function initMap() {
  map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
  }
 
- // POPUP GỌN SÁT LỀ TRÁI
- const popupContent = `
- <div style="font-family: Arial, sans-serif; font-size: 12px; line-height: 1.5; color: #1a1a1a; width: 100px; text-align: left;">
- <div style="display: flex; flex-direction: column; gap: 2px;">
+ // ĐỔ DỮ LIỆU VÀO KHUNG PANEL DƯỚI MÀN HÌNH
+ const panelContent = `
  <div><b>Số tờ:</b> ${soTo}</div>
  <div><b>Số thửa:</b> ${soThua}</div>
  <div><b>Diện tích:</b> ${dienTich} m²</div>
  <div><b>Loại đất:</b> ${loaiDat}</div>
- <div><b>Tên chủ:</b> ${tenChu}</div>
+ <div style="grid-column: span 2;"><b>Tên chủ:</b> ${tenChu}</div>
  <div><b>Số định danh:</b> ${soDinhDanh}</div>
  <div><b>Ghi chú:</b> ${ghiChu}</div>
- </div>
- </div>
  `;
 
- new maplibregl.Popup({ offset: [0, -5], maxWidth: "120px" })
- .setLngLat(e.lngLat)
- .setHTML(popupContent)
- .addTo(map);
+ const panelContentEl = document.getElementById('panel-content');
+ const panelEl = document.getElementById('parcel-info-panel');
+ if (panelContentEl) panelContentEl.innerHTML = panelContent;
+ if (panelEl) panelEl.style.display = 'block';
  });
 
  map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'default');
@@ -94,13 +108,7 @@ function initMap() {
  // 🔴 SỰ KIỆN CLICK VÙNG TRỐNG TRÊN MAP (NHÁNH 2: Hiển thị ngay ranh giới phường được click)
  map.on('click', (e) => {
  if (!isFeatureClicked) {
- // 1. Reset highlight về màu cũ
- if (map.getLayer('sheet-thua-dat-highlight-fill')) {
- map.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
- }
- if (map.getLayer('sheet-thua-dat-highlight-line')) {
- map.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
- }
+ closeParcelPanel(); // Ẩn panel thông tin và reset highlight
 
  // 2. Chọn Phường/Xã tương ứng vị trí vừa click ngay lập tức mà không hiện cả tỉnh
  if (typeof selectPhuongFromPoint === 'function') {
