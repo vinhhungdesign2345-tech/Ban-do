@@ -68,7 +68,7 @@ function initMap() {
 
  // POPUP GỌN SÁT LỀ TRÁI
  const popupContent = `
- <div style="text-align: left;">
+ <div class="custom-parcel-popup">
  <div style="display: flex; flex-direction: column; gap: 4px;">
  <div><b>Số tờ:</b> ${soTo}</div>
  <div><b>Số thửa:</b> ${soThua}</div>
