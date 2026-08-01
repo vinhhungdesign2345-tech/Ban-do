@@ -128,3 +128,21 @@ button, select, input, .maplibregl-popup {
 .mapboxgl-popup-tip {
     display: none !important; /* Ẩn luôn cái đuôi nhọn chỉ vị trí nếu không thích */
 }
+/* --- TRẤN ÁP HOÀN TOÀN KHUNG NGOÀI CỦA MAPLIBRE --- */
+.mapboxgl-popup {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-right .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
+.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border: none !important;
+    box-shadow: none !important;
+}
