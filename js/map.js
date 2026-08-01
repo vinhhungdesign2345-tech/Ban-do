@@ -38,8 +38,6 @@ function initMap() {
 
  window.currentMapInstance = map;
 
- map.addControl(new maplibregl.NavigationControl(), 'top-right');
-
  map.on('load', () => {
  initFilter(map);
  });
