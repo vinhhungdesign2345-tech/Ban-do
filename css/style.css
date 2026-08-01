@@ -51,3 +51,119 @@ body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
 button, select, input, .maplibregl-popup {
     cursor: default !important;
 }
+/* --- BẢNG ĐIỀU KHIỂN GỌN GÀNG --- */
+.map-control {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 6px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
+    max-width: 380px;
+    width: calc(100% - 24px);
+    box-sizing: border-box;
+}
+
+/* Xếp 2 ô select trên cùng 1 hàng */
+.filter-row {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+}
+
+.filter-item {
+    flex: 1; /* Chia đều 50-50 cho 2 ô select */
+    min-width: 0; /* Tránh tràn layout */
+}
+
+.map-control select {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #d0d0d0;
+    font-size: 12px;
+    font-weight: 500;
+    outline: none;
+    background-color: #fff;
+    color: #222;
+    height: 34px;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.map-control select:disabled {
+    background-color: #f0f0f0;
+    color: #888;
+    cursor: not-allowed;
+}
+
+/* --- TỐI ƯU TRÊN ĐIỆN THOẠI (MOBILE) --- */
+@media screen and (max-width: 768px) {
+    .map-control {
+        top: 10px;
+        left: 10px;
+        width: calc(100% - 20px);
+        padding: 5px;
+    }
+
+    .map-control select {
+        font-size: 11px;
+        padding: 4px 6px;
+        height: 32px;
+    }
+
+    /* Đẩy nút Zoom Maplibregl (+/-) xuống góc dưới bên phải tránh bị che */
+    .maplibregl-ctrl-top-right {
+        top: auto !important;
+        bottom: 20px !important;
+        right: 10px !important;
+    }
+}
+
+/* --- ÉP CON TRỎ CHUỘT MẶC ĐỊNH (MŨI TÊN) --- */
+#map, 
+.maplibregl-canvas-container, 
+.maplibregl-canvas {
+    cursor: default !important;
+}
+
+button, select, input, .maplibregl-popup {
+    cursor: default !important;
+}
+
+/* --- TÙY CHỈNH TOÀN DIỆN POPUP THỬA ĐẤT --- */
+.mapboxgl-popup {
+    background: transparent !important;
+}
+
+.mapboxgl-popup-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.mapboxgl-popup-tip {
+    display: none !important;
+}
+
+/* Khung custom của chính chúng ta */
+.custom-parcel-popup {
+    background: #ffffff !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+    width: 170px !important;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #1a1a1a;
+    text-align: left;
+}
