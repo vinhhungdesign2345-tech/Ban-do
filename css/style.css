@@ -136,34 +136,3 @@ button, select, input, .maplibregl-popup {
 button, select, input, .maplibregl-popup {
     cursor: default !important;
 }
-
-/* --- TÙY CHỈNH TOÀN DIỆN POPUP THỬA ĐẤT --- */
-.mapboxgl-popup {
-    background: transparent !important;
-}
-
-.mapboxgl-popup-content {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-.mapboxgl-popup-tip {
-    display: none !important;
-}
-
-/* Khung custom của chính chúng ta */
-.custom-parcel-popup {
-    background: #ffffff !important;
-    padding: 8px 12px !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
-    width: 170px !important;
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    line-height: 1.5;
-    color: #1a1a1a;
-    text-align: left;
-}
