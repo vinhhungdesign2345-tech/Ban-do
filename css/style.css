@@ -107,10 +107,10 @@ button, select, input, .maplibregl-popup {
 /* Khung custom của chính chúng ta */
 .custom-parcel-popup {
     background: #ffffff;
-    padding: 12px 16px; /* Khoảng trống bên trong: số đầu là trên/dưới, số sau là trái/phải */
+    padding: 5px 6px; /* Khoảng trống bên trong: số đầu là trên/dưới, số sau là trái/phải */
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    width: 200px; /* Chiều rộng tổng thể của popup */
+    width: 150px; /* Chiều rộng tổng thể của popup */
     font-family: Arial, sans-serif;
     font-size: 12px;
     line-height: 1.5;
