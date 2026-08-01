@@ -15,20 +15,23 @@
 </head>
 <body>
 
-    <div class="map-control">
-    <div class="filter-row">
-        <div class="filter-item">
-            <select id="tinhFilter">
-                <option value="">-- Tỉnh / TP --</option>
-            </select>
-        </div>
-        <div class="filter-item">
-            <select id="phuongFilter" disabled>
-                <option value="">-- Phường / Xã --</option>
-            </select>
-        </div>
-    </div>
-</div>
+   <div class="map-control">
+     <div class="filter-row">
+         <!-- Dropdown 1: Tỉnh/Thành -->
+         <div class="filter-item">
+             <select id="tinhFilter">
+                 <option value="">-- Tỉnh / TP --</option>
+             </select>
+         </div>
+
+         <!-- Dropdown 2: Phường/Xã -->
+         <div class="filter-item">
+             <select id="phuongFilter" disabled>
+                 <option value="">-- Phường / Xã --</option>
+             </select>
+         </div>
+     </div>
+ </div>
 
     <div id="map"></div>
 
