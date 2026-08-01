@@ -117,3 +117,14 @@ button, select, input, .maplibregl-popup {
     color: #1a1a1a;
     text-align: left;
 }
+/* --- XÓA VIỀN NGOÀI VÀ NỀN MẶC ĐỊNH CỦA POPUP --- */
+.mapboxgl-popup-content {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.mapboxgl-popup-tip {
+    display: none !important; /* Ẩn luôn cái đuôi nhọn chỉ vị trí nếu không thích */
+}
