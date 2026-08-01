@@ -31,9 +31,20 @@
              </select>
          </div>
      </div>
- </div>
+  </div>
 
     <div id="map"></div>
+
+    <!-- Khung hiển thị thông tin thửa đất ở dưới màn hình -->
+    <div id="parcel-info-panel" class="parcel-panel" style="display: none;">
+        <div class="panel-header">
+            <span><b>THÔNG TIN THỬA ĐẤT</b></span>
+            <button onclick="closeParcelPanel()" class="close-btn">&times;</button>
+        </div>
+        <div id="panel-content" class="panel-body">
+            <!-- Nội dung thông tin sẽ được đổ vào đây -->
+        </div>
+    </div>
 
     <!-- JS Mô-đun -->
     <script src="js/config.js"></script>
