@@ -5,52 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bản Đồ Quy Hoạch Cà Mau</title>
 
-    <!-- MapLibre GL & TurfJS -->
+    <!-- Thư viện MapLibre GL (hiển thị bản đồ vector/raster mã nguồn mở) & TurfJS (thư viện xử lý không gian địa lý GIS) -->
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 
-    <!-- CSS Nội bộ -->
+    <!-- Liên kết tệp định dạng kiểu dáng CSS giao diện tùy chỉnh nội bộ -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+   <!-- Khung chứa các điều khiển bộ lọc (Dropdown chọn Tỉnh và Xã) đặt nổi trên bản đồ -->
    <div class="map-control">
      <div class="filter-row">
-         <!-- Dropdown 1: Tỉnh/Thành -->
+         <!-- Dropdown 1: Lựa chọn Tỉnh / Thành phố -->
          <div class="filter-item">
              <select id="tinhFilter">
                  <option value="">-- Tỉnh / TP --</option>
              </select>
          </div>
 
-         <!-- Dropdown 2: Phường/Xã -->
+         <!-- Dropdown 2: Lựa chọn Phường / Xã (mặc định bị khóa 'disabled' khi chưa chọn tỉnh) -->
          <div class="filter-item">
              <select id="phuongFilter" disabled>
                  <option value="">-- Phường / Xã --</option>
              </select>
          </div>
      </div>
-  </div>
+ </div>
 
+    <!-- Thẻ div hiển thị toàn bộ khung bản đồ tương tác -->
     <div id="map"></div>
 
-    <!-- Khung hiển thị thông tin thửa đất ở dưới màn hình -->
+    <!-- Khung bảng panel hiển thị chi tiết thông tin thửa đất ở phía dưới màn hình (mặc định ẩn đi với style="display: none;") -->
     <div id="parcel-info-panel" class="parcel-panel" style="display: none;">
         <div class="panel-header">
             <span><b>THÔNG TIN THỬA ĐẤT</b></span>
+            <!-- Nút bấm dấu nhân (X) để đóng bảng thông tin, gọi hàm closeParcelPanel() -->
             <button onclick="closeParcelPanel()" class="close-btn">&times;</button>
         </div>
         <div id="panel-content" class="panel-body">
-            <!-- Nội dung thông tin sẽ được đổ vào đây -->
+            <!-- Nội dung chi tiết các thuộc tính thửa đất sẽ được mã JavaScript đổ động vào đây -->
         </div>
     </div>
 
-    <!-- JS Mô-đun -->
-    <script src="js/config.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/sheet.js"></script>
-    <script src="js/province.js"></script>
-    <script src="js/map.js"></script>
+    <!-- Các tệp mã nguồn JavaScript mô-đun chức năng của ứng dụng (được tải theo đúng thứ tự phụ thuộc) -->
+    <script src="js/config.js"></script>   <!-- Chứa cấu hình chung, thông tin tỉnh và bảng màu quy hoạch -->
+    <script src="js/api.js"></script>      <!-- Chứa hàm gọi API / tải dữ liệu GeoJSON -->
+    <script src="js/sheet.js"></script>    <!-- Chứa hàm tải dữ liệu thửa đất từ Google Sheets và quản lý ẩn hiện lớp -->
+    <script src="js/province.js"></script> <!-- Chứa logic xử lý chọn tỉnh/xã, lọc không gian bằng TurfJS -->
+    <script src="js/map.js"></script>      <!-- Khởi tạo bản đồ MapLibre, gán sự kiện click thửa đất và click vùng trống -->
 </body>
 </html>
