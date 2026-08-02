@@ -2,15 +2,33 @@
 
 /**
  * Hàm tải dữ liệu ranh giới và thông tin thửa đất từ Google Sheets thông qua Google Apps Script Web App
+ * Đã tối ưu tốc độ bằng cách lưu trữ tạm (Cache) trên LocalStorage của trình duyệt
  */
 async function loadThuaDatFromSheet(map) {
     // Nếu chưa cấu hình đường dẫn URL lấy dữ liệu từ Google Sheet thì dừng lại ngay
     if (!CONFIG.SHEET_DATA_URL) return;
 
     try {
-        // Gửi yêu cầu lấy dữ liệu (fetch) từ URL Google Apps Script Web App
-        const response = await fetch(CONFIG.SHEET_DATA_URL);
-        const geojson = await response.json(); // Chuyển đổi dữ liệu nhận được sang định dạng JSON (GeoJSON)
+        let geojson = null;
+        const cacheKey = 'sheet_thua_dat_cache';
+        const timeKey = 'sheet_thua_dat_time';
+        const cachedData = localStorage.getItem(cacheKey);
+        const cachedTime = localStorage.getItem(timeKey);
+        const now = new Date().getTime();
+
+        // Kiểm tra xem cache có tồn tại và thời gian lưu chưa quá 10 phút (600000ms) hay không
+        if (cachedData && cachedTime && (now - parseInt(cachedTime) < 600000)) {
+            // Lấy trực tiếp từ bộ nhớ đệm của trình duyệt để hiện lên tức thì (siêu nhanh)
+            geojson = JSON.parse(cachedData);
+        } else {
+            // Nếu chưa có cache hoặc đã quá hạn, tiến hành gọi fetch dữ liệu mới nhất từ Google Apps Script
+            const response = await fetch(CONFIG.SHEET_DATA_URL);
+            geojson = await response.json(); // Chuyển đổi dữ liệu nhận được sang định dạng JSON (GeoJSON)
+            
+            // Lưu lại vào LocalStorage để dùng cho các lần tải sau
+            localStorage.setItem(cacheKey, JSON.stringify(geojson));
+            localStorage.setItem(timeKey, now.toString());
+        }
 
         // Kiểm tra xem nguồn dữ liệu thửa đất trên bản đồ đã tồn tại hay chưa
         if (map.getSource('sheet-thua-dat-src')) {
