@@ -213,3 +213,72 @@ function initFilter(map) {
         }
     });
 }
+// --- TÍNH NĂNG TÌM KIẾM TOÀN CỤC (Tên chủ, số tờ/thửa, số định danh) ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Đợi một nhịp nhỏ để chắc chắn bản đồ đã khởi tạo xong instance
+    setTimeout(() => {
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', (e) => {
+            const keyword = e.target.value.trim().toLowerCase();
+            const mapInstance = window.currentMapInstance;
+            if (!mapInstance) return;
+
+            // Nếu ô tìm kiếm trống, ẩn lớp thửa đất đi và reset bộ lọc
+            if (!keyword) {
+                const emptyFilter = ['==', '$type', 'Point'];
+                if (mapInstance.getLayer('sheet-thua-dat-fill')) mapInstance.setFilter('sheet-thua-dat-fill', emptyFilter);
+                if (mapInstance.getLayer('sheet-thua-dat-line')) mapInstance.setFilter('sheet-thua-dat-line', emptyFilter);
+                return;
+            }
+
+            // Biểu thức lọc linh hoạt hỗ trợ nhiều tên trường dữ liệu khác nhau từ Google Sheets
+            const searchFilter = [
+                'any',
+                ['==', ['to-string', ['get', 'Số tờ']], keyword],
+                ['==', ['to-string', ['get', 'So to']], keyword],
+                ['==', ['to-string', ['get', 'so_to']], keyword],
+                ['==', ['to-string', ['get', 'Số thửa']], keyword],
+                ['==', ['to-string', ['get', 'So thua']], keyword],
+                ['==', ['to-string', ['get', 'so_thua']], keyword],
+                ['in', keyword, ['downcase', ['coalesce', ['get', 'Tên Chủ'], ['get', 'Tên chủ'], ['get', 'ten_chu'], '']]],
+                ['in', keyword, ['downcase', ['coalesce', ['get', 'Số định danh chủ đất'], ['get', 'Số định danh'], ['get', 'so_dinh_danh'], '']]],
+                ['in', keyword, ['downcase', ['coalesce', ['get', 'ID Thửa Đất'], ['get', 'id'], '']]]
+            ];
+
+            // Áp dụng bộ lọc lên lớp thửa đất của bản đồ
+            if (mapInstance.getLayer('sheet-thua-dat-fill')) {
+                mapInstance.setFilter('sheet-thua-dat-fill', searchFilter);
+            }
+            if (mapInstance.getLayer('sheet-thua-dat-line')) {
+                mapInstance.setFilter('sheet-thua-dat-line', searchFilter);
+            }
+
+            // 🎯 Tự động zoom đến khu vực chứa các thửa đất tìm thấy nếu nguồn dữ liệu đã sẵn sàng
+            const source = mapInstance.getSource('sheet-thua-dat-src');
+            if (source && source._data && source._data.features) {
+                const matchedFeatures = source._data.features.filter(f => {
+                    const p = f.properties || {};
+                    const sTo = String(p['Số tờ'] || p['So to'] || p['so_to'] || '').toLowerCase();
+                    const sThua = String(p['Số thửa'] || p['So thua'] || p['so_thua'] || '').toLowerCase();
+                    const ten = String(p['Tên Chủ'] || p['Tên chủ'] || p['ten_chu'] || '').toLowerCase();
+                    const dinhDanh = String(p['Số định danh chủ đất'] || p['Số định danh'] || p['so_dinh_danh'] || '').toLowerCase();
+                    const idThua = String(p['ID Thửa Đất'] || p['id'] || '').toLowerCase();
+
+                    return sTo === keyword || sThua === keyword || 
+                           ten.includes(keyword) || 
+                           dinhDanh.includes(keyword) || 
+                           idThua.includes(keyword);
+                });
+
+                if (matchedFeatures.length > 0) {
+                    const fc = turf.featureCollection(matchedFeatures);
+                    const bbox = turf.bbox(fc);
+                    // Thực hiện zoom mượt mà đến khung bao quanh kết quả tìm kiếm với lề đệm 50px
+                    mapInstance.fitBounds(bbox, { padding: 50, maxZoom: 18, duration: 1000 });
+                }
+            }
+        });
+    }, 500);
+});
