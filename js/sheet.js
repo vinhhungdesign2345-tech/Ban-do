@@ -46,7 +46,7 @@ async function loadThuaDatFromSheet(map) {
  'type': 'fill',
  'source': 'sheet-thua-dat-src',
  'paint': {
- 'fill-color': '#ffff00',
+ 'fill-color': '#e32727',
  'fill-opacity': 0.65
  },
  'filter': ['==', ['get', 'ID Thửa Đất'], '']
