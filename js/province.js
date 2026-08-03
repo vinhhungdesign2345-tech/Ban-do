@@ -1,11 +1,7 @@
 // js/province.js
 
-// Biến toàn cục lưu trữ dữ liệu ranh giới GeoJSON của tỉnh đang được chọn hiện tại
 let currentGeoData = null;
 
-/**
- * 1. HÀM CHỌN PHƯỜNG/XÃ TỪ TỌA ĐỘ CLICK TRÊN BẢN ĐỒ
- */
 async function selectPhuongFromPoint(lng, lat, map) {
     const tinhSelect = document.getElementById('tinhFilter');
     const phuongSelect = document.getElementById('phuongFilter');
@@ -53,9 +49,6 @@ async function selectPhuongFromPoint(lng, lat, map) {
     }
 }
 
-/**
- * 2. HÀM TẢI DỮ LIỆU RANH GIỚI TỈNH KHI CHỌN TỪ DROPDOWN
- */
 async function loadProvinceData(provinceId, map) {
     const phuongSelect = document.getElementById('phuongFilter');
     phuongSelect.innerHTML = '<option value="">-- Phường / Xã --</option>';
@@ -119,11 +112,13 @@ async function loadProvinceData(provinceId, map) {
         opt.textContent = pName;
         phuongSelect.appendChild(opt);
     });
+
+    // 🎯 TỰ ĐỘNG NẠP DỮ LIỆU THỬA ĐẤT TỪ GOOGLE SHEET NGAY KHI CHỌN TỈNH
+    if (typeof loadThuaDatFromSheet === 'function') {
+        await loadThuaDatFromSheet(map);
+    }
 }
 
-/**
- * 3. HÀM KHỞI TẠO BỘ LỌC (GẮN SỰ KIỆN CHO CÁC DROPDOWN TỈNH & XÃ)
- */
 function initFilter(map) {
     const tinhSelect = document.getElementById('tinhFilter');
     const phuongSelect = document.getElementById('phuongFilter');
@@ -193,25 +188,25 @@ function initFilter(map) {
     });
 }
 
-/**
- * 4. TÍNH NĂNG TÌM KIẾM TOÀN QUỐC (CÓ NÚT BẤM RIÊNG BIỆT, TỰ ĐỘNG NẠP SẴN DỮ LIỆU)
- */
-function handleGlobalSearch() {
+// 🎯 HÀM TÌM KIẾM THEO PHẠM VI TỈNH ĐANG CHỌN (KHI BẤM NÚT HOẶC ENTER)
+function executeProvinceSearch() {
+    const tinhSelect = document.getElementById('tinhFilter');
+    if (!tinhSelect || !tinhSelect.value) {
+        alert("Vui lòng chọn Tỉnh / Thành phố trước khi tìm kiếm!");
+        return;
+    }
+
     const searchInput = document.getElementById('searchInput');
     const mapInstance = window.currentMapInstance;
     if (!searchInput || !mapInstance) return;
 
     const keyword = searchInput.value.trim().toLowerCase();
-
-    // Nếu ô tìm kiếm trống, reset lại bộ lọc hiển thị thửa đất
     if (!keyword) {
-        const emptyFilter = ['==', '$type', 'Point'];
-        if (mapInstance.getLayer('sheet-thua-dat-fill')) mapInstance.setFilter('sheet-thua-dat-fill', emptyFilter);
-        if (mapInstance.getLayer('sheet-thua-dat-line')) mapInstance.setFilter('sheet-thua-dat-line', emptyFilter);
+        alert("Vui lòng nhập nội dung cần tìm kiếm!");
         return;
     }
 
-    // Biểu thức lọc MapLibre trên toàn bộ nguồn dữ liệu (hỗ trợ số tờ, số thửa, tên chủ, mã định danh, ID)
+    // Biểu thức lọc trực tiếp trên lớp bản đồ
     const searchFilter = [
         'any',
         ['==', ['to-string', ['coalesce', ['get', 'Số tờ'], ['get', 'So to'], ['get', 'so_to'], '']], keyword],
@@ -228,7 +223,7 @@ function handleGlobalSearch() {
         mapInstance.setFilter('sheet-thua-dat-line', searchFilter);
     }
 
-    // Quét dữ liệu trong source để tính toán khung bao (bounding box) cho toàn bộ kết quả tìm thấy trên cả nước và zoom tới
+    // Quét dữ liệu trong source để zoom mượt mà đến các kết quả tìm thấy trong tỉnh
     const source = mapInstance.getSource('sheet-thua-dat-src');
     if (source && source._data && source._data.features) {
         const matchedFeatures = source._data.features.filter(f => {
@@ -251,35 +246,29 @@ function handleGlobalSearch() {
             const bbox = turf.bbox(fc);
             mapInstance.fitBounds(bbox, { padding: 50, maxZoom: 18, duration: 1000 });
         } else {
-            alert("Không tìm thấy kết quả phù hợp với từ khóa: " + keyword);
+            alert("Không tìm thấy kết quả phù hợp trong tỉnh này với từ khóa: " + keyword);
         }
+    } else {
+        alert("Chưa có dữ liệu thửa đất trong tỉnh này!");
     }
 }
 
-// Khởi chạy tự động nạp dữ liệu Google Sheets ngầm ngay khi load trang & gắn sự kiện cho nút tìm kiếm
+// Gắn sự kiện cho nút tìm kiếm và phím Enter
 document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(async () => {
-        const mapInstance = window.currentMapInstance;
-        if (mapInstance) {
-            // Tự động nạp sẵn toàn bộ dữ liệu thửa đất từ Google Sheets ngay từ đầu để sẵn sàng tìm kiếm toàn quốc
-            await loadThuaDatFromSheet(mapInstance);
+    setTimeout(() => {
+        const searchBtn = document.getElementById('searchBtn'); // ID của nút tìm kiếm trên HTML
+        const searchInput = document.getElementById('searchInput');
+
+        if (searchBtn) {
+            searchBtn.addEventListener('click', executeProvinceSearch);
         }
 
-        const searchInput = document.getElementById('searchInput');
-        if (!searchInput) return;
-
-        // Cho phép bấm Enter trong ô input cũng kích hoạt tìm kiếm luôn cho tiện
-        searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.keyCode === 13) {
-                handleGlobalSearch();
-            }
-        });
-
-        // Tìm hoặc tự động gắn sự kiện click cho Nút Tìm Kiếm (giả sử nút tìm kiếm có id là 'searchBtn' hoặc class tương ứng)
-        let searchBtn = document.getElementById('searchBtn') || document.querySelector('.search-btn');
-        if (searchBtn) {
-            searchBtn.addEventListener('click', handleGlobalSearch);
+        if (searchInput) {
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.keyCode === 13) {
+                    executeProvinceSearch();
+                }
+            });
         }
     }, 500);
 });
-```[cite: 6]
