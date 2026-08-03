@@ -11,7 +11,7 @@ const CONFIG = {
     ],
 
     // Đường dẫn URL lấy dữ liệu trực tiếp từ nhánh main của GitHub (đã đổi sang dạng raw)
-    SHEET_DATA_URL: 'https://raw.githubusercontent.com/vinhhungdesign2345-tech/Ban-do/main/thua-dat.geojson',
+    SHEET_DATA_URL: 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec',
 
     // Cấu hình giao diện nền bản đồ vệ tinh sử dụng nguồn tile trực tiếp từ Google Maps
     MAP_STYLE: {
