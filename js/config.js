@@ -11,7 +11,7 @@ const CONFIG = {
     ],
 
     // Đường dẫn URL liên kết đến ứng dụng Google Apps Script Web App để lấy dữ liệu từ Google Sheets
-    SHEET_DATA_URL: 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec',
+    SHEET_DATA_URL: 'https://cdn.jsdelivr.net/gh/vinhhungdesign2345-tech/Ban-do@main/thua-dat.geojson',
 
     // Cấu hình giao diện nền bản đồ vệ tinh sử dụng nguồn tile trực tiếp từ Google Maps
     MAP_STYLE: {
