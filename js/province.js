@@ -152,64 +152,52 @@ function initFilter(map) {
         tinhSelect.appendChild(opt);
     });
 
-    // Sự kiện lắng nghe khi người dùng thay đổi lựa chọn ở dropdown Tỉnh/Thành phố
-    tinhSelect.addEventListener('change', async (e) => {
-        const selectedTinh = e.target.value;
-        if (!selectedTinh) {
-            hideThuaDat(map); // Nếu bỏ chọn tỉnh thì ẩn dữ liệu thửa đất
-            currentGeoData = null;
-            phuongSelect.innerHTML = '<option value="">-- Phường / Xã --</option>';
-            phuongSelect.disabled = true; // Khóa dropdown phường/xã lại
-        } else {
-            await loadProvinceData(selectedTinh, map); // Tải dữ liệu tương ứng với tỉnh được chọn
-        }
-    });
-
     // Sự kiện lắng nghe khi người dùng thay đổi lựa chọn ở dropdown Phường/Xã cụ thể
-    phuongSelect.addEventListener('change', (e) => {
-        const selectedPhuong = e.target.value;
+phuongSelect.addEventListener('change', (e) => {
+    const selectedPhuong = e.target.value;
 
-        if (!selectedPhuong) {
-            // Nếu bỏ chọn phường, hiển thị lại toàn bộ ranh giới của tỉnh và ẩn dữ liệu thửa đất chi tiết
-            const showAllProvinceFilter = ['!=', '$type', 'Point'];
-            if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
-            if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
-            
-            if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', ['==', '$type', 'Point']);
-            if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', ['==', '$type', 'Point']);
-        } else {
-            // Thiết lập điều kiện lọc ranh giới và thửa đất chỉ cho riêng phường/xã được chọn
-            const filterExpr = [
-                'any',
-                ['==', ['get', 'name'], selectedPhuong],
-                ['==', ['get', 'dia_chi'], selectedPhuong],
-                ['==', ['get', 'Phuong'], selectedPhuong],
-                ['==', ['get', 'Xa'], selectedPhuong]
-            ];
+    if (!selectedPhuong) {
+        // Nếu bỏ chọn phường, hiển thị lại toàn bộ ranh giới của tỉnh và hiển thị lại TOÀN BỘ thửa đất của tỉnh thay vì ẩn đi
+        const showAllProvinceFilter = ['!=', '$type', 'Point'];
+        if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
+        if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
+        
+        // Sửa lại thành hiển thị toàn bộ polygon thửa đất thay vì lọc ép về Point
+        if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', ['!=', '$type', 'Point']);
+        if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', ['!=', '$type', 'Point']);
+    } else {
+        // Thiết lập điều kiện lọc ranh giới và thửa đất chỉ cho riêng phường/xã được chọn
+        const filterExpr = [
+            'any',
+            ['==', ['get', 'name'], selectedPhuong],
+            ['==', ['get', 'dia_chi'], selectedPhuong],
+            ['==', ['get', 'Phuong'], selectedPhuong],
+            ['==', ['get', 'Xa'], selectedPhuong]
+        ];
 
-            const sheetFilterExpr = [
-                '==', ['get', 'Địa Chỉ Thửa Đất'], selectedPhuong
-            ];
+        const sheetFilterExpr = [
+            '==', ['get', 'Địa Chỉ Thửa Đất'], selectedPhuong
+        ];
 
-            if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
-            if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
-            
-            if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
-            if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
+        if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
+        if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
+        
+        if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
+        if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
 
-            // Tự động thu phóng (zoom) bản đồ đến khung vực (bounding box) của phường/xã được chọn
-            if (currentGeoData) {
-                const filtered = currentGeoData.features.filter(f => {
-                    const p = f.properties || {};
-                    return p.name === selectedPhuong || p.dia_chi === selectedPhuong || p.Phuong === selectedPhuong || p.Xa === selectedPhuong;
-                });
+        // Tự động thu phóng (zoom) bản đồ đến khung vực (bounding box) của phường/xã được chọn
+        if (currentGeoData) {
+            const filtered = currentGeoData.features.filter(f => {
+                const p = f.properties || {};
+                return p.name === selectedPhuong || p.dia_chi === selectedPhuong || p.Phuong === selectedPhuong || p.Xa === selectedPhuong;
+            });
 
-                if (filtered.length > 0) {
-                    const fc = turf.featureCollection(filtered);
-                    const bbox = turf.bbox(fc);
-                    map.fitBounds(bbox, { padding: 50 }); // Phóng to vừa vặn với khung bao quanh phường kèm lề 50px
-                }
+            if (filtered.length > 0) {
+                const fc = turf.featureCollection(filtered);
+                const bbox = turf.bbox(fc);
+                map.fitBounds(bbox, { padding: 50 }); // Phóng to vừa vặn với khung bao quanh phường kèm lề 50px
             }
         }
-    });
+    }
+});
 }
