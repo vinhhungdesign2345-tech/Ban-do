@@ -45,13 +45,13 @@ const CONFIG = {
 const COLOR_MATCH_EXPRESSION = [
     'match',                                /* Hàm so khớp điều kiện của MapLibre Style Specification */
     ['get', 'Loại Đất'],                    /* Lấy giá trị thuộc tính 'Loại Đất' của từng thửa đất từ dữ liệu bản đồ */
-    'Đất ở tại đô thị', '#ff007f',          /* Nếu là Đất ở tại đô thị -> Tô màu hồng đậm (#ff007f) */
-    'Đất ở tại nông thôn', '#ff5400',       /* Nếu là Đất ở tại nông thôn -> Tô màu cam (#ff5400) */
+    'Đất ở tại đô thị', '#e063ce',          /* Nếu là Đất ở tại đô thị -> Tô màu hồng đậm (#ff007f) */
+    'Đất ở tại nông thôn', '#cf99c7',       /* Nếu là Đất ở tại nông thôn -> Tô màu cam (#ff5400) */
     'Đất nuôi trồng thuỷ sản', '#00b4d8',   /* Nếu là Đất nuôi trồng thuỷ sản -> Tô màu xanh dương nhạt (#00b4d8) */
     'Đất nuôi trồng thủy sản', '#00b4d8',   /* Dự phòng thêm trường hợp sai chính tả dấu/chữ -> Tô màu xanh dương nhạt */
-    'Đất trồng cây lâu năm', '#70e000',     /* Nếu là Đất trồng cây lâu năm -> Tô màu xanh lá mạ (#70e000) */
-    'Đất trồng cây hàng năm khác', '#9ef01a',/* Nếu là Đất trồng cây hàng năm khác -> Tô màu xanh nõn chuối (#9ef01a) */
+    'Đất trồng cây lâu năm', '#519e05',     /* Nếu là Đất trồng cây lâu năm -> Tô màu xanh lá mạ (#70e000) */
+    'Đất trồng cây hàng năm khác', '#519e05',/* Nếu là Đất trồng cây hàng năm khác -> Tô màu xanh nõn chuối (#9ef01a) */
     'Đất trồng lúa', '#f5e753',             /* Nếu là Đất trồng lúa -> Tô màu vàng nhạt (#f5e753) */
     'Đất chuyên trồng lúa nước', '#ffea00', /* Nếu là Đất chuyên trồng lúa nước -> Tô màu vàng tươi (#ffea00) */
-    '#ff9e00'                               /* Màu mặc định dự phòng nếu loại đất không nằm trong danh sách trên (màu cam vàng) */
+    '#c2b9ab'                               /* Màu mặc định dự phòng nếu loại đất không nằm trong danh sách trên (màu cam vàng) */
 ];
