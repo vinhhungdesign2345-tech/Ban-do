@@ -15,24 +15,31 @@
 </head>
 <body>
 
-   <!-- Khung chứa các điều khiển bộ lọc (Dropdown chọn Tỉnh và Xã) đặt nổi trên bản đồ -->
-   <div class="map-control">
-     <div class="filter-row">
-         <!-- Dropdown 1: Lựa chọn Tỉnh / Thành phố -->
-         <div class="filter-item">
-             <select id="tinhFilter">
-                 <option value="">-- Tỉnh / TP --</option>
-             </select>
-         </div>
+    <!-- Khung chứa các điều khiển bộ lọc (Dropdown chọn Tỉnh, Xã và Ô tìm kiếm) đặt nổi trên bản đồ -->
+    <div class="map-control">
+        <div class="filter-row">
+            <!-- Dropdown 1: Lựa chọn Tỉnh / Thành phố -->
+            <div class="filter-item">
+                <select id="tinhFilter">
+                    <option value="">-- Tỉnh / TP --</option>
+                </select>
+            </div>
 
-         <!-- Dropdown 2: Lựa chọn Phường / Xã (mặc định bị khóa 'disabled' khi chưa chọn tỉnh) -->
-         <div class="filter-item">
-             <select id="phuongFilter" disabled>
-                 <option value="">-- Phường / Xã --</option>
-             </select>
-         </div>
-     </div>
- </div>
+            <!-- Dropdown 2: Lựa chọn Phường / Xã (mặc định bị khóa 'disabled' khi chưa chọn tỉnh) -->
+            <div class="filter-item">
+                <select id="phuongFilter" disabled>
+                    <option value="">-- Phường / Xã --</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 🔍 Ô TÌM KIẾM TOÀN CỤC (Tên chủ, số tờ/thửa, số định danh) -->
+        <div class="filter-row" style="margin-top: 6px;">
+            <div class="filter-item" style="flex: 1;">
+                <input type="text" id="searchInput" placeholder="Tìm tên chủ, số tờ/thửa, số định danh..." autocomplete="off">
+            </div>
+        </div>
+    </div>
 
     <!-- Thẻ div hiển thị toàn bộ khung bản đồ tương tác -->
     <div id="map"></div>
@@ -51,7 +58,7 @@
 
     <!-- Các tệp mã nguồn JavaScript mô-đun chức năng của ứng dụng (được tải theo đúng thứ tự phụ thuộc) -->
     <script src="js/config.js"></script>   <!-- Chứa cấu hình chung, thông tin tỉnh và bảng màu quy hoạch -->
-    <script src="js/api.js"></script>      <!-- Chứa hàm gọi API / tải dữ liệu GeoJSON -->
+    <script src="js/api.js"></script>       <!-- Chứa hàm gọi API / tải dữ liệu GeoJSON -->
     <script src="js/sheet.js"></script>    <!-- Chứa hàm tải dữ liệu thửa đất từ Google Sheets và quản lý ẩn hiện lớp -->
     <script src="js/province.js"></script> <!-- Chứa logic xử lý chọn tỉnh/xã, lọc không gian bằng TurfJS -->
     <script src="js/map.js"></script>      <!-- Khởi tạo bản đồ MapLibre, gán sự kiện click thửa đất và click vùng trống -->
