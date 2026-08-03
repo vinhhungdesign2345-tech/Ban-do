@@ -1,6 +1,6 @@
 // js/map.js
 
-// 🎯 Hàm định dạng số chuẩn Việt Nam: 15348.7 -> 15.348,7
+// 🎯 Hàm định dạng số chuẩn Việt Nam: 1.234,5
 function formatNumberVN(val) {
     // Kiểm tra nếu giá trị trống hoặc dấu gạch ngang thì trả về nguyên bản dấu '-'
     if (val === null || val === undefined || val === '' || val === '-') return '-';
