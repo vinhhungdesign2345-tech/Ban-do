@@ -172,3 +172,22 @@ input {
         height: 30px;                    /* Giảm chiều cao ô select cho gọn */
     }
 }
+/* --- TÙY CHỈNH Ô TÌM KIẾM TOÀN CỤC --- */
+.map-control input[type="text"] {
+    width: 100%;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #d0d0d0;
+    font-size: 12px;
+    font-weight: 500;
+    outline: none;
+    background-color: #fff;
+    color: #222;
+    height: 34px;
+    box-sizing: border-box;
+}
+
+.map-control input[type="text"]::placeholder {
+    color: #888;
+    font-weight: normal;
+}
