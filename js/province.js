@@ -213,19 +213,21 @@ function initFilter(map) {
         }
     });
 }
-// --- TÍNH NĂNG TÌM KIẾM TOÀN CỤC (Tên chủ, số tờ/thửa, số định danh) ---
+// --- TÍNH NĂNG TÌM KIẾM TOÀN CỤC (BẤM ENTER MỚI TÌM & ZOOM, HỖ TRỢ CHÍNH XÁC SỐ TỜ/THỬA) ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Đợi một nhịp nhỏ để chắc chắn bản đồ đã khởi tạo xong instance
     setTimeout(() => {
         const searchInput = document.getElementById('searchInput');
         if (!searchInput) return;
 
-        searchInput.addEventListener('input', (e) => {
+        // Lắng nghe sự kiện khi người dùng gõ phím, nếu bấm Enter (keyCode 13 hoặc key === 'Enter') thì thực hiện tìm kiếm
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter' && e.keyCode !== 13) return;
+
             const keyword = e.target.value.trim().toLowerCase();
             const mapInstance = window.currentMapInstance;
             if (!mapInstance) return;
 
-            // Nếu ô tìm kiếm trống, ẩn lớp thửa đất đi và reset bộ lọc
+            // Nếu ô tìm kiếm trống khi bấm Enter, ẩn lớp thửa đất đi và reset bộ lọc
             if (!keyword) {
                 const emptyFilter = ['==', '$type', 'Point'];
                 if (mapInstance.getLayer('sheet-thua-dat-fill')) mapInstance.setFilter('sheet-thua-dat-fill', emptyFilter);
@@ -233,15 +235,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Biểu thức lọc linh hoạt hỗ trợ nhiều tên trường dữ liệu khác nhau từ Google Sheets
+            // Biểu thức lọc MapLibre ép kiểu toàn bộ về string để đối chiếu chính xác số tờ, số thửa, tên chủ, định danh
             const searchFilter = [
                 'any',
-                ['==', ['to-string', ['get', 'Số tờ']], keyword],
-                ['==', ['to-string', ['get', 'So to']], keyword],
-                ['==', ['to-string', ['get', 'so_to']], keyword],
-                ['==', ['to-string', ['get', 'Số thửa']], keyword],
-                ['==', ['to-string', ['get', 'So thua']], keyword],
-                ['==', ['to-string', ['get', 'so_thua']], keyword],
+                ['==', ['to-string', ['coalesce', ['get', 'Số tờ'], ['get', 'So to'], ['get', 'so_to'], '']], keyword],
+                ['==', ['to-string', ['coalesce', ['get', 'Số thửa'], ['get', 'So thua'], ['get', 'so_thua'], '']], keyword],
                 ['in', keyword, ['downcase', ['coalesce', ['get', 'Tên Chủ'], ['get', 'Tên chủ'], ['get', 'ten_chu'], '']]],
                 ['in', keyword, ['downcase', ['coalesce', ['get', 'Số định danh chủ đất'], ['get', 'Số định danh'], ['get', 'so_dinh_danh'], '']]],
                 ['in', keyword, ['downcase', ['coalesce', ['get', 'ID Thửa Đất'], ['get', 'id'], '']]]
@@ -255,18 +253,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 mapInstance.setFilter('sheet-thua-dat-line', searchFilter);
             }
 
-            // 🎯 Tự động zoom đến khu vực chứa các thửa đất tìm thấy nếu nguồn dữ liệu đã sẵn sàng
+            // 🎯 Lọc dữ liệu trong source để tính toán tọa độ khung bao (bounding box) và tiến hành zoom mượt mà
             const source = mapInstance.getSource('sheet-thua-dat-src');
             if (source && source._data && source._data.features) {
                 const matchedFeatures = source._data.features.filter(f => {
                     const p = f.properties || {};
-                    const sTo = String(p['Số tờ'] || p['So to'] || p['so_to'] || '').toLowerCase();
-                    const sThua = String(p['Số thửa'] || p['So thua'] || p['so_thua'] || '').toLowerCase();
+                    const sTo = String(p['Số tờ'] || p['So to'] || p['so_to'] || '').trim().toLowerCase();
+                    const sThua = String(p['Số thửa'] || p['So thua'] || p['so_thua'] || '').trim().toLowerCase();
                     const ten = String(p['Tên Chủ'] || p['Tên chủ'] || p['ten_chu'] || '').toLowerCase();
                     const dinhDanh = String(p['Số định danh chủ đất'] || p['Số định danh'] || p['so_dinh_danh'] || '').toLowerCase();
                     const idThua = String(p['ID Thửa Đất'] || p['id'] || '').toLowerCase();
 
-                    return sTo === keyword || sThua === keyword || 
+                    return sTo === keyword || 
+                           sThua === keyword || 
                            ten.includes(keyword) || 
                            dinhDanh.includes(keyword) || 
                            idThua.includes(keyword);
@@ -275,10 +274,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (matchedFeatures.length > 0) {
                     const fc = turf.featureCollection(matchedFeatures);
                     const bbox = turf.bbox(fc);
-                    // Thực hiện zoom mượt mà đến khung bao quanh kết quả tìm kiếm với lề đệm 50px
                     mapInstance.fitBounds(bbox, { padding: 50, maxZoom: 18, duration: 1000 });
+                } else {
+                    alert("Không tìm thấy kết quả phù hợp với từ khóa: " + keyword);
                 }
             }
         });
     }, 500);
 });
+```[cite: 6]
