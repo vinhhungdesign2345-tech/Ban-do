@@ -4,39 +4,40 @@
 let currentGeoData = null;
 
 /**
- * 1. HÀM CHỌN PHƯỜNG/XÃ TỪ TỌA ĐỘ CLICK TRÊN BẢN ĐỒ (ĐÃ CHẶN TẢI RANH TỈNH)
+ * 1. HÀM CHỌN PHƯỜNG/XÃ TỪ TỌA ĐỘ CLICK TRÊN BẢN ĐỒ (ĐÃ TỐI ƯU SIÊU NHANH)
  */
 async function selectPhuongFromPoint(lng, lat, map) {
     const tinhSelect = document.getElementById('tinhFilter');
     const phuongSelect = document.getElementById('phuongFilter');
 
-    // NẾU CHƯA CHỌN TỈNH THÌ DỪNG LẠI NGAY LẬP TỨC, TUYỆT ĐỐI KHÔNG TẢI RANH TOÀN TỈNH
-    if (!tinhSelect.value || !currentGeoData || !currentGeoData.features) {
-        return; 
+    // Nếu người dùng chưa chọn tỉnh mà click bừa lên bản đồ, tự động gán mặc định tỉnh đầu tiên và tải dữ liệu 1 LẦN DUY NHẤT
+    if (!tinhSelect.value && CONFIG.PROVINCES.length > 0) {
+        const defaultProvince = CONFIG.PROVINCES[0];
+        tinhSelect.value = defaultProvince.id;
+        await loadProvinceData(defaultProvince.id, map);
     }
 
-    const point = turf.point([lng, lat]); // Tạo điểm hình học từ tọa độ click
-    let matchedPhuong = null;
-    let matchedFeature = null;
+    if (!currentGeoData || !currentGeoData.features) return;
 
-    // Duyệt qua các vùng polygon của tỉnh đã được tải sẵn trong bộ nhớ để tìm xem điểm click nằm ở phường/xã nào
+    const point = turf.point([lng, lat]); // Tạo đối tượng điểm hình học từ tọa độ [Kinh độ, Vĩ độ] người dùng vừa click
+    let matchedPhuong = null;
+
+    // Duyệt nhanh qua tất cả các vùng polygon trong GeoJSON để tìm xem điểm click nằm bên trong phường/xã nào
     for (const feature of currentGeoData.features) {
         if (turf.booleanPointInPolygon(point, feature)) {
             const p = feature.properties || {};
+            // Lấy tên phường/xã từ nhiều trường thuộc tính dự phòng khác nhau của dữ liệu
             matchedPhuong = p.name || p.dia_chi || p.Phuong || p.Xa || p.NAME_2 || p.NAME_3;
-            if (matchedPhuong) {
-                matchedFeature = feature;
-                break;
-            }
+            if (matchedPhuong) break; // Thoát vòng lặp ngay khi tìm thấy phường khớp
         }
     }
 
-    // Nếu tìm thấy phường/xã chứa điểm click, tiến hành cập nhật giao diện và thu phóng ngay lập tức
+    // Nếu tìm thấy tên phường, cập nhật giao diện dropdown và tiến hành lọc lớp thửa đất tức thì
     if (matchedPhuong && phuongSelect) {
         if (phuongSelect.value !== matchedPhuong) {
-            phuongSelect.value = matchedPhuong; // Đồng bộ giá trị lên dropdown phường/xã
-
-            // Lọc ranh giới chỉ hiển thị riêng phường/xã đó
+            phuongSelect.value = matchedPhuong; // Gán giá trị mới cho ô chọn phường/xã
+            
+            // Biểu thức lọc ranh giới hành chính phường/xã trên bản đồ
             const filterExpr = [
                 'any',
                 ['==', ['get', 'name'], matchedPhuong],
@@ -45,22 +46,16 @@ async function selectPhuongFromPoint(lng, lat, map) {
                 ['==', ['get', 'Xa'], matchedPhuong]
             ];
 
-            // Lọc dữ liệu thửa đất từ Google Sheets tương ứng với phường/xã đó
+            // Biểu thức lọc các thửa đất lấy từ Google Sheets theo địa chỉ phường/xã tương ứng
             const sheetFilterExpr = [
                 '==', ['get', 'Địa Chỉ Thửa Đất'], matchedPhuong
             ];
 
-            // Áp dụng bộ lọc lên bản đồ
+            // Cập nhật bộ lọc trực tiếp lên các lớp bản đồ ngay lập tức không cần chờ mạng
             if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
             if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
             if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
             if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
-
-            // Tự động thu phóng (zoom) đến đúng khung vực của phường/xã vừa click
-            if (matchedFeature) {
-                const bbox = turf.bbox(matchedFeature);
-                map.fitBounds(bbox, { padding: 50 });
-            }
         }
     }
 }
