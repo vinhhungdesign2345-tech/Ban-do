@@ -24,19 +24,20 @@ function initThuaDatSearch(map) {
             return;
         }
 
-        // 1. Thu thập dữ liệu từ các source có trên bản đồ
+        // 1. Thu thập dữ liệu trực tiếp từ tất cả các source có trên bản đồ
         let allFeatures = [];
         const style = map.getStyle();
         if (style && style.sources) {
             for (const sourceId in style.sources) {
                 const src = map.getSource(sourceId);
+                // Kiểm tra nếu source có chứa dữ liệu dạng GeoJSON thô
                 if (src && src._data && src._data.features) {
                     allFeatures = allFeatures.concat(src._data.features);
                 }
             }
         }
 
-        // Dự phòng lấy từ rendered features nếu source chưa sẵn sàng
+        // 2. Nếu lấy từ source chưa được, quét dự phòng qua các đối tượng đang hiển thị trên màn hình
         if (allFeatures.length === 0) {
             const rendered = map.queryRenderedFeatures({ layers: ['sheet-thua-dat-fill'] });
             if (rendered) allFeatures = rendered;
@@ -47,7 +48,7 @@ function initThuaDatSearch(map) {
             return;
         }
 
-        // 2. Tiến hành quét tìm kiếm
+        // 3. Tiến hành quét tìm kiếm không phân biệt dấu và chữ hoa/thường
         const matchedIds = [];
         allFeatures.forEach(f => {
             const props = f.properties || {};
@@ -64,7 +65,7 @@ function initThuaDatSearch(map) {
             }
         });
 
-        // 3. Đặt bộ lọc hiển thị kết quả lên bản đồ
+        // 4. Áp dụng bộ lọc hiển thị lên bản đồ
         let finalFilter;
         if (matchedIds.length > 0) {
             finalFilter = ['in', ['get', 'ID Thửa Đất'], ['literal', matchedIds]];
@@ -75,7 +76,7 @@ function initThuaDatSearch(map) {
         if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', finalFilter);
         if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', finalFilter);
 
-        // 4. Tự động thu phóng (zoom) đến khu vực tìm thấy và hiện thông báo số lượng
+        // 5. Tự động thu phóng (zoom) đến khu vực kết quả và hiển thị thông báo
         setTimeout(() => {
             try {
                 const matchedFeaturesList = allFeatures.filter(f => {
@@ -88,8 +89,8 @@ function initThuaDatSearch(map) {
                     const bbox = turf.bbox(fc);
                     map.fitBounds(bbox, { padding: 60, maxZoom: 18 });
 
-                    // Hiển thị thông báo số lượng thửa đất tìm được
-                    alert(`Đã tìm được ${matchedFeaturesList.length} thửa đất của từ khóa "${rawKeyword}"!`);
+                    // Thêm thông báo số lượng thửa đất tìm được
+                    alert(`Đã tìm được ${matchedFeaturesList.length} thửa đất phù hợp với từ khóa "${rawKeyword}"!`);
                 } else {
                     alert("Không tìm thấy kết quả phù hợp với từ khóa: " + rawKeyword);
                 }
