@@ -1,7 +1,7 @@
 // js/searchThuaDat.js
 
 /**
- * Hàm khởi tạo ô tìm kiếm thửa đất (Hỗ trợ tìm toàn quốc hoặc theo tỉnh/phường khi nhấn Enter)
+ * Hàm khởi tạo ô tìm kiếm thửa đất (Hỗ trợ tìm theo tên chủ, số định danh, số tờ, số thửa)
  * @param {Object} map - Instance bản đồ MapLibre
  */
 function initThuaDatSearch(map) {
@@ -22,10 +22,6 @@ function initThuaDatSearch(map) {
                 const sheetFilterExpr = ['==', ['get', 'Địa Chỉ Thửa Đất'], selectedPhuong];
                 if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
                 if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
-            } else if (selectedTinh) {
-                const showAllFilter = ['!=', '$type', 'Point'];
-                if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', showAllFilter);
-                if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', showAllFilter);
             } else {
                 if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', ['==', '$type', 'Point']);
                 if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', ['==', '$type', 'Point']);
@@ -33,7 +29,7 @@ function initThuaDatSearch(map) {
             return;
         }
 
-        // 2. Sử dụng đúng tên các trường tiếng Việt có dấu khớp với Google Sheet / GeoJSON của bạn
+        // 2. Lọc theo từ khóa với các trường tiếng Việt có dấu trong Google Sheet / GeoJSON
         const keywordFilter = [
             'any',
             ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'Tên Chủ']]]], 0],
@@ -44,7 +40,6 @@ function initThuaDatSearch(map) {
 
         let finalFilter = keywordFilter;
 
-        // 3. Nếu người dùng đã chọn Phường/Xã trước đó, kết hợp thêm điều kiện lọc Phường
         if (selectedPhuong) {
             finalFilter = [
                 'all',
@@ -53,7 +48,6 @@ function initThuaDatSearch(map) {
             ];
         }
 
-        // Áp dụng bộ lọc lên các lớp thửa đất trên bản đồ
         if (map.getLayer('sheet-thua-dat-fill')) {
             map.setFilter('sheet-thua-dat-fill', finalFilter);
         }
@@ -61,7 +55,7 @@ function initThuaDatSearch(map) {
             map.setFilter('sheet-thua-dat-line', finalFilter);
         }
 
-        // Tự động thu phóng đến khu vực có kết quả tìm thấy
+        // Tự động thu phóng đến khu vực tìm thấy kết quả
         setTimeout(() => {
             try {
                 const features = map.queryRenderedFeatures({ layers: ['sheet-thua-dat-fill'] });
@@ -70,10 +64,10 @@ function initThuaDatSearch(map) {
                     const bbox = turf.bbox(fc);
                     map.fitBounds(bbox, { padding: 50, maxZoom: 18 });
                 } else {
-                    alert("Không tìm thấy thửa đất phù hợp với từ khóa này!");
+                    alert("Không tìm thấy thửa đất phù hợp!");
                 }
             } catch (err) {
-                console.log("Lỗi zoom kết quả tìm kiếm:", err);
+                console.log("Lỗi zoom kết quả:", err);
             }
         }, 300);
     };
@@ -91,4 +85,3 @@ function initThuaDatSearch(map) {
         }
     });
 }
-```[cite: 8]
