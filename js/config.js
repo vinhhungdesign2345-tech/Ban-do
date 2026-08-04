@@ -8,6 +8,13 @@ const CONFIG = {
             file: "./geojson/Ca-Mau.geojson", /* Đường dẫn tệp chứa ranh giới bản đồ GeoJSON của tỉnh */
             center: [105.15, 9.18]         /* Tọa độ trung tâm mặc định [Kinh độ, Vĩ độ] khi chọn tỉnh này */
         }
+        // 🎯 THÊM TỈNH MỚI VƯỢT TRỘI VÀO ĐÂY:
+ { 
+ id: "AnGiang", /* Mã định danh riêng không trùng lặp */
+ name: "An Giang", /* Tên hiển thị trên dropdown giao diện */
+ file: "./geojson/An-Giang.geojson", /* Đường dẫn đến file GeoJSON ranh giới tỉnh mới */
+ center: [105.42, 10.37] /* Tọa độ trung tâm [Kinh độ, Vĩ độ] khi chọn tỉnh này */
+ }
     ],
 
     // Đường dẫn URL lấy dữ liệu trực tiếp từ nhánh main của GitHub (đã đổi sang dạng raw)
