@@ -1,6 +1,6 @@
 // js/map.js
 
-// 🎯 Hàm định dạng số chuẩn Việt Nam: 1.234,5
+// Định dạng số chuẩn Việt Nam: 1.234,5
 function formatNumberVN(val) {
     // Kiểm tra nếu giá trị trống hoặc dấu gạch ngang thì trả về nguyên bản dấu '-'
     if (val === null || val === undefined || val === '' || val === '-') return '-';
@@ -117,7 +117,7 @@ function initMap() {
         map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = 'default');
     });
 
-    // 🔴 SỰ KIỆN CLICK VÙNG TRỐNG TRÊN BẢN ĐỒ (Xử lý khi bấm ngoài thửa đất)
+    // SỰ KIỆN CLICK VÙNG TRỐNG TRÊN BẢN ĐỒ (Xử lý khi bấm ngoài thửa đất)
     map.on('click', (e) => {
         if (!isFeatureClicked) {
             closeParcelPanel(); // Nếu không bấm trúng thửa đất thì ẩn bảng thông tin đi và reset highlight
