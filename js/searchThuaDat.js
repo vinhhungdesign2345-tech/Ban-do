@@ -115,7 +115,7 @@ function initThuaDatSearch(map) {
                     map.fitBounds(bbox, { padding: 60, maxZoom: 18 });
 
                     // Bật bảng thông báo số lượng thửa đất tìm được ra màn hình
-                    alert(`Đã tìm được ${matchedFeaturesList.length} thửa đất phù hợp với từ khóa "${rawKeyword}"!`);
+                    alert(`Tìm thấy ${matchedFeaturesList.length} kết quả với từ khóa "${rawKeyword}"!`);
                 } else {
                     // Nếu không có kết quả khớp, báo không tìm thấy
                     alert("Không tìm thấy kết quả phù hợp với từ khóa: " + rawKeyword);
