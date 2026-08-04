@@ -1,14 +1,11 @@
 // js/searchThuaDat.js
 
-/**
- * Hàm khởi tạo ô tìm kiếm thửa đất (Hỗ trợ tìm theo tên chủ, số định danh, số tờ, số thửa)
- * @param {Object} map - Instance bản đồ MapLibre
- */
 function initThuaDatSearch(map) {
     const searchInput = document.getElementById('searchThuaDatInput');
     if (!searchInput) return;
 
     const performSearch = () => {
+        // Chuyển toàn bộ từ khóa người dùng nhập sang chữ thường để so sánh không phân biệt hoa/thường
         const keyword = searchInput.value.trim().toLowerCase();
         
         const tinhSelect = document.getElementById('tinhFilter');
@@ -29,7 +26,7 @@ function initThuaDatSearch(map) {
             return;
         }
 
-        // 2. Lọc theo từ khóa với các trường tiếng Việt có dấu trong Google Sheet / GeoJSON
+        // 2. Lọc không phân biệt chữ hoa/thường cho các trường thông tin
         const keywordFilter = [
             'any',
             ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'Tên Chủ']]]], 0],
