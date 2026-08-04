@@ -8,7 +8,6 @@ function initThuaDatSearch(map) {
     const searchInput = document.getElementById('searchThuaDatInput');
     if (!searchInput) return;
 
-    // Hàm thực hiện logic tìm kiếm và lọc bản đồ
     const performSearch = () => {
         const keyword = searchInput.value.trim().toLowerCase();
         
@@ -28,27 +27,19 @@ function initThuaDatSearch(map) {
                 if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', showAllFilter);
                 if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', showAllFilter);
             } else {
-                // Chưa chọn gì và xóa ô tìm kiếm -> ẩn lớp thửa đất
                 if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', ['==', '$type', 'Point']);
                 if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', ['==', '$type', 'Point']);
             }
             return;
         }
 
-        // 2. Tạo biểu thức lọc chính xác cho MapLibre
-        // Lưu ý: Các tên trường ('Ten', 'MaDinhDanh', 'SoTo', 'SoThua') phải khớp với tên thuộc tính trong dữ liệu của bạn.
-        // Nếu tên cột trong dữ liệu tiếng Việt có dấu (ví dụ: 'Tên Chủ', 'Số Thửa'), hãy thay thế chính xác vào bên dưới.
+        // 2. Sử dụng đúng tên các trường tiếng Việt có dấu khớp với Google Sheet / GeoJSON của bạn
         const keywordFilter = [
             'any',
-            ['==', ['downcase', ['to-string', ['get', 'Ten']]], keyword],
-            ['==', ['downcase', ['to-string', ['get', 'MaDinhDanh']]], keyword],
-            ['==', ['downcase', ['to-string', ['get', 'SoTo']]], keyword],
-            ['==', ['downcase', ['to-string', ['get', 'SoThua']]] , keyword],
-            // Hỗ trợ tìm kiếm chứa từ khóa (substring) nếu cần thiết qua biểu thức so sánh chuỗi
-            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'Ten']]]], 0],
-            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'MaDinhDanh']]]], 0],
-            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'SoTo']]]], 0],
-            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'SoThua']]]], 0]
+            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'Tên Chủ']]]], 0],
+            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'Số định danh chủ đất']]]], 0],
+            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'Số tờ']]]], 0],
+            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'Số thửa']]]], 0]
         ];
 
         let finalFilter = keywordFilter;
@@ -84,10 +75,9 @@ function initThuaDatSearch(map) {
             } catch (err) {
                 console.log("Lỗi zoom kết quả tìm kiếm:", err);
             }
-        }, 300); // Đợi một nhịp ngắn để MapLibre cập nhật xong bộ lọc layer
+        }, 300);
     };
 
-    // Lắng nghe sự kiện nhấn phím Enter trên ô input
     searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -95,10 +85,10 @@ function initThuaDatSearch(map) {
         }
     });
 
-    // Hỗ trợ xóa trắng ô input thì tự động reset bản đồ
     searchInput.addEventListener('input', (e) => {
         if (e.target.value.trim() === '') {
             performSearch();
         }
     });
 }
+```[cite: 8]
