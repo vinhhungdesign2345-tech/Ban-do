@@ -1,7 +1,7 @@
 // js/searchThuaDat.js
 
 /**
- * Hàm khởi tạo ô tìm kiếm thửa đất (Hỗ trợ tìm kiếm không phân biệt chữ hoa/thường, không phân biệt dấu tiếng Việt)
+ * Hàm khởi tạo ô tìm kiếm thửa đất toàn cục (Không bắt buộc chọn tỉnh/phường trước)
  * @param {Object} map - Instance bản đồ MapLibre
  */
 function initThuaDatSearch(map) {
@@ -23,12 +23,10 @@ function initThuaDatSearch(map) {
         const rawKeyword = searchInput.value.trim();
         const keyword = removeAccentsAndLower(rawKeyword);
         
-        const tinhSelect = document.getElementById('tinhFilter');
         const phuongSelect = document.getElementById('phuongFilter');
-        const selectedTinh = tinhSelect ? tinhSelect.value : '';
         const selectedPhuong = phuongSelect ? phuongSelect.value : '';
 
-        // 1. Nếu ô tìm kiếm trống, khôi phục lại trạng thái hiển thị theo bộ lọc hành chính
+        // 1. Nếu ô tìm kiếm trống, khôi phục lại trạng thái hiển thị theo bộ lọc hành chính (nếu có)
         if (!keyword) {
             if (selectedPhuong) {
                 const sheetFilterExpr = ['==', ['get', 'Địa Chỉ Thửa Đất'], selectedPhuong];
@@ -41,17 +39,10 @@ function initThuaDatSearch(map) {
             return;
         }
 
-        // Lấy toàn bộ các features (đối tượng thửa đất) đang có trên bản đồ nguồn
-        const allFeaturesSource = map.querySourceFeatures('sheet-thua-dat-source'); // Đảm bảo tên source trùng khớp với config của bạn
-        
-        // Nếu không query trực tiếp được từ source, fallback dùng queryRenderedFeatures
+        // Lấy tất cả các đối tượng thửa đất đang hiển thị trên bản đồ để quét dữ liệu
         let features = map.queryRenderedFeatures({ layers: ['sheet-thua-dat-fill'] });
         
-        // Lọc toàn diện toàn bộ kho dữ liệu theo từ khóa (Không phân biệt hoa thường, không phân biệt dấu)
-        // Tìm kiếm trên các trường: Tên Chủ, Số định danh chủ đất, Số tờ, Số thửa, Ghi chú
         const matchedIds = [];
-        
-        // Duyệt qua tất cả các features có sẵn trong layer hoặc source
         const targetFeatures = (features && features.length > 0) ? features : [];
         
         targetFeatures.forEach(f => {
@@ -63,7 +54,7 @@ function initThuaDatSearch(map) {
             const ghiChu = removeAccentsAndLower(props['Ghi Chú'] || props['Ghi chú'] || '');
             const diaChi = props['Địa Chỉ Thửa Đất'] || '';
 
-            // Kiểm tra nếu từ khóa khớp với bất kỳ trường thông tin nào
+            // Kiểm tra khớp từ khóa trên các trường thông tin
             const isMatch = 
                 tenChu.includes(keyword) || 
                 soDinhDanh.includes(keyword) || 
@@ -71,7 +62,7 @@ function initThuaDatSearch(map) {
                 soThua.includes(keyword) || 
                 ghiChu.includes(keyword);
 
-            // Nếu có chọn kèm phường xã thì lọc thêm điều kiện phường xã
+            // Nếu người dùng có chọn thêm phường/xã thì mới lọc kết hợp, còn không thì tìm trên toàn cục
             const matchPhuong = selectedPhuong ? (diaChi === selectedPhuong) : true;
 
             if (isMatch && matchPhuong) {
@@ -82,13 +73,11 @@ function initThuaDatSearch(map) {
             }
         });
 
-        // 2. Tạo biểu thức bộ lọc (Filter expression) áp dụng lên MapLibre Layer
+        // 2. Tạo biểu thức lọc áp dụng lên MapLibre Layer
         let finalFilter;
-        if (matchedIds.length >  0) {
-            // Lọc ra tất cả các thửa đất có ID nằm trong danh sách tìm thấy để hiện lên bản đồ
+        if (matchedIds.length > 0) {
             finalFilter = ['in', ['get', 'ID Thửa Đất'], ['literal', matchedIds]];
         } else {
-            // Nếu không tìm thấy kết quả nào, gán điều kiện rỗng để ẩn hết bản đồ tránh hiển thị sai
             finalFilter = ['==', ['get', 'ID Thửa Đất'], '___no_match___'];
         }
 
@@ -99,7 +88,7 @@ function initThuaDatSearch(map) {
             map.setFilter('sheet-thua-dat-line', finalFilter);
         }
 
-        // 3. Tự động thu phóng màn hình đến trọn vẹn khu vực các kết quả tìm thấy
+        // 3. Tự động thu phóng màn hình đến khu vực kết quả tìm thấy
         setTimeout(() => {
             try {
                 const renderedMatched = map.queryRenderedFeatures({ layers: ['sheet-thua-dat-fill'] });
@@ -116,7 +105,7 @@ function initThuaDatSearch(map) {
         }, 300);
     };
 
-    // Bắt sự kiện bấm phím Enter trên ô input tìm kiếm
+    // Bắt sự kiện nhấn Enter trên ô tìm kiếm
     searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -124,7 +113,7 @@ function initThuaDatSearch(map) {
         }
     });
 
-    // Tự động khôi phục bản đồ nếu người dùng xóa trắng ô input
+    // Tự động reset bản đồ khi xóa trắng ô input
     searchInput.addEventListener('input', (e) => {
         if (e.target.value.trim() === '') {
             performSearch();
