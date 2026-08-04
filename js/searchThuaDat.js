@@ -1,7 +1,7 @@
 // js/searchThuaDat.js
 
 /**
- * Hàm khởi tạo ô tìm kiếm thửa đất toàn cục (Không bắt buộc chọn tỉnh/phường trước)
+ * Hàm khởi tạo ô tìm kiếm thửa đất toàn cục, quét trực tiếp từ nguồn dữ liệu bản đồ
  * @param {Object} map - Instance bản đồ MapLibre
  */
 function initThuaDatSearch(map) {
@@ -26,7 +26,7 @@ function initThuaDatSearch(map) {
         const phuongSelect = document.getElementById('phuongFilter');
         const selectedPhuong = phuongSelect ? phuongSelect.value : '';
 
-        // 1. Nếu ô tìm kiếm trống, khôi phục lại trạng thái hiển thị theo bộ lọc hành chính (nếu có)
+        // 1. Nếu ô tìm kiếm trống, khôi phục lại trạng thái hiển thị mặc định
         if (!keyword) {
             if (selectedPhuong) {
                 const sheetFilterExpr = ['==', ['get', 'Địa Chỉ Thửa Đất'], selectedPhuong];
@@ -39,13 +39,17 @@ function initThuaDatSearch(map) {
             return;
         }
 
-        // Lấy tất cả các đối tượng thửa đất đang hiển thị trên bản đồ để quét dữ liệu
-        let features = map.queryRenderedFeatures({ layers: ['sheet-thua-dat-fill'] });
-        
+        // 2. Lấy toàn bộ dữ liệu từ nguồn (source) của bản đồ thay vì chỉ lấy các vùng đang render trên màn hình
+        const source = map.getSource('sheet-thua-dat-source');
+        if (!source || !source._data || !source._data.features) {
+            alert("Dữ liệu bản đồ chưa sẵn sàng, vui lòng thử lại sau giây lát!");
+            return;
+        }
+
+        const allFeatures = source._data.features;
         const matchedIds = [];
-        const targetFeatures = (features && features.length > 0) ? features : [];
-        
-        targetFeatures.forEach(f => {
+
+        allFeatures.forEach(f => {
             const props = f.properties || {};
             const tenChu = removeAccentsAndLower(props['Tên Chủ'] || props['Tên chủ'] || '');
             const soDinhDanh = removeAccentsAndLower(props['Số định danh chủ đất'] || props['Số định danh'] || '');
@@ -54,7 +58,7 @@ function initThuaDatSearch(map) {
             const ghiChu = removeAccentsAndLower(props['Ghi Chú'] || props['Ghi chú'] || '');
             const diaChi = props['Địa Chỉ Thửa Đất'] || '';
 
-            // Kiểm tra khớp từ khóa trên các trường thông tin
+            // Kiểm tra khớp từ khóa
             const isMatch = 
                 tenChu.includes(keyword) || 
                 soDinhDanh.includes(keyword) || 
@@ -62,7 +66,6 @@ function initThuaDatSearch(map) {
                 soThua.includes(keyword) || 
                 ghiChu.includes(keyword);
 
-            // Nếu người dùng có chọn thêm phường/xã thì mới lọc kết hợp, còn không thì tìm trên toàn cục
             const matchPhuong = selectedPhuong ? (diaChi === selectedPhuong) : true;
 
             if (isMatch && matchPhuong) {
@@ -73,7 +76,7 @@ function initThuaDatSearch(map) {
             }
         });
 
-        // 2. Tạo biểu thức lọc áp dụng lên MapLibre Layer
+        // 3. Thiết lập bộ lọc hiển thị lên bản đồ dựa trên danh sách ID tìm thấy
         let finalFilter;
         if (matchedIds.length > 0) {
             finalFilter = ['in', ['get', 'ID Thửa Đất'], ['literal', matchedIds]];
@@ -88,12 +91,17 @@ function initThuaDatSearch(map) {
             map.setFilter('sheet-thua-dat-line', finalFilter);
         }
 
-        // 3. Tự động thu phóng màn hình đến khu vực kết quả tìm thấy
+        // 4. Tự động zoom đến khu vực kết quả tìm thấy thông qua Turf.js
         setTimeout(() => {
             try {
-                const renderedMatched = map.queryRenderedFeatures({ layers: ['sheet-thua-dat-fill'] });
-                if (renderedMatched && renderedMatched.length > 0) {
-                    const fc = turf.featureCollection(renderedMatched);
+                // Lọc lấy các feature khớp từ nguồn để tạo bounding box chính xác
+                const matchedFeaturesList = allFeatures.filter(f => {
+                    const id = f.properties['ID Thửa Đất'] || f.properties['id'] || f.properties['Tên Chủ'];
+                    return matchedIds.includes(id);
+                });
+
+                if (matchedFeaturesList.length > 0) {
+                    const fc = turf.featureCollection(matchedFeaturesList);
                     const bbox = turf.bbox(fc);
                     map.fitBounds(bbox, { padding: 60, maxZoom: 18 });
                 } else {
@@ -105,7 +113,7 @@ function initThuaDatSearch(map) {
         }, 300);
     };
 
-    // Bắt sự kiện nhấn Enter trên ô tìm kiếm
+    // Bắt sự kiện nhấn Enter
     searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -113,7 +121,7 @@ function initThuaDatSearch(map) {
         }
     });
 
-    // Tự động reset bản đồ khi xóa trắng ô input
+    // Reset khi xóa trắng ô input
     searchInput.addEventListener('input', (e) => {
         if (e.target.value.trim() === '') {
             performSearch();
