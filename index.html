@@ -15,9 +15,14 @@
 </head>
 <body>
 
-   <!-- Khung chứa các điều khiển bộ lọc (Dropdown chọn Tỉnh và Xã) đặt nổi trên bản đồ -->
+   <!-- Khung chứa các điều khiển bộ lọc và tìm kiếm đặt nổi trên bản đồ -->
    <div class="map-control">
      <div class="filter-row">
+         <!-- Ô tìm kiếm thửa đất theo tên, mã định danh, số tờ hoặc số thửa -->
+         <div class="filter-item" style="width: 100%;">
+             <input type="text" id="searchThuaDatInput" placeholder="Tìm theo tên, mã ĐD, tờ/thửa..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+         </div>
+
          <!-- Dropdown 1: Lựa chọn Tỉnh / Thành phố -->
          <div class="filter-item">
              <select id="tinhFilter">
@@ -54,6 +59,7 @@
     <script src="js/api.js"></script>      <!-- Chứa hàm gọi API / tải dữ liệu GeoJSON -->
     <script src="js/sheet.js"></script>    <!-- Chứa hàm tải dữ liệu thửa đất từ Google Sheets và quản lý ẩn hiện lớp -->
     <script src="js/province.js"></script> <!-- Chứa logic xử lý chọn tỉnh/xã, lọc không gian bằng TurfJS -->
+    <script src="js/searchThuaDat.js"></script> <!-- Chứa logic tìm kiếm thửa đất theo tên, mã ĐD, tờ/thửa -->
     <script src="js/map.js"></script>      <!-- Khởi tạo bản đồ MapLibre, gán sự kiện click thửa đất và click vùng trống -->
 </body>
 </html>
