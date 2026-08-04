@@ -1,7 +1,7 @@
 // js/searchThuaDat.js
 
 /**
- * Hàm khởi tạo ô tìm kiếm thửa đất toàn cục, quét trực tiếp từ nguồn dữ liệu bản đồ
+ * Hàm khởi tạo ô tìm kiếm thửa đất toàn cục, tương thích với mọi tên source bản đồ
  * @param {Object} map - Instance bản đồ MapLibre
  */
 function initThuaDatSearch(map) {
@@ -26,7 +26,7 @@ function initThuaDatSearch(map) {
         const phuongSelect = document.getElementById('phuongFilter');
         const selectedPhuong = phuongSelect ? phuongSelect.value : '';
 
-        // 1. Nếu ô tìm kiếm trống, khôi phục lại trạng thái hiển thị mặc định
+        // 1. Nếu ô tìm kiếm trống, khôi phục lại trạng thái hiển thị ban đầu
         if (!keyword) {
             if (selectedPhuong) {
                 const sheetFilterExpr = ['==', ['get', 'Địa Chỉ Thửa Đất'], selectedPhuong];
@@ -39,14 +39,31 @@ function initThuaDatSearch(map) {
             return;
         }
 
-        // 2. Lấy toàn bộ dữ liệu từ nguồn (source) của bản đồ thay vì chỉ lấy các vùng đang render trên màn hình
-        const source = map.getSource('sheet-thua-dat-source');
-        if (!source || !source._data || !source._data.features) {
-            alert("Dữ liệu bản đồ chưa sẵn sàng, vui lòng thử lại sau giây lát!");
+        // 2. Thu thập toàn bộ dữ liệu thửa đất (Quét linh hoạt từ source hoặc các layer đang có)
+        let allFeatures = [];
+        
+        // Thử lấy danh sách source đang có trên bản đồ
+        const style = map.getStyle();
+        if (style && style.sources) {
+            for (const sourceId in style.sources) {
+                const src = map.getSource(sourceId);
+                if (src && src._data && src._data.features) {
+                    allFeatures = allFeatures.concat(src._data.features);
+                }
+            }
+        }
+
+        // Nếu quét qua source chưa lấy được, lấy từ rendered features trên màn hình
+        if (allFeatures.length === 0) {
+            const rendered = map.queryRenderedFeatures({ layers: ['sheet-thua-dat-fill'] });
+            if (rendered) allFeatures = rendered;
+        }
+
+        if (allFeatures.length === 0) {
+            alert("Dữ liệu bản đồ đang được tải, vui lòng phóng to/thu nhỏ bản đồ một chút rồi thử tìm kiếm lại!");
             return;
         }
 
-        const allFeatures = source._data.features;
         const matchedIds = [];
 
         allFeatures.forEach(f => {
@@ -58,7 +75,7 @@ function initThuaDatSearch(map) {
             const ghiChu = removeAccentsAndLower(props['Ghi Chú'] || props['Ghi chú'] || '');
             const diaChi = props['Địa Chỉ Thửa Đất'] || '';
 
-            // Kiểm tra khớp từ khóa
+            // Kiểm tra khớp từ khóa (không phân biệt hoa thường, không phân biệt dấu)
             const isMatch = 
                 tenChu.includes(keyword) || 
                 soDinhDanh.includes(keyword) || 
@@ -66,6 +83,7 @@ function initThuaDatSearch(map) {
                 soThua.includes(keyword) || 
                 ghiChu.includes(keyword);
 
+            // Nếu có chọn phường xã thì lọc kèm phường xã, không thì tìm toàn cục
             const matchPhuong = selectedPhuong ? (diaChi === selectedPhuong) : true;
 
             if (isMatch && matchPhuong) {
@@ -76,7 +94,7 @@ function initThuaDatSearch(map) {
             }
         });
 
-        // 3. Thiết lập bộ lọc hiển thị lên bản đồ dựa trên danh sách ID tìm thấy
+        // 3. Đặt bộ lọc hiển thị kết quả lên bản đồ
         let finalFilter;
         if (matchedIds.length > 0) {
             finalFilter = ['in', ['get', 'ID Thửa Đất'], ['literal', matchedIds]];
@@ -91,10 +109,9 @@ function initThuaDatSearch(map) {
             map.setFilter('sheet-thua-dat-line', finalFilter);
         }
 
-        // 4. Tự động zoom đến khu vực kết quả tìm thấy thông qua Turf.js
+        // 4. Tự động zoom đến khu vực kết quả tìm thấy
         setTimeout(() => {
             try {
-                // Lọc lấy các feature khớp từ nguồn để tạo bounding box chính xác
                 const matchedFeaturesList = allFeatures.filter(f => {
                     const id = f.properties['ID Thửa Đất'] || f.properties['id'] || f.properties['Tên Chủ'];
                     return matchedIds.includes(id);
