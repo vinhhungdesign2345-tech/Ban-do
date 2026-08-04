@@ -12,7 +12,7 @@ const CONFIG = {
   
     ],
 
-    // Đường dẫn URL lấy dữ liệu trực tiếp từ nhánh main của GitHub (đã đổi sang dạng raw)
+    // Cập nhật đường dẫn Web URL của Sheet tại đây
     SHEET_DATA_URL: 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec',
 
     // Cấu hình giao diện nền bản đồ vệ tinh sử dụng nguồn tile trực tiếp từ Google Maps
@@ -28,10 +28,10 @@ const CONFIG = {
         'layers': [
             {
                 'id': 'google-satellite-layer', /* ID định danh lớp hiển thị bản đồ vệ tinh */
-                'type': 'raster',              /* Kiểu hiển thị là dạng ảnh raster */
+                'type': 'raster',               /* Kiểu hiển thị là dạng ảnh raster */
                 'source': 'google-satellite',   /* Liên kết trực tiếp đến nguồn 'google-satellite' đã định nghĩa phía trên */
-                'minzoom': 0,                  /* Mức thu nhỏ tối đa cho phép hiển thị */
-                'maxzoom': 22                  /* Mức phóng to chi tiết tối đa cho phép hiển thị */
+                'minzoom': 0,                   /* Mức thu nhỏ tối đa cho phép hiển thị */
+                'maxzoom': 22                   /* Mức phóng to chi tiết tối đa cho phép hiển thị */
             }
         ]
     },
