@@ -1,20 +1,15 @@
 // js/config.js
 const CONFIG = {
-    // Danh sách Tỉnh/Thành phố được hỗ trợ hiển thị trên bản đồ
+    // THÊM TỈNH TẠI ĐÂY
     PROVINCES: [
-        { 
- id: "CaMau",                         /* Mã định danh riêng của tỉnh */
- name: " Tỉnh Cà Mau",                /* Tên hiển thị trên dropdown giao diện */
- file: "./geojson/Ca-Mau.geojson",    /* Đường dẫn tệp chứa ranh giới bản đồ GeoJSON của tỉnh */
- center: [105.15, 9.18]               /* Tọa độ trung tâm mặc định [Kinh độ, Vĩ độ] khi chọn tỉnh này */
-        }
-    // 🎯 THÊM TỈNH MỚI VÀO ĐÂY:
- { 
- id: "AnGiang",                      /* Mã định danh riêng không trùng lặp */
- name: "Tỉnh An Giang",              /* Tên hiển thị trên dropdown giao diện */
- file: "./geojson/An-Giang.geojson", /* Đường dẫn đến file GeoJSON ranh giới tỉnh mới */
- center: [105.42, 10.37] /* Tọa độ trung tâm [Kinh độ, Vĩ độ] khi chọn tỉnh này */
- }
+        { id: "AnGiang", name: "Tỉnh An Giang", file: "./geojson/An-Giang.json" },
+        { id: "BacNinh", name: "Tỉnh Bắc Ninh", file: "./geojson/Bac-Ninh.json" },
+        { id: "CaMau", name: "Tỉnh Cà Mau", file: "./geojson/Ca-Mau.json" },
+        { id: "CaoBang", name: "Tỉnh Cao Bằng", file: "./geojson/Cao-Bang.json" },
+        { id: "DakLak", name: "Tỉnh Dak Lak", file: "./geojson/Dak-Lak.json" },
+        
+        
+  
     ],
 
     // Đường dẫn URL lấy dữ liệu trực tiếp từ nhánh main của GitHub (đã đổi sang dạng raw)
