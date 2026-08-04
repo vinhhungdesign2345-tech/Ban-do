@@ -108,76 +108,83 @@ async function selectPhuongFromPoint(lng, lat, map) {
  * 2. HÀM TẢI DỮ LIỆU RANH GIỚI TỈNH KHI CHỌN TỪ DROPDOWN
  */
 async function loadProvinceData(provinceId, map) {
-    const phuongSelect = document.getElementById('phuongFilter');
-    phuongSelect.innerHTML = '<option value="">-- Phường / Xã --</option>'; // Đặt lại giá trị mặc định cho dropdown phường/xã
+ const phuongSelect = document.getElementById('phuongFilter');
+ phuongSelect.innerHTML = '<option value="">-- Phường / Xã --</option>'; // Đặt lại giá trị mặc định cho dropdown phường/xã
 
-    hideThuaDat(map); // Ẩn các lớp dữ liệu thửa đất cũ đi
+ hideThuaDat(map); // Ẩn các lớp dữ liệu thửa đất cũ đi
 
-    if (!provinceId) {
-        phuongSelect.disabled = true; // Vô hiệu hóa dropdown phường nếu chưa chọn tỉnh
-        currentGeoData = null;
-        return;
-    }
+ if (!provinceId) {
+ phuongSelect.disabled = true; // Vô hiệu hóa dropdown phường nếu chưa chọn tỉnh
+ currentGeoData = null;
+ return;
+ }
 
-    const provinceInfo = CONFIG.PROVINCES.find(p => p.id === provinceId);
-    if (!provinceInfo) return;
+ const provinceInfo = CONFIG.PROVINCES.find(p => p.id === provinceId);
+ if (!provinceInfo) return;
 
-    const geoData = await fetchGeoDataByUrl(provinceInfo.file); // Tải file GeoJSON ranh giới tỉnh theo đường dẫn cấu hình
-    if (!geoData || !geoData.features) {
-        alert("Chưa tải được file GeoJSON!");
-        return;
-    }
+ const geoData = await fetchGeoDataByUrl(provinceInfo.file); // Tải file GeoJSON ranh giới tỉnh theo đường dẫn cấu hình
+ if (!geoData || !geoData.features) {
+ alert("Chưa tải được file GeoJSON!");
+ return;
+ }
 
-    currentGeoData = geoData; // Lưu trữ dữ liệu GeoJSON vừa tải vào biến toàn cục
-    const phuongSet = new Set(); // Sử dụng Set để lọc danh sách tên phường/xã không bị trùng lặp
+ currentGeoData = geoData; // Lưu trữ dữ liệu GeoJSON vừa tải vào biến toàn cục
+ const phuongSet = new Set(); // Sử dụng Set để lọc danh sách tên phường/xã không bị trùng lặp
 
-    // Lọc qua từng đối tượng trong file GeoJSON để thu thập tên các phường/xã
-    geoData.features.forEach(f => {
-        const p = f.properties || {};
-        const val = p.name || p.dia_chi || p.Phuong || p.Quan || p.Xa || p.NAME_2 || p.NAME_3;
-        if (val) phuongSet.add(String(val).trim());
-    });
+ // Lọc qua từng đối tượng trong file GeoJSON để thu thập tên các phường/xã
+ geoData.features.forEach(f => {
+ const p = f.properties || {};
+ const val = p.name || p.dia_chi || p.Phuong || p.Quan || p.Xa || p.NAME_2 || p.NAME_3;
+ if (val) phuongSet.add(String(val).trim());
+ });
 
-    // Thêm nguồn dữ liệu (source) và các lớp hiển thị (layers) ranh giới tỉnh vào bản đồ MapLibre
-    if (map.getSource('thua-dat-src')) {
-        map.getSource('thua-dat-src').setData(geoData);
-    } else {
-        map.addSource('thua-dat-src', { type: 'geojson', data: geoData });
+ // Thêm nguồn dữ liệu (source) và các lớp hiển thị (layers) ranh giới tỉnh vào bản đồ MapLibre
+ if (map.getSource('thua-dat-src')) {
+ map.getSource('thua-dat-src').setData(geoData);
+ } else {
+ map.addSource('thua-dat-src', { type: 'geojson', data: geoData });
 
-        // Lớp tô màu nền ranh giới (mặc định để trong suốt opacity = 0)
-        map.addLayer({
-            'id': 'thua-dat-layer',
-            'type': 'fill',
-            'source': 'thua-dat-src',
-            'paint': { 'fill-color': '#000000', 'fill-opacity': 0 },
-            'filter': ['==', '$type', 'Point']
-        });
+ // Lớp tô màu nền ranh giới (mặc định để trong suốt opacity = 0)
+ map.addLayer({
+ 'id': 'thua-dat-layer',
+ 'type': 'fill',
+ 'source': 'thua-dat-src',
+ 'paint': { 'fill-color': '#000000', 'fill-opacity': 0 }
+ });
 
-        // Lớp hiển thị đường viền ranh giới (màu đỏ)
-        map.addLayer({
-            'id': 'thua-dat-line-layer',
-            'type': 'line',
-            'source': 'thua-dat-src',
-            'paint': { 'line-color': '#ff0000', 'line-width': 2 },
-            'filter': ['==', '$type', 'Point']
-        });
-    }
+ // Lớp hiển thị đường viền ranh giới (màu đỏ)
+ map.addLayer({
+ 'id': 'thua-dat-line-layer',
+ 'type': 'line',
+ 'source': 'thua-dat-src',
+ 'paint': { 'line-color': '#ff0000', 'line-width': 2 }
+ });
+ }
 
-    // Thiết lập bộ lọc hiển thị toàn bộ ranh giới của tỉnh vừa chọn lên bản đồ
-    const showAllProvinceFilter = ['!=', '$type', 'Point']; 
-    if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
-    if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
+ // 🎯 SỬA Ở ĐÂY: Thiết lập bộ lọc hiển thị toàn bộ ranh giới của tỉnh (loại bỏ đi các điểm Point ẩn không cần thiết)
+ const showAllProvinceFilter = ['!=', '$type', 'Point']; 
+ if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', showAllProvinceFilter);
+ if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', showAllProvinceFilter);
 
-    phuongSelect.disabled = false; // Kích hoạt lại ô chọn phường/xã
-    // Sắp xếp thứ tự tên phường/xã theo bảng chữ cái và đưa vào thẻ select dưới dạng các option
-    Array.from(phuongSet).sort().forEach(pName => {
-        const opt = document.createElement('option');
-        opt.value = pName;
-        opt.textContent = pName;
-        phuongSelect.appendChild(opt);
-    });
+ // 🎯 TỰ ĐỘNG ZOOM TOÀN BỘ TỈNH VỪA CHỌN BẰNG TURF.JS
+ try {
+ const bbox = turf.bbox(geoData);
+ map.fitBounds(bbox, { padding: 50, maxZoom: 15 });
+ } catch (err) {
+ console.error("Lỗi tự động zoom khung tỉnh:", err);
+ }
 
-    await loadThuaDatFromSheet(map); // Gọi hàm tải dữ liệu thửa đất từ Google Sheets lên bản đồ
+ phuongSelect.disabled = false; // Kích hoạt lại ô chọn phường/xã
+ 
+ // Sắp xếp thứ tự tên phường/xã theo bảng chữ cái và đưa vào thẻ select dưới dạng các option
+ Array.from(phuongSet).sort().forEach(pName => {
+ const opt = document.createElement('option');
+ opt.value = pName;
+ opt.textContent = pName;
+ phuongSelect.appendChild(opt);
+ });
+
+ await loadThuaDatFromSheet(map); // Gọi hàm tải dữ liệu thửa đất từ Google Sheets lên bản đồ
 }
 
 /**
