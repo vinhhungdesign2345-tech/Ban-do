@@ -1,6 +1,6 @@
 // js/province.js
 
-// Biến toàn cục lưu trữ dữ liệu ranh giới GeoJSON của tỉnh đang được chọn hiện tại
+// Biến toàn cục lưu trữ dữ liệu ranh giới GeoJSON của tỉnh đang được chọn
 let currentGeoData = null;
 
 /**
