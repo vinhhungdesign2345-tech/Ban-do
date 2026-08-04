@@ -1,7 +1,7 @@
 // js/searchThuaDat.js
 
 /**
- * Hàm khởi tạo ô tìm kiếm thửa đất (Hỗ trợ tìm toàn quốc hoặc theo tỉnh/phường, bấm Enter hoặc gõ đều chạy)
+ * Hàm khởi tạo ô tìm kiếm thửa đất (Hỗ trợ tìm toàn quốc hoặc theo tỉnh/phường khi nhấn Enter)
  * @param {Object} map - Instance bản đồ MapLibre
  */
 function initThuaDatSearch(map) {
@@ -17,7 +17,7 @@ function initThuaDatSearch(map) {
         const selectedTinh = tinhSelect ? tinhSelect.value : '';
         const selectedPhuong = phuongSelect ? phuongSelect.value : '';
 
-        // 1. Nếu ô tìm kiếm trống
+        // 1. Nếu ô tìm kiếm trống, khôi phục lại trạng thái hiển thị theo bộ lọc hành chính
         if (!keyword) {
             if (selectedPhuong) {
                 const sheetFilterExpr = ['==', ['get', 'Địa Chỉ Thửa Đất'], selectedPhuong];
@@ -28,25 +28,32 @@ function initThuaDatSearch(map) {
                 if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', showAllFilter);
                 if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', showAllFilter);
             } else {
+                // Chưa chọn gì và xóa ô tìm kiếm -> ẩn lớp thửa đất
                 if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', ['==', '$type', 'Point']);
                 if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', ['==', '$type', 'Point']);
             }
             return;
         }
 
-        // 2. Tạo điều kiện lọc theo từ khóa (Tìm theo Tên, Mã định danh, Số tờ, Số thửa)
-        // Lưu ý: Thay đổi tên trường ('Ten', 'MaDinhDanh', 'SoTo', 'SoThua') cho khớp với cột dữ liệu của bạn
+        // 2. Tạo biểu thức lọc chính xác cho MapLibre
+        // Lưu ý: Các tên trường ('Ten', 'MaDinhDanh', 'SoTo', 'SoThua') phải khớp với tên thuộc tính trong dữ liệu của bạn.
+        // Nếu tên cột trong dữ liệu tiếng Việt có dấu (ví dụ: 'Tên Chủ', 'Số Thửa'), hãy thay thế chính xác vào bên dưới.
         const keywordFilter = [
             'any',
-            ['==', ['index-of', keyword, ['downcase', ['to-string', ['get', 'Ten']]]], true],
-            ['==', ['index-of', keyword, ['downcase', ['to-string', ['get', 'MaDinhDanh']]]], true],
-            ['==', ['index-of', keyword, ['downcase', ['to-string', ['get', 'SoTo']]]], true],
-            ['==', ['index-of', keyword, ['downcase', ['to-string', ['get', 'SoThua']]]], true]
+            ['==', ['downcase', ['to-string', ['get', 'Ten']]], keyword],
+            ['==', ['downcase', ['to-string', ['get', 'MaDinhDanh']]], keyword],
+            ['==', ['downcase', ['to-string', ['get', 'SoTo']]], keyword],
+            ['==', ['downcase', ['to-string', ['get', 'SoThua']]] , keyword],
+            // Hỗ trợ tìm kiếm chứa từ khóa (substring) nếu cần thiết qua biểu thức so sánh chuỗi
+            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'Ten']]]], 0],
+            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'MaDinhDanh']]]], 0],
+            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'SoTo']]]], 0],
+            ['>=', ['index-of', keyword, ['downcase', ['to-string', ['get', 'SoThua']]]], 0]
         ];
 
         let finalFilter = keywordFilter;
 
-        // 3. Kết hợp điều kiện phạm vi địa lý nếu người dùng đã chọn Tỉnh hoặc Phường
+        // 3. Nếu người dùng đã chọn Phường/Xã trước đó, kết hợp thêm điều kiện lọc Phường
         if (selectedPhuong) {
             finalFilter = [
                 'all',
@@ -55,7 +62,7 @@ function initThuaDatSearch(map) {
             ];
         }
 
-        // Áp dụng bộ lọc hoàn chỉnh lên bản đồ
+        // Áp dụng bộ lọc lên các lớp thửa đất trên bản đồ
         if (map.getLayer('sheet-thua-dat-fill')) {
             map.setFilter('sheet-thua-dat-fill', finalFilter);
         }
@@ -63,31 +70,35 @@ function initThuaDatSearch(map) {
             map.setFilter('sheet-thua-dat-line', finalFilter);
         }
 
-        // Tự động zoom (fitBounds) đến các thửa đất thỏa mãn điều kiện tìm kiếm nếu có dữ liệu
-        try {
-            const features = map.queryRenderedFeatures({ layers: ['sheet-thua-dat-fill'] });
-            if (features && features.length > 0) {
-                const fc = turf.featureCollection(features);
-                const bbox = turf.bbox(fc);
-                map.fitBounds(bbox, { padding: 50, maxZoom: 18 });
+        // Tự động thu phóng đến khu vực có kết quả tìm thấy
+        setTimeout(() => {
+            try {
+                const features = map.queryRenderedFeatures({ layers: ['sheet-thua-dat-fill'] });
+                if (features && features.length > 0) {
+                    const fc = turf.featureCollection(features);
+                    const bbox = turf.bbox(fc);
+                    map.fitBounds(bbox, { padding: 50, maxZoom: 18 });
+                } else {
+                    alert("Không tìm thấy thửa đất phù hợp với từ khóa này!");
+                }
+            } catch (err) {
+                console.log("Lỗi zoom kết quả tìm kiếm:", err);
             }
-        } catch (err) {
-            console.log("Không thể tự động zoom đến kết quả tìm kiếm:", err);
-        }
+        }, 300); // Đợi một nhịp ngắn để MapLibre cập nhật xong bộ lọc layer
     };
 
-    // Lắng nghe sự kiện nhấn phím Enter
+    // Lắng nghe sự kiện nhấn phím Enter trên ô input
     searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault(); // Ngăn chặn form submit mặc định (nếu có)
-            performSearch();    // Thực hiện tìm kiếm khi nhấn Enter
+            e.preventDefault();
+            performSearch();
         }
     });
 
-    // Vẫn giữ sự kiện 'input' để lọc theo thời gian thực nếu muốn, hoặc bạn có thể bỏ dòng dưới nếu chỉ thích bấm Enter mới tìm
+    // Hỗ trợ xóa trắng ô input thì tự động reset bản đồ
     searchInput.addEventListener('input', (e) => {
         if (e.target.value.trim() === '') {
-            performSearch(); // Tự động reset khi xóa hết chữ
+            performSearch();
         }
     });
 }
