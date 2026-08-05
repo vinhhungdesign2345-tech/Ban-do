@@ -50,30 +50,30 @@ body {
 
 /* Định dạng ô input tìm kiếm */
 #searchThuaDatInput {
-    flex: 1;                        /* Tự co giãn chiếm không gian phần lớn */
-    padding: 6px 8px;
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
-    font-size: 12px;
-    height: 34px;
-    box-sizing: border-box;
-    outline: none;
-    background-color: #fff;
-    color: #222;
+    flex: 1;                        /* Cho phép ô input tự động co giãn để chiếm toàn bộ không gian còn lại trên hàng */
+    padding: 6px 8px;               /* Khoảng cách đệm bên trong: 6px cho trên/dưới và 8px cho trái/phải */
+    border: 1px solid #d0d0d0;      /* Tạo đường viền xung quanh ô input màu xám nhạt (độ dày 1px) */
+    border-radius: 6px;             /* Bo tròn 4 góc của ô input với bán kính 6px */
+    font-size: 12px;                /* Đặt kích thước chữ hiển thị bên trong ô input là 12px */
+    height: 34px;                   /* Cố định chiều cao tổng thể của ô input là 34px */
+    box-sizing: border-box;         /* Bao gồm padding và border vào trong tổng chiều cao/rộng đã định nghĩa */
+    outline: none;                  /* Xóa bỏ đường viền sáng (focus glow) mặc định của trình duyệt khi bấm vào ô */
+    background-color: #fff;         /* Đặt màu nền bên trong ô input là màu trắng */
+    color: #222;                    /* Đặt màu chữ do người dùng gõ vào là màu đen xám đậm (#222) */
 }
 
 /* Định dạng nút bấm "Tìm" */
 #searchThuaDatBtn {
-    padding: 0 14px;
-    background-color: #1a73e8;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: bold;
-    height: 34px;
-    cursor: default !important;
-    white-space: nowrap;
+    padding: 0 14px;                /* Khoảng cách đệm bên trong nút: 0 cho trên/dưới và 14px mở rộng sang trái/phải */
+    background-color: #1a73e8;      /* Đặt màu nền chủ đạo cho nút là màu xanh dương đặc trưng */
+    color: white;                   /* Đặt màu chữ hiển thị trên nút là màu trắng */
+    border: none;                   /* Xóa bỏ hoàn toàn đường viền mặc định của nút */
+    border-radius: 6px;             /* Bo tròn 4 góc của nút với bán kính 6px */
+    font-size: 12px;                /* Đặt kích thước chữ trên nút là 12px */
+    font-weight: bold;              /* Làm đậm phần chữ hiển thị trên nút */
+    height: 34px;                   /* Cố định chiều cao của nút bằng đúng 34px để khớp chiều cao với ô input */
+    cursor: default !important;     /* Ép kiểu con trỏ chuột hiển thị dạng mặc định (mũi tên), không đổi thành bàn tay */
+    white-space: nowrap;            /* Ngăn không cho chữ "Tìm" bị ngắt dòng xuống hàng dưới */
 }
 
 #searchThuaDatBtn:hover {
