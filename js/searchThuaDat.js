@@ -84,7 +84,7 @@ function initThuaDatSearch(map) {
             
             let isMatch = false;
 
-            // Nếu người dùng tìm theo định dạng Tờ/Thửa (VD: 7/29)
+            // Nếu người tìm kiếm theo định dạng Tờ/Thửa (VD: 7/29)
             if (searchSoTo !== null && searchSoThua !== null) {
                 const valSoTo = String(props['Số tờ'] || props['So to'] || props['so_to'] || '').trim();
                 const valSoThua = String(props['Số thửa'] || props['So thua'] || props['so_thua'] || '').trim();
@@ -158,20 +158,27 @@ function initThuaDatSearch(map) {
         }, 300); // Độ trễ nhỏ 300 mili-giây để bản đồ kịp cập nhật bộ lọc trước khi zoom
     };
 
-    // Lắng nghe sự kiện khi người dùng gõ phím trong ô tìm kiếm
+    // Lắng nghe sự kiện khi người dùng gõ phím trong ô tìm kiếm (nhấn Enter)
     searchInput.addEventListener('keydown', (e) => {
-        // Nếu phím được bấm là phím "Enter"
         if (e.key === 'Enter') {
-            e.preventDefault(); // Chặn hành vi mặc định của phím Enter (như submit form)
-            performSearch();     // Gọi hàm thực thi tìm kiếm
+            e.preventDefault();
+            performSearch();
         }
     });
 
-    // Lắng nghe sự kiện khi nội dung trong ô input thay đổi
+    // Lắng nghe sự kiện khi nội dung trong ô input thay đổi (nếu xóa trắng thì reset)
     searchInput.addEventListener('input', (e) => {
-        // Nếu người dùng xóa trắng nội dung ô tìm kiếm thì tự động reset bản đồ
         if (e.target.value.trim() === '') {
             performSearch();
         }
     });
+
+    // Lắng nghe sự kiện click vào nút "Tìm" trên giao diện điện thoại/máy tính
+    const searchBtn = document.getElementById('searchThuaDatBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            performSearch();
+        });
+    }
 }
