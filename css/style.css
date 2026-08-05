@@ -35,7 +35,7 @@ body {
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 /* Dịch chuyển cụm điều khiển ở góc trên bên phải xuống dưới để tránh bị che bởi ô tìm kiếm/dropdown */
 .maplibregl-ctrl-top-right {
-    top: 75px !important;           /* Đẩy nút định vị xuống cách mép trên 75px */
+    top: 75px !important;           /* Đẩy nút định vị xuống cách mép trên 75px (cho màn hình lớn/PC) */
 }
 
 .filter-row {
@@ -226,5 +226,11 @@ input {
     #searchThuaDatBtn {
         font-size: 11px;                  /* Thu nhỏ cỡ chữ trên điện thoại */
         height: 30px;                     /* Giảm chiều cao cho gọn gàng */
+    }
+
+    /* ĐIỀU CHỈNH RIÊNG VỊ TRÍ NÚT ĐỊNH VỊ TRÊN ĐIỆN THOẠI */
+    .maplibregl-ctrl-top-right {
+        top: 105px !important;            /* Đẩy nút định vị xuống sâu hơn trên mobile để không bị thanh tìm kiếm/dropdown che */
+        right: 8px !important;            /* Cách lề phải một khoảng vừa phải */
     }
 }
