@@ -18,9 +18,10 @@
    <!-- Khung chứa các điều khiển bộ lọc và tìm kiếm đặt nổi trên bản đồ -->
    <div class="map-control">
      <div class="filter-row">
-         <!-- Ô tìm kiếm thửa đất theo tên, mã định danh, số tờ hoặc số thửa -->
-         <div class="filter-item" style="width: 100%;">
-             <input type="text" id="searchThuaDatInput" placeholder="Tìm theo tên, mã ĐD, tờ/thửa..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+         <!-- Ô tìm kiếm thửa đất và nút bấm Tìm -->
+         <div class="filter-item" style="width: 100%; display: flex; gap: 6px;">
+             <input type="text" id="searchThuaDatInput" placeholder="Tìm theo tên, mã ĐD, tờ/thửa (VD: 7/29)..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+             <button id="searchThuaDatBtn" style="padding: 8px 16px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">Tìm</button>
          </div>
 
          <!-- Dropdown 1: Lựa chọn Tỉnh / Thành phố -->
@@ -55,7 +56,7 @@
     </div>
 
     <!-- Các tệp mã nguồn JavaScript mô-đun chức năng của ứng dụng (được tải theo đúng thứ tự phụ thuộc) -->
-    <script src="js/config.js"></script>    <!-- Chứa cấu hình chung, thông tin tỉnh và bảng màu quy hoạch -->
+    <script src="js/config.js"></script>   <!-- Chứa cấu hình chung, thông tin tỉnh và bảng màu quy hoạch -->
     <script src="js/api.js"></script>      <!-- Chứa hàm gọi API / tải dữ liệu GeoJSON -->
     <script src="js/sheet.js"></script>    <!-- Chứa hàm tải dữ liệu thửa đất từ Google Sheets và quản lý ẩn hiện lớp -->
     <script src="js/province.js"></script> <!-- Chứa logic xử lý chọn tỉnh/xã, lọc không gian bằng TurfJS -->
