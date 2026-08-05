@@ -44,10 +44,35 @@ function initMap() {
     // Lưu trữ instance của bản đồ ra biến toàn cục window để các hàm khác có thể gọi dùng lại khi cần
     window.currentMapInstance = map;
 
+    // 📍 TÍCH HỢP NÚT ĐỊNH VỊ (GEOLOCATION CONTROL) CHO THIẾT BỊ DI ĐỘNG VÀ MÁY TÍNH
+    const geolocate = new maplibregl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true // Bật định vị độ chính xác cao (GPS)
+        },
+        trackUserLocation: true,     // Theo dõi liên tục vị trí di chuyển của người dùng
+        showUserHeading: true        // Hiển thị hướng xoay của thiết bị
+    });
+
+    // Thêm nút định vị vào góc trên bên phải bản đồ
+    map.addControl(geolocate, 'top-right');
+
+    // Lắng nghe sự kiện khi thiết bị trả về tọa độ GPS thực tế của người dùng
+    geolocate.on('geolocate', async (position) => {
+        const lng = position.coords.longitude;
+        const lat = position.coords.latitude;
+        
+        console.log("Vị trí GPS hiện tại:", lng, lat);
+
+        // Tự động gọi hàm quét điểm để nhận diện Tỉnh, Phường/Xã và lọc thửa đất tương ứng
+        if (typeof selectPhuongFromPoint === 'function') {
+            await selectPhuongFromPoint(lng, lat, map);
+        }
+    });
+
     // Sự kiện chờ bản đồ tải xong hoàn tất thì tiến hành gọi bộ lọc dữ liệu và ô tìm kiếm
     map.on('load', () => {
-        initFilter(map);          // Khởi tạo bộ lọc tỉnh/xã
-        initThuaDatSearch(map);   // Khởi tạo chức năng tìm kiếm thửa đất
+        initFilter(map);         // Khởi tạo bộ lọc tỉnh/xã
+        initThuaDatSearch(map);  // Khởi tạo chức năng tìm kiếm thửa đất
     });
 
     // Mảng chứa các ID lớp dữ liệu thửa đất (gồm lớp phủ màu và lớp đường viền)
@@ -109,7 +134,7 @@ function initMap() {
             const panelContentEl = document.getElementById('panel-content');
             const panelEl = document.getElementById('parcel-info-panel');
             if (panelContentEl) panelContentEl.innerHTML = panelContent; // Đưa nội dung HTML vào khung
-            if (panelEl) panelEl.style.display = 'block';                 // Hiển thị khung bảng thông tin lên màn hình
+            if (panelEl) panelEl.style.display = 'block';               // Hiển thị khung bảng thông tin lên màn hình
         });
 
         // Thiết lập sự kiện con trỏ chuột khi di chuyển vào/ra vùng thửa đất (giữ nguyên mặc định)
