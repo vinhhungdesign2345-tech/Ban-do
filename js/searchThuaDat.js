@@ -61,19 +61,51 @@ function initThuaDatSearch(map) {
             return;
         }
 
+        // --- XỬ LÝ ĐẶC BIỆT CHO TÌM KIẾM THEO ĐỊNH DẠNG "SỐ_TỜ/SỐ_THỬA" (VD: 7/29) ---
+        let searchSoTo = null;
+        let searchSoThua = null;
+        if (rawKeyword.includes('/')) {
+            const parts = rawKeyword.split('/');
+            if (parts.length === 2) {
+                const t = parts[0].trim();
+                const s = parts[1].trim();
+                // Kiểm tra xem cả hai vế trước và sau dấu gạch chéo có phải là số hay không
+                if (!isNaN(t) && !isNaN(s) && t !== '' && s !== '') {
+                    searchSoTo = String(Number(t));   // Quy đổi về dạng số chuẩn để so khớp tránh lệch định dạng "07" và "7"
+                    searchSoThua = String(Number(s));
+                }
+            }
+        }
+
         // 3. Tiến hành quét tìm kiếm trong toàn bộ tập dữ liệu thửa đất
         const matchedIds = []; // Mảng lưu các ID thửa đất khớp với từ khóa
         allFeatures.forEach(f => {
             const props = f.properties || {}; // Lấy danh sách thuộc tính của thửa đất
-            let combinedText = "";
             
-            // Duyệt qua tất cả các trường thuộc tính và gom lại thành một chuỗi văn bản lớn
-            for (let key in props) {
-                if (props[key]) combinedText += " " + removeAccentsAndLower(props[key]);
+            let isMatch = false;
+
+            // Nếu người dùng tìm theo định dạng Tờ/Thửa (VD: 7/29)
+            if (searchSoTo !== null && searchSoThua !== null) {
+                const valSoTo = String(props['Số tờ'] || props['So to'] || props['so_to'] || '').trim();
+                const valSoThua = String(props['Số thửa'] || props['So thua'] || props['so_thua'] || '').trim();
+                
+                // So khớp chính xác cột Số tờ và Số thửa
+                if (valSoTo === searchSoTo && valSoThua === searchSoThua) {
+                    isMatch = true;
+                }
+            } else {
+                // Tìm kiếm thông thường trên tất cả các trường dữ liệu
+                let combinedText = "";
+                for (let key in props) {
+                    if (props[key]) combinedText += " " + removeAccentsAndLower(props[key]);
+                }
+                if (combinedText.includes(keyword)) {
+                    isMatch = true;
+                }
             }
 
-            // Nếu chuỗi văn bản tổng hợp chứa từ khóa người dùng tìm kiếm
-            if (combinedText.includes(keyword)) {
+            // Nếu khớp điều kiện tìm kiếm, tiến hành lấy ID để hiển thị
+            if (isMatch) {
                 // Lấy mã định danh độc lập của thửa đất theo thứ tự ưu tiên các trường
                 const uniqueId = props['ID Thửa Đất'] || props['id'] || props['Tên Chủ'];
                 // Nếu có ID và chưa tồn tại trong mảng kết quả thì thêm vào
