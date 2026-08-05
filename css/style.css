@@ -1,10 +1,13 @@
 /* css/style.css */
+
+/* --- CÀI ĐẶT CHUNG CHO TOÀN BỘ TRANG WEB --- */
 body { 
-    margin: 0;                      /* Xóa khoảng cách viền mặc định xung quanh trang web */
-    padding: 0;                     /* Xóa vùng đệm mặc định xung quanh trang web */
+    margin: 0;                     /* Xóa khoảng cách viền mặc định xung quanh trang web */
+    padding: 0;                    /* Xóa vùng đệm mặc định xung quanh trang web */
     font-family: Arial, sans-serif; /* Kiểu font chữ tổng thể cho toàn trang */
 }
 
+/* --- KHUNG HIỂN THỊ BẢN ĐỒ --- */
 #map { 
     position: absolute;             /* Định vị khung bản đồ tuyệt đối phủ kín màn hình */
     top: 0;                         /* Sát mép trên cùng */
@@ -27,6 +30,12 @@ body {
     max-width: 380px;               /* Chiều rộng tối đa không vượt quá 380px */
     width: calc(100% - 24px);       /* Chiều rộng co giãn theo màn hình trừ đi lề 2 bên */
     box-sizing: border-box;         /* Tính padding và border gộp vào tổng chiều rộng */
+}
+
+/* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
+/* Dịch chuyển cụm điều khiển ở góc trên bên phải xuống dưới để tránh bị che bởi ô tìm kiếm/dropdown */
+.maplibregl-ctrl-top-right {
+    top: 75px !important;           /* Đẩy nút định vị xuống cách mép trên 75px */
 }
 
 .filter-row {
@@ -77,7 +86,7 @@ body {
 }
 
 #searchThuaDatBtn:hover {
-    background-color: #1557b0;
+    background-color: #1557b0;      /* Đổi màu nền xanh đậm hơn khi di chuột vào */
 }
 
 /* Chia đều 2 ô dropdown Tỉnh và Phường/Xã ở hàng phía dưới */
@@ -115,7 +124,7 @@ body {
 button, 
 select, 
 input {
-    cursor: default !important;
+    cursor: default !important;     /* Cố định toàn bộ con trỏ chuột hiển thị dạng mũi tên mặc định */
 }
 
 /* --- KHUNG THÔNG TIN THỬA ĐẤT DƯỚI MÀN HÌNH (PC) --- */
