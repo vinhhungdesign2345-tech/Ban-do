@@ -48,7 +48,7 @@ const CONFIG = {
         'sources': {
             'google-satellite': {
                 'type': 'raster',          /* Định dạng nguồn ảnh dạng lưới raster */
-                'tiles': ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'], /* URL lấy mảnh ảnh bản đồ vệ tinh Google */
+                'tiles': ['https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}'], /* URL lấy mảnh ảnh bản đồ vệ tinh Google */
                 'tileSize': 256            /* Kích thước tiêu chuẩn của mỗi mảnh ảnh (tile) là 256x256 pixel */
             }
         },
