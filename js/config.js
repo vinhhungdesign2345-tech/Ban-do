@@ -35,7 +35,7 @@ const CONFIG = {
         { id: "ThaiNguyen", name: "Tỉnh Thái Nguyên", file: "./geojson/Thai-Nguyên.json" },
         { id: "ThanhHoa", name: "Tỉnh Thanh Hóa", file: "./geojson/Thanh-Hoa.json" },
         { id: "TuyenQuang", name: "Tỉnh Tuyên Quang", file: "./geojson/Tuyen-Quang.json" },
-        { id: "VinhLong", name: "Tỉnh Vĩnh Long", file: "./geojson/Vĩnh-Long.json" },
+        { id: "VinhLong", name: "Tỉnh Vĩnh Long", file: "./geojson/Vinh-Long.json" },
   
     ],
 
