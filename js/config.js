@@ -2,7 +2,6 @@
 const CONFIG = {
     // THÊM TỈNH TẠI ĐÂY
     PROVINCES: [
-        { id: "VietNam", name: "Việt Nam", file: "./geojson/Viet-Nam.json" },
         { id: "AnGiang", name: "Tỉnh An Giang", file: "./geojson/An-Giang.json" },
         { id: "BacNinh", name: "Tỉnh Bắc Ninh", file: "./geojson/Bac-Ninh.json" },
         { id: "CaMau", name: "Tỉnh Cà Mau", file: "./geojson/Ca-Mau.json" },
