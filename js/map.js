@@ -1,168 +1,102 @@
-// ==========================================
-// FILE: js/map.js (Toàn bộ code chuẩn tích hợp hiển thị nhãn tên tỉnh)
-// ==========================================
+// js/map.js
 
-// Định dạng số chuẩn Việt Nam: 1.234,5 (Ví dụ diện tích, số lượng lớn)
+// Định dạng số chuẩn Việt Nam: 1.234,5
 function formatNumberVN(val) {
-    // Trả về dấu gạch ngang nếu giá trị bị trống, null hoặc undefined
+    // Kiểm tra nếu giá trị trống hoặc dấu gạch ngang thì trả về nguyên bản dấu '-'
     if (val === null || val === undefined || val === '' || val === '-') return '-';
     
-    // Đổi dấu phẩy thành dấu chấm để hàm toán học đọc được số thập phân
+    // Chuyển đổi dấu phẩy (nếu có trong dữ liệu chuỗi) thành dấu chấm để hàm parseFloat có thể đọc được dạng số thực
     const num = parseFloat(String(val).replace(',', '.'));
-    // Nếu không phải là số hợp lệ thì trả về nguyên bản giá trị gốc
+    // Nếu sau khi chuyển đổi mà không phải là số hợp lệ thì trả về giá trị gốc ban đầu
     if (isNaN(num)) return val;
 
-    // Trả về chuỗi định dạng số theo chuẩn văn hóa Việt Nam (dấu chấm ngăn cách hàng nghìn)
+    // Định dạng số theo chuẩn văn hóa Việt Nam (dấu chấm phân cách hàng nghìn, dấu phẩy phân cách phần thập phân)
     return num.toLocaleString('vi-VN');
 }
 
 // Hàm đóng bảng thông tin phía dưới màn hình và xóa trạng thái làm nổi bật (highlight) thửa đất
 function closeParcelPanel() {
     const panel = document.getElementById('parcel-info-panel');
-    if (panel) panel.style.display = 'none'; // Ẩn khung giao diện bảng thông tin đi
+    if (panel) panel.style.display = 'none'; // Ẩn khung panel thông tin đi
 
     const mapInstance = window.currentMapInstance;
     if (mapInstance) {
-        // Đặt lại bộ lọc của lớp phủ màu nền về rỗng để tắt hiệu ứng chọn thửa đất
+        // Đặt lại bộ lọc highlight phần tô nền về rỗng (tắt hiệu ứng chọn)
         if (mapInstance.getLayer('sheet-thua-dat-highlight-fill')) {
             mapInstance.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
         }
-        // Đặt lại bộ lọc của lớp đường viền về rỗng
+        // Đặt lại bộ lọc highlight đường viền về rỗng
         if (mapInstance.getLayer('sheet-thua-dat-highlight-line')) {
             mapInstance.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
         }
     }
 }
 
-// Hàm xử lý riêng khi chọn Việt Nam (Di chuyển camera ra góc nhìn toàn quốc)
-function zoomToVietNam(map) {
-    map.flyTo({
-        center: [106.5, 16.0], // Tọa độ trung tâm địa lý của Việt Nam (Kinh độ, Vĩ độ)
-        zoom: 5.5,             // Mức độ thu phóng (zoom level) vừa khít để thấy toàn bộ cả nước
-        essential: true        // Đảm bảo lệnh chuyển động camera luôn được thực thi mượt mà
-    });
-}
-
 function initMap() {
-    // Khởi tạo đối tượng bản đồ MapLibre GL và gắn vào thẻ div có id là 'map' trong file HTML
+    // Khởi tạo đối tượng bản đồ MapLibre GL gắn vào thẻ div có id là 'map'
     const map = new maplibregl.Map({
-        container: 'map',           // ID của thẻ HTML chứa bản đồ
-        style: CONFIG.MAP_STYLE,    // Lấy cấu hình giao diện nền bản đồ từ file config.js
-        center: CONFIG.MAP_CENTER,  // Tọa độ điểm trung tâm mặc định khi khởi động
-        zoom: CONFIG.MAP_ZOOM       // Mức zoom mặc định khi khởi động
+        container: 'map',
+        style: CONFIG.MAP_STYLE,       // Lấy cấu hình style nền bản đồ từ file config.js
+        center: CONFIG.MAP_CENTER,     // Tọa độ trung tâm mặc định
+        zoom: CONFIG.MAP_ZOOM          // Mức độ phóng to mặc định
     });
 
-    // Lưu trữ instance của bản đồ ra biến toàn cục window để các tệp script bên ngoài có thể gọi lại
+    // Lưu trữ instance của bản đồ ra biến toàn cục window để các hàm khác có thể gọi dùng lại khi cần
     window.currentMapInstance = map;
 
-    // 📍 TÍCH HỢP NÚT ĐỊNH VỊ VỚI CẤU HÌNH GPS PHẦN CỨNG THỰC TẾ
+    // 📍 TÍCH HỢP NÚT ĐỊNH VỊ VỚI CẤU HÌNH ĐỘ CHÍNH XÁC CAO (GPS PHẦN CỨNG)
     const geolocate = new maplibregl.GeolocateControl({
         positionOptions: {
-            enableHighAccuracy: true, // Bật chế độ định vị có độ chính xác cao (GPS phần cứng)
-            maximumAge: 0,            // Không sử dụng dữ liệu định vị cũ trong bộ nhớ đệm
-            timeout: 20000            // Thời gian tối đa (20 giây) chờ bắt tín hiệu vệ tinh
+            enableHighAccuracy: true, // Ép thiết bị bật GPS phần cứng để lấy tọa độ chuẩn xác nhất
+            maximumAge: 0,            // Không sử dụng lại bộ nhớ cache cũ, luôn bắt buộc lấy tọa độ thời gian thực
+            timeout: 20000            // Thời gian chờ tối đa (20 giây) để bắt tín hiệu vệ tinh
         },
-        trackUserLocation: true,      // Liên tục theo dõi vị trí thực tế của thiết bị
-        showUserHeading: true         // Hiển thị hướng xoay/hướng di chuyển của người dùng trên bản đồ
+        trackUserLocation: true,      // Liên tục theo dõi và cập nhật vị trí khi người dùng di chuyển
+        showUserHeading: true         // Hiển thị hướng xoay/hướng di chuyển của thiết bị
     });
 
-    // Thêm nút định vị vào góc trên bên phải của bản đồ
+    // Thêm nút định vị vào góc trên bên phải bản đồ
     map.addControl(geolocate, 'top-right');
 
-    // Lắng nghe sự kiện khi thiết bị trả về tọa độ GPS thành công
+    // Lắng nghe sự kiện khi thiết bị trả về tọa độ GPS thực tế của người dùng
     geolocate.on('geolocate', async (position) => {
-        const lng = position.coords.longitude; // Lấy kinh độ thực tế
-        const lat = position.coords.latitude;  // Lấy vĩ độ thực tế
+        const lng = position.coords.longitude;
+        const lat = position.coords.latitude;
         
         console.log("Vị trí GPS hiện tại:", lng, lat);
 
-        // Tự động gọi hàm quét tọa độ để nhận diện Tỉnh, Phường/Xã và lọc thửa đất tương ứng
+        // Tự động gọi hàm quét điểm để nhận diện Tỉnh, Phường/Xã và lọc thửa đất tương ứng
         if (typeof selectPhuongFromPoint === 'function') {
             await selectPhuongFromPoint(lng, lat, map);
         }
     });
 
-    // Sự kiện kích hoạt khi bản đồ đã tải xong hoàn toàn cấu trúc dữ liệu nền
+    // Sự kiện chờ bản đồ tải xong hoàn tất thì tiến hành gọi bộ lọc dữ liệu và ô tìm kiếm
     map.on('load', () => {
-        // Kiểm tra xem nguồn dữ liệu ranh giới Việt Nam đã được thêm vào bản đồ chưa
-        if (!map.getSource('vietnam-boundary-source')) {
-            
-            // 1. Khai báo nguồn dữ liệu GeoJSON chứa ranh giới toàn quốc
-            map.addSource('vietnam-boundary-source', {
-                type: 'geojson',
-                data: './geojson/Viet-Nam.json' // Đường dẫn tới file chứa ranh giới các tỉnh
-            });
-
-            // 2. Thêm lớp hiển thị đường viền ranh giới các tỉnh (Line Layer)
-            map.addLayer({
-                id: 'vietnam-boundary-layer',
-                type: 'line',
-                source: 'vietnam-boundary-source',
-                paint: {
-                    'line-color': '#007cbf',    // Màu sắc của đường viền ranh giới (Xanh dương)
-                    'line-width': 1.5,          // Độ dày của đường viền
-                    'line-opacity': 0.8         // Độ trong suốt của đường viền
-                }
-            });
-
-            // 3. Thêm lớp hiển thị tên của từng tỉnh thành (Symbol Layer)
-            map.addLayer({
-                id: 'vietnam-province-labels',
-                type: 'symbol',
-                source: 'vietnam-boundary-source',
-                minzoom: 4,   // Mức zoom nhỏ nhất bắt đầu hiển thị tên tỉnh (khi ở góc nhìn toàn quốc)
-                maxzoom: 11,  // Mức zoom lớn nhất; khi bạn phóng to >= 11, tên tỉnh sẽ tự động ẩn đi để không che khuất thửa đất
-                layout: {
-                    // Lấy giá trị tên tỉnh từ thuộc tính 'name' trong file JSON (hãy đổi thành 'ten_tinh' nếu file của bạn dùng tên khác)
-                    'text-field': ['get', 'name'], 
-                    'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'], // Phông chữ hiển thị nhãn
-                    'text-size': 12,        // Kích thước chữ của tên tỉnh
-                    'text-anchor': 'center' // Cố định vị trí neo chữ ở tâm vùng ranh giới
-                },
-                paint: {
-                    'text-color': '#333333',       // Màu sắc của chữ (Màu xám đậm)
-                    'text-halo-color': '#ffffff',  // Màu viền bao quanh chữ giúp nổi bật trên nền bản đồ
-                    'text-halo-width': 1.5         // Độ dày của viền bao quanh chữ
-                }
-            });
-        }
-
-        initFilter(map);        // Khởi tạo tính năng bộ lọc lựa chọn Tỉnh / Phường / Xã
-        initThuaDatSearch(map); // Khởi tạo tính năng tìm kiếm thông tin thửa đất
-
-        // 🔗 LẮNG NGHE SỰ KIỆN THAY ĐỔI TỪ DROPDOWN CHỌN TỈNH HOẶC CHỌN VIỆT NAM
-        const provinceSelect = document.getElementById('province-select') || document.getElementById('tinh-select');
-        if (provinceSelect) {
-            provinceSelect.addEventListener('change', (e) => {
-                const selectedValue = e.target.value;
-                // Nếu người dùng chọn mục Việt Nam thì gọi hàm zoom toàn quốc
-                if (selectedValue === "VietNam" || selectedValue.toLowerCase().includes("việt nam")) {
-                    zoomToVietNam(map);
-                }
-            });
-        }
+        initFilter(map);           // Khởi tạo bộ lọc tỉnh/xã
+        initThuaDatSearch(map);  // Khởi tạo chức năng tìm kiếm thửa đất
     });
 
-    // Mảng chứa định danh của các lớp đồ họa thửa đất chi tiết (lớp tô màu và lớp đường viền)
+    // Mảng chứa các ID lớp dữ liệu thửa đất (gồm lớp phủ màu và lớp đường viền)
     const sheetLayers = ['sheet-thua-dat-fill', 'sheet-thua-dat-line'];
-    let isFeatureClicked = false; // Biến cờ kiểm tra xem người dùng có bấm trúng thửa đất hay không
+    let isFeatureClicked = false; // Biến cờ (flag) kiểm tra xem người dùng có bấm trúng thửa đất hay không
 
-    // Lặp qua từng lớp để gán sự kiện bấm chuột (click)
+    // Lặp qua từng lớp thửa đất để gán sự kiện bấm chuột
     sheetLayers.forEach(layerId => {
         map.on('click', layerId, (e) => {
-            if (!e.features || !e.features.length) return; // Dừng lại nếu không bắt được dữ liệu đối tượng
+            if (!e.features || !e.features.length) return; // Nếu không lấy được thông tin đối tượng thì dừng lại
 
-            isFeatureClicked = true; // Xác nhận người dùng đã bấm trúng thửa đất
+            isFeatureClicked = true; // Đánh dấu xác nhận là đã click trúng thửa đất
 
-            const selectedFeature = e.features[0];         // Lấy thửa đất đầu tiên nằm ở vị trí click
-            const rawProps = selectedFeature.properties || {}; // Lấy toàn bộ thông tin chi tiết của thửa đất
+            const selectedFeature = e.features[0]; // Lấy ra thửa đất đầu tiên được click trúng
+            const rawProps = selectedFeature.properties || {}; // Lấy toàn bộ thuộc tính dữ liệu của thửa đất đó
 
-            // Lọc và trích xuất các thông tin cụ thể (hỗ trợ cả chữ hoa và chữ thường để tránh lệch dữ liệu)
+            // 🎯 Lấy trực tiếp các trường thông tin chính xác từ thuộc tính gốc (hỗ trợ nhiều kiểu tên viết hoa/thường khác nhau)
             const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
             const soThua = rawProps['Số thửa'] || rawProps['So thua'] || '-';
             
             const rawDienTich = rawProps['Diện tích'] || rawProps['Dien tich'] || '-';
-            const dienTich = formatNumberVN(rawDienTich); // Gọi hàm chuẩn hóa số diện tích kiểu Việt Nam
+            const dienTich = formatNumberVN(rawDienTich); // Gọi hàm định dạng số diện tích chuẩn Việt Nam
 
             const loaiDat = rawProps['Loại Đất'] || rawProps['Loại Đất:'] || rawProps['Loại đất'] || rawProps['loai_dat'] || '-';
             const tenChu = rawProps['Tên Chủ'] || rawProps['Tên chủ'] || '-';
@@ -171,7 +105,7 @@ function initMap() {
 
             const parcelId = rawProps['ID Thửa Đất'] || rawProps['id'];
 
-            // Xây dựng câu lệnh điều kiện lọc để tô màu làm nổi bật (highlight) đúng thửa đất vừa chọn
+            // Xây dựng bộ lọc điều kiện để tô màu làm nổi bật thửa đất vừa chọn trên bản đồ
             let selectFilter;
             if (parcelId) {
                 selectFilter = ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId];
@@ -179,16 +113,16 @@ function initMap() {
                 selectFilter = ['==', ['get', 'Tên Chủ'], rawProps['Tên Chủ'] || tenChu];
             }
 
-            // Áp dụng bộ lọc highlight cho lớp tô nền bên trong thửa đất
+            // Áp dụng bộ lọc highlight cho lớp phủ nền
             if (map.getLayer('sheet-thua-dat-highlight-fill')) {
                 map.setFilter('sheet-thua-dat-highlight-fill', selectFilter);
             }
-            // Áp dụng bộ lọc highlight cho lớp đường viền ranh giới thửa đất
+            // Áp dụng bộ lọc highlight cho lớp đường viền
             if (map.getLayer('sheet-thua-dat-highlight-line')) {
                 map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
             }
 
-            // Cấu trúc nội dung mã HTML sẽ hiển thị lên bảng thông tin chi tiết ở góc dưới màn hình
+            // ĐỔ DỮ LIỆU VÀO KHUNG PANEL HIỂN THỊ DƯỚI MÀN HÌNH
             const panelContent = `
                 <div><b>Số tờ:</b> ${soTo}</div>
                 <div><b>Số thửa:</b> ${soThua}</div>
@@ -201,28 +135,28 @@ function initMap() {
 
             const panelContentEl = document.getElementById('panel-content');
             const panelEl = document.getElementById('parcel-info-panel');
-            if (panelContentEl) panelContentEl.innerHTML = panelContent; // Đổ dữ liệu vào vùng chứa nội dung
+            if (panelContentEl) panelContentEl.innerHTML = panelContent; // Đưa nội dung HTML vào khung
             if (panelEl) panelEl.style.display = 'block';                // Hiển thị khung bảng thông tin lên màn hình
         });
 
-        // Thiết lập sự kiện con trỏ chuột khi rê chuột vào hoặc ra khỏi vùng thửa đất
+        // Thiết lập sự kiện con trỏ chuột khi di chuyển vào/ra vùng thửa đất (giữ nguyên mặc định)
         map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'default');
         map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = 'default');
     });
 
-    // SỰ KIỆN CLICK VÀO VÙNG TRỐNG TRÊN BẢN ĐỒ (Không bấm trúng thửa đất nào)
+    // SỰ KIỆN CLICK VÙNG TRỐNG TRÊN BẢN ĐỒ (Xử lý khi bấm ngoài thửa đất)
     map.on('click', (e) => {
         if (!isFeatureClicked) {
-            closeParcelPanel(); // Ẩn bảng thông tin chi tiết và xóa trạng thái highlight đang chọn
+            closeParcelPanel(); // Nếu không bấm trúng thửa đất thì ẩn bảng thông tin đi và reset highlight
 
-            // Gọi hàm nhận diện tọa độ điểm vừa bấm để tự động chọn lại Phường/Xã tương ứng
+            // Gọi hàm chọn Phường/Xã tương ứng ngay tại tọa độ điểm vừa bấm chuột xuống bản đồ
             if (typeof selectPhuongFromPoint === 'function') {
                 selectPhuongFromPoint(e.lngLat.lng, e.lngLat.lat, map);
             }
         }
-        isFeatureClicked = false; // Đặt lại trạng thái biến cờ sau khi hoàn tất chuỗi sự kiện click
+        isFeatureClicked = false; // Đặt lại trạng thái cờ kiểm tra sau mỗi lần click
     });
 }
 
-// Lắng nghe sự kiện toàn bộ cấu trúc mã HTML/DOM đã được tải hoàn tất thì tự động kích hoạt hàm khởi tạo bản đồ
+// Lắng nghe sự kiện trang web đã tải hoàn tất toàn bộ cấu trúc DOM thì kích hoạt hàm khởi tạo bản đồ initMap
 document.addEventListener('DOMContentLoaded', initMap);
