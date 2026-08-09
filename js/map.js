@@ -205,7 +205,7 @@ function initMap() {
                         const el = document.createElement('div');
                         el.style.color = '#ffffff';                     // Màu chữ số đo (Trắng)
                         el.style.fontSize = '12px';                     // Cỡ chữ (12 pixel)
-                        el.style.fontWeight = 'normal';                   // Độ đậm của chữ (In đậm)
+                        el.style.fontWeight = 'Bold';                   // Độ đậm của chữ (In đậm)
                         el.style.textShadow = '1px 1px 2px #000000, -1px -1px 2px #000000, 1px -1px 2px #000000, -1px 1px 2px #000000'; // Hiệu ứng viền bóng đen giúp nổi bật trên mọi nền
                         el.style.whiteSpace = 'nowrap';                 // Không cho phép chữ bị ngắt xuống dòng
                         el.innerText = formattedLength;                 // Gán giá trị chiều dài cạnh (ví dụ: 30.4m)
