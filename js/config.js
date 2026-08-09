@@ -52,7 +52,7 @@ const CONFIG = {
             },
             'ha-tang-dien-source': {         /* Đã thêm dấu phẩy ngăn cách ở đây */
                 'type': 'geojson',           /* Nguồn dữ liệu GeoJSON cho hạ tầng điện Cà Mau */
-                'data': './geojson/ca-mau-ha-tang-dien.json'
+                'data': './geojson/Ca-Mau-ha-tang-dien.json'
             }
         },
         'layers': [
