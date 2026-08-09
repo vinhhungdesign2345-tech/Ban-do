@@ -2,141 +2,141 @@
 
 /* --- CÀI ĐẶT CHUNG CHO TOÀN BỘ TRANG WEB --- */
 body { 
-    margin: 0;                    
-    padding: 0;                   
-    font-family: Arial, sans-serif; 
+    margin: 0;                    /* Loại bỏ hoàn toàn khoảng cách thừa (margin) mặc định quanh viền trang */
+    padding: 0;                   /* Loại bỏ khoảng đệm (padding) mặc định của trình duyệt */
+    font-family: Arial, sans-serif; /* Đặt font chữ mặc định là Arial, dự phòng sang sans-serif */
 }
 
 /* --- KHUNG HIỂN THỊ BẢN ĐỒ --- */
 #map { 
-    position: absolute;           
-    top: 0;                       
-    bottom: 0;                    
-    width: 100%;                  
+    position: absolute;           /* Đặt vị trí tuyệt đối để bản đồ phủ kín toàn màn hình */
+    top: 0;                       /* Canh sát mép trên cùng của màn hình */
+    bottom: 0;                    /* Kéo dài đến sát mép dưới cùng của màn hình */
+    width: 100%;                  /* Chiều rộng phủ kín 100% màn hình ngang */
 }
 
 /* --- NÚT CHUYỂN ĐỔI LỚP BẢN ĐỒ (BỔ SUNG MỚI) --- */
 .map-layer-control {
-    position: absolute; 
-    bottom: 20px; 
-    left: 10px; 
-    z-index: 100;
+    position: absolute;           /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
+    bottom: 20px;                 /* Cách mép dưới khung bản đồ một khoảng 20 pixel */
+    left: 10px;                   /* Cách mép trái khung bản đồ một khoảng 10 pixel */
+    z-index: 100;                 /* Mức độ ưu tiên hiển thị lớp, nằm trên bản đồ */
 }
 
 #toggleLayerBtn {
-    padding: 10px 15px;
-    background: white;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: bold;
-    color: #333;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 10px 15px;           /* Khoảng đệm bên trong: trên dưới 10px, trái phải 15px */
+    background: white;            /* Màu nền mặc định của nút là màu trắng */
+    border: 1px solid #ccc;       /* Viền bo xung quanh nút màu xám nhạt */
+    cursor: pointer;              /* Hiển thị con trỏ chuột khi rê vào nút */
+    border-radius: 6px;           /* Bo tròn 4 góc của nút với bán kính 6 pixel */
+    font-size: 13px;              /* Kích thước chữ hiển thị trong nút là 13px */
+    font-weight: bold;            /* Định dạng chữ in đậm */
+    color: #333;                  /* Màu chữ bên trong nút là màu xám đậm (#333) */
+    transition: background-color 0.2s ease, border-color 0.2s ease; /* Hiệu ứng chuyển màu mượt mà trong 0.2 giây */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Đổ bóng nhẹ phía dưới nút tạo chiều sâu */
 }
 
 #toggleLayerBtn:hover {
-    background-color: #f1f3f4; /* Đổi màu xám nhẹ khi di chuột vào */
-    border-color: #b0b0b0;
+    background-color: #d3e4ed;    /* Đổi màu nền sang xám nhẹ khi người dùng rê chuột vào */
+    border-color: #b0b0b0;        /* Đổi màu viền đậm hơn một chút khi rê chuột */
 }
 
 /* --- BẢNG ĐIỀU KHIỂN DROPDOWN GỌN GÀNG --- */
 .map-control {
-    position: absolute;           
-    top: 12px;                    
-    left: 12px;                   
-    z-index: 10;                  
-    background: rgba(255, 255, 255, 0.92); 
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); 
-    padding: 6px;                 
-    border-radius: 10px;          
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18); 
-    max-width: 380px;             
-    width: calc(100% - 24px);     
-    box-sizing: border-box;       
+    position: absolute;           /* Đặt vị trí tuyệt đối ở góc trên bên trái bản đồ */
+    top: 12px;                    /* Cách mép trên 12 pixel */
+    left: 12px;                   /* Cách mép trái 12 pixel */
+    z-index: 10;                  /* Đảm bảo hiển thị nổi lên trên nền bản đồ */
+    background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt 92% */
+    backdrop-filter: blur(10px);  /* Hiệu ứng làm mờ nội dung phía sau bảng điều khiển */
+    -webkit-backdrop-filter: blur(10px); /* Hỗ trợ hiệu ứng làm mờ cho trình duyệt Safari/WebKit */
+    padding: 6px;                 /* Khoảng đệm bên trong bao quanh các thành phần là 6px */
+    border-radius: 10px;          /* Bo tròn các góc của bảng điều khiển với bán kính 10px */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18); /* Tạo hiệu ứng đổ bóng sâu rõ nét cho khung */
+    max-width: 380px;             /* Giới hạn chiều rộng tối đa của bảng là 380 pixel */
+    width: calc(100% - 24px);     /* Chiều rộng tự động co giãn theo màn hình trừ đi lề 24px */
+    box-sizing: border-box;       /* Tính toán padding và border gộp chung vào kích thước width */
 }
 
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 .maplibregl-ctrl-top-right {
-    top: 75px !important;         
+    top: 75px !important;         /* Đẩy cụm điều hướng mặc định của bản đồ xuống 75px để tránh che lấp */
 }
 
 .filter-row {
-    display: flex;                
-    flex-wrap: wrap;              
-    gap: 6px;                     
-    width: 100%;                  
-    align-items: center;          
+    display: flex;                /* Sử dụng mô hình Flexbox để sắp xếp các phần tử con theo hàng ngang */
+    flex-wrap: wrap;              /* Cho phép các phần tử tự động xuống hàng nếu không đủ chỗ */
+    gap: 6px;                     /* Khoảng cách khoảng hở giữa các phần tử là 6 pixel */
+    width: 100%;                  /* Chiếm toàn bộ 100% chiều rộng khung chứa */
+    align-items: center;          /* Canh chỉnh các phần tử con nằm giữa theo chiều dọc */
 }
 
 .filter-item {
-    min-width: 0;                 
+    min-width: 0;                 /* Ngăn chặn lỗi tràn kích thước flex item trên trình duyệt */
 }
 
 .filter-row > .filter-item:first-child {
-    width: 100%;                  
-    display: flex;                
-    gap: 6px;
+    width: 100%;                  /* Ép phần tử lọc đầu tiên (ô tìm kiếm) chiếm trọn 100% dòng trên */
+    display: flex;                /* Bật chế độ Flexbox cho riêng ô tìm kiếm và nút tìm */
+    gap: 6px;                     /* Khoảng cách giữa ô input và nút tìm kiếm là 6px */
 }
 
 #searchThuaDatInput {
-    flex: 1;                      
-    padding: 6px 8px;             
-    border: 1px solid #d0d0d0;    
-    border-radius: 6px;           
-    font-size: 12px;              
-    height: 34px;                 
-    box-sizing: border-box;       
-    outline: none;                
-    background-color: #fff;       
-    color: #222;                  
+    flex: 1;                      /* Ô nhập liệu tự động giãn nở chiếm toàn bộ không gian trống còn lại */
+    padding: 6px 8px;             /* Khoảng đệm bên trong: trên dưới 6px, trái phải 8px */
+    border: 1px solid #d0d0d0;    /* Viền khung nhập liệu màu xám nhạt */
+    border-radius: 6px;           /* Bo tròn 4 góc ô nhập liệu với bán kính 6px */
+    font-size: 12px;              /* Cỡ chữ bên trong ô nhập là 12px */
+    height: 34px;                 /* Cố định chiều cao của ô nhập liệu là 34 pixel */
+    box-sizing: border-box;       /* Bao gồm padding và border vào tổng kích thước chiều cao/rộng */
+    outline: none;                /* Loại bỏ viền sáng mặc định của trình duyệt khi focus vào ô */
+    background-color: #fff;       /* Màu nền bên trong ô nhập là màu trắng */
+    color: #222;                  /* Màu chữ gõ vào là màu xám đen gần đen (#222) */
 }
 
 #searchThuaDatBtn {
-    padding: 0 14px;              
-    background-color: #1a73e8;    
-    color: white;                 
-    border: none;                 
-    border-radius: 6px;           
-    font-size: 12px;              
-    font-weight: bold;            
-    height: 34px;                 
-    cursor: default !important;   
-    white-space: nowrap;          
-    transition: background-color 0.2s;
+    padding: 0 14px;              /* Khoảng đệm ngang trái phải là 14px, trên dưới bằng 0 */
+    background-color: #1a73e8;    /* Màu nền nút tìm kiếm là màu xanh dương đặc trưng (#1a73e8) */
+    color: white;                 /* Màu chữ hiển thị trên nút là màu trắng */
+    border: none;                 /* Không sử dụng đường viền cho nút */
+    border-radius: 6px;           /* Bo tròn 4 góc nút với bán kính 6px */
+    font-size: 12px;              /* Kích thước chữ trên nút là 12px */
+    font-weight: bold;            /* Định dạng chữ trên nút in đậm */
+    height: 34px;                 /* Cố định chiều cao nút khớp hoàn hảo với ô input (34px) */
+    cursor: default !important;   /* Buộc con trỏ chuột giữ nguyên mặc định khi trỏ vào nút */
+    white-space: nowrap;          /* Ngăn không cho chữ bên trong nút bị xuống hàng */
+    transition: background-color 0.2s; /* Hiệu ứng chuyển màu nền mượt trong 0.2 giây */
 }
 
 #searchThuaDatBtn:hover {
-    background-color: #1557b0;    
+    background-color: #1557b0;    /* Chuyển sang màu xanh dương đậm hơn khi rê chuột vào */
 }
 
 .filter-row > .filter-item:not(:first-child) {
-    flex: 1;                      
+    flex: 1;                      /* Các mục còn lại (các thẻ select) chia đều không gian ngang bằng nhau */
 }
 
 .map-control select {
-    width: 100%;                  
-    padding: 6px 8px;             
-    border-radius: 6px;           
-    border: 1px solid #d0d0d0;    
-    font-size: 12px;              
-    font-weight: 500;             
-    outline: none;                
-    background-color: #fff;       
-    color: #222;                  
-    height: 34px;                 
-    box-sizing: border-box;       
-    text-overflow: ellipsis;      
-    white-space: nowrap;          
-    overflow: hidden;             
+    width: 100%;                  /* Thẻ chọn (dropdown) chiếm trọn 100% chiều rộng ô chứa nó */
+    padding: 6px 8px;             /* Khoảng đệm bên trong thẻ select: trên dưới 6px, trái phải 8px */
+    border-radius: 6px;           /* Bo tròn góc thẻ chọn với bán kính 6px */
+    border: 1px solid #d0d0d0;    /* Đường viền thẻ chọn màu xám nhạt */
+    font-size: 12px;              /* Kích thước chữ trong danh sách lựa chọn là 12px */
+    font-weight: 500;             /* Độ đậm của chữ ở mức trung bình (medium) */
+    outline: none;                /* Loại bỏ viền sáng mặc định khi click vào select */
+    background-color: #fff;       /* Màu nền của thẻ chọn là màu trắng */
+    color: #222;                  /* Màu chữ lựa chọn là xám đen (#222) */
+    height: 34px;                 /* Chiều cao cố định của thẻ chọn là 34 pixel */
+    box-sizing: border-box;       /* Tính toán kích thước tổng thể bao gồm cả viền và đệm */
+    text-overflow: ellipsis;      /* Cắt bớt văn bản quá dài bằng dấu ba chấm (...) */
+    white-space: nowrap;          /* Giữ nội dung văn bản nằm trên một dòng duy nhất */
+    overflow: hidden;             /* Ẩn đi phần văn bản bị tràn kích thước khung */
 }
 
 .map-control select:disabled {
-    background-color: #f0f0f0;    
-    color: #888;                  
-    cursor: not-allowed;          
+    background-color: #f0f0f0;    /* Đổi nền sang màu xám nhạt khi dropdown bị vô hiệu hóa (disabled) */
+    color: #888;                  /* Đổi màu chữ sang xám tối để biểu thị trạng thái mờ */
+    cursor: not-allowed;          /* Đổi kiểu con trỏ chuột thành dạng cấm khi rê vào */
 }
 
 /* --- ÉP CON TRỎ CHUỘT MẶC ĐỊNH (MŨI TÊN) --- */
@@ -146,112 +146,112 @@ body {
 button, 
 select, 
 input {
-    cursor: default !important;   
+    cursor: default !important;   /* Buộc toàn bộ các thành phần bản đồ, nút, ô nhập liệu giữ nguyên hình mũi tên mặc định */
 }
 
 /* --- KHUNG THÔNG TIN THỬA ĐẤT DƯỚI MÀN HÌNH (PC) --- */
 .parcel-panel {
-    position: fixed;              
-    bottom: 20px;                 
-    left: 50%;                    
-    transform: translateX(-50%);  
-    z-index: 1000;                
-    background: rgba(255, 255, 255, 0.95); 
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 12px 16px;           
-    border-radius: 12px;          
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); 
-    width: 90%;                   
-    max-width: 450px;             
-    font-family: Arial, sans-serif; 
-    font-size: 13px;              
-    color: #1a1a1a;               
-    box-sizing: border-box;
+    position: fixed;              /* Đặt vị trí cố định trên màn hình, không bị trôi theo trang */
+    bottom: 20px;                 /* Cách mép dưới màn hình 20 pixel */
+    left: 50%;                    /* Đặt điểm căn lề trái ở chính giữa màn hình (50%) */
+    transform: translateX(-50%);  /* Dịch chuyển ngược lại 50% bề ngang để khung được căn giữa tuyệt đối */
+    z-index: 1000;                /* Độ ưu tiên hiển thị rất cao, nổi lên trên mọi thành phần giao diện khác */
+    background: rgba(255, 255, 255, 0.95); /* Màu nền trắng trong suốt 95% */
+    backdrop-filter: blur(10px);  /* Làm mờ các chi tiết hiển thị phía sau khung thông tin */
+    -webkit-backdrop-filter: blur(10px); /* Hỗ trợ hiệu ứng làm mờ cho trình duyệt Safari */
+    padding: 12px 16px;           /* Khoảng đệm bên trong khung: trên dưới 12px, trái phải 16px */
+    border-radius: 12px;          /* Bo tròn các góc khung thông tin với bán kính lớn 12px */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); /* Tạo hiệu ứng đổ bóng đậm và rộng quanh khung */
+    width: 90%;                   /* Chiều rộng khung chiếm 90% màn hình ở các thiết bị nhỏ */
+    max-width: 450px;             /* Giới hạn chiều rộng tối đa của khung thông tin là 450 pixel */
+    font-family: Arial, sans-serif; /* Quy định font chữ chuẩn cho toàn bộ panel */
+    font-size: 13px;              /* Kích thước chữ bên trong panel là 13px */
+    color: #1a1a1a;               /* Màu chữ hiển thị là màu đen đậm vừa (#1a1a1a) */
+    box-sizing: border-box;       /* Tính toán kích thước khung bao gồm cả padding và border */
 }
 
 .panel-header {
-    display: flex;                
-    justify-content: space-between; 
-    align-items: center;          
-    border-bottom: 1px solid #ddd; 
-    padding-bottom: 6px;          
-    margin-bottom: 8px;           
-    font-size: 14px;              
-    color: #007bff;               
+    display: flex;                /* Sắp xếp tiêu đề và nút đóng theo chiều ngang bằng Flexbox */
+    justify-content: space-between; /* Đẩy tiêu đề sang trái và nút đóng sang phải tối đa */
+    align-items: center;          /* Canh chỉnh tiêu đề và nút đóng thẳng hàng theo chiều dọc */
+    border-bottom: 1px solid #ddd; /* Tạo đường kẻ ngang mỏng màu xám phân cách phần đầu và nội dung */
+    padding-bottom: 6px;          /* Khoảng cách từ chữ tiêu đề xuống đường kẻ dưới là 6px */
+    margin-bottom: 8px;           /* Khoảng cách lề dưới của phần header với nội dung bên dưới là 8px */
+    font-size: 14px;              /* Kích thước chữ tiêu đề lớn hơn một chút (14px) */
+    color: #007bff;               /* Màu chữ tiêu đề là màu xanh dương nổi bật (#007bff) */
 }
 
 .close-btn {
-    background: none;             
-    border: none;                 
-    font-size: 18px;              
-    font-weight: bold;            
-    cursor: default;              
-    color: #666;                  
+    background: none;             /* Không sử dụng màu nền cho nút đóng (trong suốt) */
+    border: none;                 /* Không hiển thị viền khung quanh nút đóng */
+    font-size: 18px;              /* Kích thước ký tự dấu nhân (×) lớn rõ (18px) */
+    font-weight: bold;            /* Định dạng dấu nhân in đậm */
+    cursor: default;              /* Giữ con trỏ chuột mặc định khi rê vào nút đóng */
+    color: #666;                  /* Màu sắc biểu tượng nút đóng là màu xám trung tính (#666) */
 }
 
 .close-btn:hover {
-    color: #000;                  
+    color: #000;                  /* Đổi màu dấu nhân thành đen tuyền khi rê chuột vào */
 }
 
 .panel-body {
-    display: grid;                
-    grid-template-columns: 1fr 1fr; 
-    gap: 6px 12px;                
+    display: grid;                /* Sử dụng hệ thống lưới (Grid) để sắp xếp thông tin thửa đất */
+    grid-template-columns: 1fr 1fr; /* Chia nội dung thành đúng 2 cột có chiều rộng bằng nhau (1fr mỗi cột) */
+    gap: 6px 12px;                /* Khoảng cách lưới: hàng cách hàng 6px, cột cách cột 12px */
 }
 
 .panel-body div {
-    overflow: hidden;             
-    text-overflow: ellipsis;      
-    white-space: nowrap;          
+    overflow: hidden;             /* Ẩn bớt các đoạn text dài vượt quá ô lưới */
+    text-overflow: ellipsis;      /* Tự động thay thế phần text bị tràn bằng dấu ba chấm (...) */
+    white-space: nowrap;          /* Buộc nội dung trong mỗi ô lưới nằm gọn trên một dòng */
 }
 
 /* --- TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI / MOBILE --- */
 @media screen and (max-width: 768px) {
     .parcel-panel {
-        width: 95% !important;         
-        max-width: none !important;    
-        bottom: 10px !important;       
-        padding: 8px 10px !important;  
-        max-height: 45vh !important;   
-        overflow-y: auto !important;   
+        width: 95% !important;         /* Mở rộng bề ngang khung thông tin chiếm 95% màn hình di động */
+        max-width: none !important;    /* Xóa bỏ giới hạn chiều rộng tối đa trên điện thoại */
+        bottom: 10px !important;       /* Đưa khung thông tin sát xuống đáy màn hình hơn (cách 10px) */
+        padding: 8px 10px !important;  /* Thu nhỏ khoảng đệm bên trong để tiết kiệm diện tích */
+        max-height: 45vh !important;   /* Giới hạn chiều cao tối đa của khung bằng 45% chiều cao màn hình */
+        overflow-y: auto !important;   /* Cho phép cuộn dọc bên trong khung nếu nội dung quá dài */
     }
 
     .panel-header {
-        font-size: 12px !important;    
-        padding-bottom: 4px !important;
-        margin-bottom: 6px !important;
+        font-size: 12px !important;    /* Thu nhỏ kích thước chữ tiêu đề trên mobile xuống 12px */
+        padding-bottom: 4px !important;/* Thu hẹp khoảng đệm dưới của tiêu đề */
+        margin-bottom: 6px !important;/* Thu hẹp khoảng cách lề dưới */
     }
 
     .panel-body {
-        display: flex !important;      
-        flex-direction: column !important;
-        gap: 4px !important;           
+        display: flex !important;      /* Chuyển đổi lưới thành dạng danh sách xếp dọc trên mobile */
+        flex-direction: column !important; /* Xếp các dòng thông tin lần lượt từ trên xuống dưới */
+        gap: 4px !important;           /* Thu hẹp khoảng cách giữa các dòng thông tin xuống còn 4px */
     }
 
     .panel-body div {
-        width: 100% !important;        
-        font-size: 11px !important;    
-        white-space: normal !important;
-        overflow: visible !important;
+        width: 100% !important;        /* Mỗi dòng thông tin chiếm trọn 100% bề ngang màn hình */
+        font-size: 11px !important;    /* Thu nhỏ cỡ chữ xuống 11px để hiển thị vừa vặn trên màn hình nhỏ */
+        white-space: normal !important;/* Cho phép chữ xuống dòng tự nhiên thay vì bị ẩn đi */
+        overflow: visible !important;  /* Hiển thị toàn bộ nội dung văn bản, không bị cắt bớt */
     }
 
     .map-control {
-        top: 8px;                     
-        left: 8px;                    
-        width: calc(100% - 16px);     
-        padding: 4px;
+        top: 8px;                     /* Đưa bảng điều khiển dịch lên sát mép trên màn hình điện thoại (8px) */
+        left: 8px;                    /* Đưa bảng điều khiển sát lề trái hơn (8px) */
+        width: calc(100% - 16px);     /* Tự động tính toán chiều rộng phủ kín màn hình trừ 2 bên lề */
+        padding: 4px;                 /* Thu nhỏ khoảng đệm bên trong bảng điều khiển trên mobile */
     }
 
     .map-control select, 
     #searchThuaDatInput, 
     #searchThuaDatBtn {
-        font-size: 11px;              
-        height: 30px;                 
+        font-size: 11px;              /* Thu nhỏ kích thước chữ các ô nhập liệu và nút xuống 11px */
+        height: 30px;                 /* Thu nhỏ chiều cao các thành phần điều khiển xuống còn 30px */
     }
 
     .maplibregl-ctrl-top-right {
-        top: 105px !important;        
-        right: 8px !important;        
+        top: 105px !important;        /* Đẩy cụm nút điều hướng bản đồ xuống thấp hơn trên mobile (105px) */
+        right: 8px !important;        /* Cách lề phải màn hình di động một khoảng 8px */
     }
 }
