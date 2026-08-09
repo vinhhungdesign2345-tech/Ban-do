@@ -201,11 +201,11 @@ function initMap() {
                         const coords = segment.geometry.coordinates;
                         const midCoord = [(coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2];
 
-                        // Tạo phần tử div thuần túy hiển thị con số (màu trắng, in đậm, có viền bóng đen, KHÔNG khung nền)
+                        // Tạo phần tử div thuần túy hiển thị con số (màu trắng, in đậm, có viền bóng đen, không nền)
                         const el = document.createElement('div');
                         el.style.color = '#ffffff';                     // Màu chữ số đo (Trắng)
                         el.style.fontSize = '12px';                     // Cỡ chữ (12 pixel)
-                        el.style.fontWeight = 'bold';                   // Độ đậm của chữ (In đậm)
+                        el.style.fontWeight = 'normal';                   // Độ đậm của chữ (In đậm)
                         el.style.textShadow = '1px 1px 2px #000000, -1px -1px 2px #000000, 1px -1px 2px #000000, -1px 1px 2px #000000'; // Hiệu ứng viền bóng đen giúp nổi bật trên mọi nền
                         el.style.whiteSpace = 'nowrap';                 // Không cho phép chữ bị ngắt xuống dòng
                         el.innerText = formattedLength;                 // Gán giá trị chiều dài cạnh (ví dụ: 30.4m)
