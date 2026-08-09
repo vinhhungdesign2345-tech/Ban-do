@@ -51,6 +51,10 @@ const CONFIG = {
                 'tiles': ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'], /* URL lấy mảnh ảnh bản đồ vệ tinh Google */
                 'tileSize': 256            /* Kích thước tiêu chuẩn của mỗi mảnh ảnh (tile) là 256x256 pixel */
             }
+            'ha-tang-dien-source': {
+                'type': 'geojson',           /* Nguồn dữ liệu GeoJSON cho hạ tầng điện Cà Mau */
+                'data': './geojson/ca-mau-ha-tang-dien.json'
+            }
         },
         'layers': [
             {
