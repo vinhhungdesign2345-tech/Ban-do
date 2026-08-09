@@ -1,3 +1,53 @@
+// js/map.js
+
+// --- HÀM ĐỊNH DẠNG SỐ CHUẨN VIỆT NAM (Ví dụ: 1.234,5) ---
+function formatNumberVN(val) {
+    // Kiểm tra nếu giá trị rỗng, null, undefined hoặc dấu gạch ngang thì trả về dấu '-' mặc định
+    if (val === null || val === undefined || val === '' || val === '-') return '-';
+    
+    // Ép kiểu giá trị sang chuỗi và thay thế dấu phẩy (nếu có) thành dấu chấm để chuẩn hóa số thực
+    const num = parseFloat(String(val).replace(',', '.'));
+    
+    // Nếu giá trị sau khi chuyển đổi không phải là số hợp lệ (NaN), trả về nguyên bản giá trị ban đầu
+    if (isNaN(num)) return val;
+
+    // Trả về chuỗi số đã được định dạng theo chuẩn địa phương Việt Nam (có dấu chấm phân cách hàng nghìn)
+    return num.toLocaleString('vi-VN');
+}
+
+// --- HÀM ĐÓNG BẢNG THÔNG TIN VÀ XÓA TRẠNG THÁI LÀM NỔI BẬT (HIGHLIGHT) THỬA ĐẤT ---
+function closeParcelPanel() {
+    // Lấy phần tử khung hiển thị thông tin thửa đất phía dưới màn hình thông qua ID
+    const panel = document.getElementById('parcel-info-panel');
+    
+    // Nếu khung tồn tại, chuyển trạng thái hiển thị thành 'none' (ẩn đi)
+    if (panel) panel.style.display = 'none';
+
+    // Lấy đối tượng thể hiện bản đồ đang hoạt động được lưu toàn cục trong cửa sổ trình duyệt
+    const mapInstance = window.currentMapInstance;
+    if (mapInstance) {
+        // Kiểm tra xem lớp đồ họa tô màu phần thửa đất được chọn (highlight fill) có tồn tại không
+        if (mapInstance.getLayer('sheet-thua-dat-highlight-fill')) {
+            // Đặt lại bộ lọc (filter) rỗng để gỡ bỏ hiệu ứng tô màu nổi bật của thửa đất cũ
+            mapInstance.setFilter('sheet-thua-dat-highlight-fill', ['==', ['get', 'ID Thửa Đất'], '']);
+        }
+        
+        // Kiểm tra xem lớp đường viền ranh giới thửa đất được chọn (highlight line) có tồn tại không
+        if (mapInstance.getLayer('sheet-thua-dat-highlight-line')) {
+            // Đặt lại bộ lọc rỗng để gỡ bỏ đường viền nổi bật của thửa đất cũ
+            mapInstance.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
+        }
+
+        // 📏 XÓA DỮ LIỆU NHÃN KÍCH THƯỚC CÁC CẠNH THỬA ĐẤT KHI ĐÓNG PANEL
+        if (mapInstance.getSource('parcel-dimensions-source')) {
+            mapInstance.getSource('parcel-dimensions-source').setData({
+                type: 'FeatureCollection',
+                features: [] // Làm trống danh sách các đoạn thẳng kích thước
+            });
+        }
+    }
+}
+
 // --- HÀM KHỞI TẠO VÀ CẤU HÌNH TOÀN BỘ BẢN ĐỒ ---
 function initMap() {
     // Khởi tạo một đối tượng bản đồ MapLibre mới gắn vào thẻ div có id là 'map'
@@ -87,10 +137,10 @@ function initMap() {
                 type: 'circle',
                 source: 'parcel-dimensions-source',
                 paint: {
-                    'circle-radius': 4,             // Bán kính vòng tròn điểm mốc nhỏ gọn (pixel)
+                    'circle-radius': 4,             // Bán kính vòng tròn điểm mốc (pixel)
                     'circle-color': '#ffffff',      // Màu tô bên trong vòng tròn (Trắng)
                     'circle-stroke-width': 1.5,     // Độ dày đường viền vòng tròn (pixel)
-                    'circle-stroke-color': '#000000'// Màu viền vòng tròn (Đen)
+                    'circle-stroke-color': '#000000'// Màu đường viền vòng tròn (Đen)
                 }
             });
         }
@@ -101,7 +151,7 @@ function initMap() {
         initThuaDatSearch(map);
     });
 
-    // 🏷️ Mảng lưu trữ các Marker hiển thị số đo độ dài cạnh trên bản đồ (thay thế cho Popup cũ để bỏ hẳn nền trắng)
+    // Mảng lưu trữ các Marker hiển thị số đo độ dài cạnh trên bản đồ (thay thế hoàn toàn Popup cũ để bỏ khung nền trắng)
     let activeMarkers = [];
 
     // Hàm dọn dẹp và xóa các Marker hiển thị số đo cũ
@@ -151,23 +201,22 @@ function initMap() {
                         const coords = segment.geometry.coordinates;
                         const midCoord = [(coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2];
 
-                        // Tạo phần tử HTML thuần túy chỉ có chữ màu trắng và bóng đổ viền đen (hoàn toàn không có khung nền trắng)
+                        // Tạo phần tử div thuần túy hiển thị con số (màu trắng, in đậm, có viền bóng đen, KHÔNG khung nền)
                         const el = document.createElement('div');
                         el.style.color = '#ffffff';                     // Màu chữ số đo (Trắng)
                         el.style.fontSize = '12px';                     // Cỡ chữ (12 pixel)
                         el.style.fontWeight = 'bold';                   // Độ đậm của chữ (In đậm)
-                        // Hiệu ứng bóng đổ viền đen xung quanh chữ giúp hiển thị cực rõ trên nền ảnh vệ tinh sáng/tối khác nhau
-                        el.style.textShadow = '1px 1px 2px #000000, -1px -1px 2px #000000, 1px -1px 2px #000000, -1px 1px 2px #000000';
+                        el.style.textShadow = '1px 1px 2px #000000, -1px -1px 2px #000000, 1px -1px 2px #000000, -1px 1px 2px #000000'; // Hiệu ứng viền bóng đen giúp nổi bật trên mọi nền
                         el.style.whiteSpace = 'nowrap';                 // Không cho phép chữ bị ngắt xuống dòng
                         el.innerText = formattedLength;                 // Gán giá trị chiều dài cạnh (ví dụ: 30.4m)
 
-                        // Sử dụng maplibregl.Marker thay cho Popup để loại bỏ triệt để khung nền trắng mặc định
+                        // Sử dụng maplibregl.Marker để ghim trực tiếp lên bản đồ mà không có khung nền trắng
                         const marker = new maplibregl.Marker({
                             element: el,
                             anchor: 'center'
                         })
-                        .setLngLat(midCoord)        // Thiết lập tọa độ hiển thị tại điểm giữa của cạnh
-                        .addTo(map);                // Thêm trực tiếp lên bản đồ
+                        .setLngLat(midCoord)        // Thiết lập tọa độ hiển thị là điểm giữa của cạnh
+                        .addTo(map);                // Thêm marker trực tiếp lên bản đồ
 
                         activeMarkers.push(marker); // Lưu trữ marker vào mảng quản lý chung
                     });
@@ -239,3 +288,6 @@ function initMap() {
         isFeatureClicked = false; // Đặt lại trạng thái cờ kiểm tra click
     });
 }
+
+// Kích hoạt thực thi hàm khởi tạo bản đồ ngay sau khi cấu trúc trang HTML được tải hoàn tất
+document.addEventListener('DOMContentLoaded', initMap);
