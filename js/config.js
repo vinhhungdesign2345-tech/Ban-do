@@ -64,15 +64,15 @@ const CONFIG = {
                 'maxzoom': 22                   /* Mức phóng to chi tiết tối đa cho phép hiển thị */
             },
             {
-                'id': 'ha-tang-dien-layer',      /* Lớp hiển thị đường dây điện luôn xuất hiện trên nền */
-                'type': 'line',
-                'source': 'ha-tang-dien-source',
-                'minzoom': 0,
-                'maxzoom': 22,
+                'id': 'ha-tang-dien-layer',      /* ID định danh duy nhất cho lớp hiển thị hạ tầng điện trên bản đồ */
+                'type': 'line',                 /* Kiểu hiển thị dữ liệu là dạng đường (line) cho các đối tượng đường dây điện */
+                'source': 'ha-tang-dien-source',/* Liên kết đến nguồn dữ liệu GeoJSON 'ha-tang-dien-source' đã khai báo ở trên */
+                'minzoom': 0,                   /* Mức phóng to tối thiểu cho phép hiển thị lớp này (bắt đầu từ mức 0 - toàn cảnh) */
+                'maxzoom': 22,                  /* Mức phóng to tối đa cho phép hiển thị lớp này (đến mức 22 - cực kỳ chi tiết) */
                 'paint': {
-                    'line-color': '#ffcc00',    /* Màu vàng sáng nổi bật trên nền vệ tinh */
-                    'line-width': 2,
-                    'line-opacity': 0.9
+                    'line-color': '#8f8c82',    /* Màu sắc của đường dây điện (chọn màu vàng sáng để dễ dàng nhận diện nổi bật trên nền vệ tinh) */
+                    'line-width': 0.7           /* Độ dày/chiều rộng của nét vẽ đường dây điện (đơn vị pixel) */
+                    'line-opacity': 0.5         /* Độ trong suốt của đường line (0.9 tương đương hiển thị rõ 90%, gần như đặc) */
                 }
             }
         ]
