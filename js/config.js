@@ -41,55 +41,52 @@ const CONFIG = {
     // Cập nhật đường dẫn Web URL của Sheet tại đây
     SHEET_DATA_URL: 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec',
 
-    // Cấu hình giao diện: Nền vệ tinh Google sắc nét (không icon rườm rà) + Lớp đường nét vector tối giản từ dữ liệu OSM
+    // Cấu hình giao diện: Ảnh vệ tinh Google sắc nét ở dưới + Lớp bản đồ OSM tiêu chuẩn ở trên với độ trong suốt vừa phải để thấy cả đường lẫn vệ tinh
     MAP_STYLE: {
         'version': 8,
         'sources': {
-            // 1. Nguồn ảnh vệ tinh thuần túy của Google (giống ảnh 1.3 nhưng sạch sẽ không có các icon dịch vụ)
-            'google-satellite-clean': {
+            'google-satellite': {
                 'type': 'raster',
                 'tiles': ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
                 'tileSize': 256
             },
-            // 2. Nguồn nét đường và nhãn tối giản dạng trong suốt từ dữ liệu OSM (CartoDB Voyager Labels hoặc Stamen style)
-            'osm-lines-labels': {
+            'osm-standard': {
                 'type': 'raster',
-                'tiles': ['https://a.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}@2x.png'],
+                'tiles': ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
                 'tileSize': 256,
-                'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                'attribution': '&copy; OpenStreetMap contributors'
             }
         },
         'layers': [
-            // Lớp 1: Nền vệ tinh nằm ở dưới cùng
             {
-                'id': 'google-sat-layer',
+                'id': 'satellite-layer',
                 'type': 'raster',
-                'source': 'google-satellite-clean',
+                'source': 'google-satellite',
                 'minzoom': 0,
                 'maxzoom': 22
             },
-            // Lớp 2: Lớp đường sá và nhãn phong cách OSM phủ lên trên, làm nổi bật đường đi mà không che lấp vệ tinh
             {
-                'id': 'osm-overlay-layer',
+                'id': 'osm-layer',
                 'type': 'raster',
-                'source': 'osm-lines-labels',
+                'source': 'osm-standard',
                 'minzoom': 0,
                 'maxzoom': 22,
                 'paint': {
-                    'raster-opacity': 0.85 // Độ rõ nét của đường xá phía trên
+                    // Chỉnh độ mờ ở mức 0.4 hoặc 0.45 để các đường nét, tên đường màu đen/cam của OSM nổi lên, 
+                    // đồng thời vẫn nhìn thấy mờ mờ ảnh vệ tinh bên dưới đúng ý bạn muốn.
+                    'raster-opacity': 0.45 
                 }
             }
         ]
     },
 
-    MAP_CENTER: [105.15, 9.18],              /* Tọa độ trung tâm mặc định */
-    MAP_ZOOM: 12,                            /* Mức độ phóng to mặc định */
-    FILL_COLOR: '#00ffcc',                   /* Màu tô nền mặc định cho thửa đất */
-    FILL_OPACITY: 0.3,                       /* Độ trong suốt nền thửa đất */
-    OUTLINE_COLOR: '#ffffff'                 /* Màu viền thửa đất */
+    MAP_CENTER: [105.15, 9.18],              
+    MAP_ZOOM: 12,                            
+    FILL_COLOR: '#00ffcc',                   
+    FILL_OPACITY: 0.3,                       
+    OUTLINE_COLOR: '#ffffff'                 
 };
 
-// Biểu thức quy tắc phân loại màu sắc quy hoạch theo từng loại đất
 const COLOR_MATCH_EXPRESSION = [
     'match',                                 
     ['get', 'Loại Đất'],                     
