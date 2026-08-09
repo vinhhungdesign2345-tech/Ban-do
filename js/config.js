@@ -1,6 +1,6 @@
 // js/config.js
 const CONFIG = {
-    // THÊM TỈNH TẠI ĐÂY
+    // DANH SÁCH CÁC TỈNH TRÊN BẢN ĐỒ
     PROVINCES: [
         { id: "AnGiang", name: "Tỉnh An Giang", file: "./geojson/An-Giang.json" },
         { id: "BacNinh", name: "Tỉnh Bắc Ninh", file: "./geojson/Bac-Ninh.json" },
@@ -38,64 +38,76 @@ const CONFIG = {
         { id: "VinhLong", name: "Tỉnh Vĩnh Long", file: "./geojson/Vinh-Long.json" },
     ],
 
-    // Cập nhật đường dẫn Web URL của Sheet tại đây
     SHEET_DATA_URL: 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec',
 
-    // Cấu hình giao diện nền bản đồ vệ tinh sử dụng nguồn tile trực tiếp từ Google Maps
     MAP_STYLE: {
-        'version': 8,                        /* Phiên bản định dạng cấu hình style của MapLibre GL */
+        'version': 8,
         'sources': {
             'google-satellite': {
-                'type': 'raster',            /* Định dạng nguồn ảnh dạng lưới raster */
-                'tiles': ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'], /* URL lấy mảnh ảnh bản đồ vệ tinh Google */
-                'tileSize': 256              /* Kích thước tiêu chuẩn của mỗi mảnh ảnh (tile) là 256x256 pixel */
+                'type': 'raster',
+                'tiles': ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'],
+                'tileSize': 256
             },
-            'ha-tang-dien-source': {         /* Đã thêm dấu phẩy ngăn cách ở đây */
-                'type': 'geojson',           /* Nguồn dữ liệu GeoJSON cho hạ tầng điện Cà Mau */
-                'data': './geojson/Ca-Mau-ha-tang-dien.json'
+            'ha-tang-dien-source': {
+                'type': 'geojson',
+                'data': './geojson/ca-mau-ha-tang-dien.json'
             }
         },
         'layers': [
             {
-                'id': 'google-satellite-layer', /* ID định danh lớp hiển thị bản đồ vệ tinh */
-                'type': 'raster',               /* Kiểu hiển thị là dạng ảnh raster */
-                'source': 'google-satellite',   /* Liên kết trực tiếp đến nguồn 'google-satellite' đã định nghĩa phía trên */
-                'minzoom': 0,                   /* Mức thu nhỏ tối đa cho phép hiển thị */
-                'maxzoom': 22                   /* Mức phóng to chi tiết tối đa cho phép hiển thị */
+                'id': 'google-satellite-layer',      /* Lớp nền ảnh vệ tinh */
+                'type': 'raster',
+                'source': 'google-satellite',
+                'minzoom': 0,
+                'maxzoom': 22
             },
             {
-                'id': 'ha-tang-dien-layer',      /* ID định danh duy nhất cho lớp hiển thị hạ tầng điện trên bản đồ */
-                'type': 'line',                 /* Kiểu hiển thị dữ liệu là dạng đường (line) cho các đối tượng đường dây điện */
-                'source': 'ha-tang-dien-source',/* Liên kết đến nguồn dữ liệu GeoJSON 'ha-tang-dien-source' đã khai báo ở trên */
-                'minzoom': 0,                   /* Mức phóng to tối thiểu cho phép hiển thị lớp này (bắt đầu từ mức 0 - toàn cảnh) */
-                'maxzoom': 22,                  /* Mức phóng to tối đa cho phép hiển thị lớp này (đến mức 22 - cực kỳ chi tiết) */
+                'id': 'ha-tang-dien-line',           /* Lớp hiển thị đường dây điện */
+                'type': 'line',
+                'source': 'ha-tang-dien-source',
+                'filter': ['==', '$type', 'LineString'], /* Chỉ hiển thị đối tượng dạng đường */
+                'minzoom': 0,
+                'maxzoom': 22,
                 'paint': {
-                    'line-color': '#8f8c82',    /* Màu sắc của đường dây điện (chọn màu vàng sáng để dễ dàng nhận diện nổi bật trên nền vệ tinh) */
-                    'line-width': 0.7           /* Độ dày/chiều rộng của nét vẽ đường dây điện (đơn vị pixel) */
-                    'line-opacity': 0.5         /* Độ trong suốt của đường line (0.9 tương đương hiển thị rõ 90%, gần như đặc) */
+                    'line-color': '#ffcc00',         /* Màu vàng */
+                    'line-width': 2,                 /* Độ rộng nét */
+                    'line-opacity': 0.9              /* Độ đậm nhạt */
+                }
+            },
+            {
+                'id': 'ha-tang-dien-points',         /* Lớp hiển thị các trụ điện */
+                'type': 'circle',
+                'source': 'ha-tang-dien-source',
+                'filter': ['==', '$type', 'Point'],  /* Chỉ hiển thị đối tượng dạng điểm */
+                'minzoom': 14,                       /* Chỉ hiện khi zoom đủ gần để tránh rối */
+                'maxzoom': 22,
+                'paint': {
+                    'circle-radius': 4,              /* Kích thước trụ điện */
+                    'circle-color': '#ff0000',       /* Màu đỏ cho trụ */
+                    'circle-stroke-width': 1,        /* Viền trụ */
+                    'circle-stroke-color': '#ffffff' /* Viền trắng để trụ nổi hơn */
                 }
             }
         ]
     },
 
-    MAP_CENTER: [105.15, 9.18],              /* Tọa độ trung tâm mặc định khởi tạo ban đầu cho toàn bản đồ [Kinh độ, Vĩ độ] */
-    MAP_ZOOM: 12,                            /* Mức độ phóng to (zoom level) mặc định khi vừa mở trang web */
-    FILL_COLOR: '#00ffcc',                   /* Màu tô nền mặc định cho các thửa đất/vùng chọn */
-    FILL_OPACITY: 0.3,                       /* Độ trong suốt của lớp màu tô nền (0.3 tương đương 30%) */
-    OUTLINE_COLOR: '#ffffff'                 /* Màu đường viền bao quanh thửa đất (màu trắng) */
+    MAP_CENTER: [105.15, 9.18],
+    MAP_ZOOM: 12,
+    FILL_COLOR: '#00ffcc',
+    FILL_OPACITY: 0.3,
+    OUTLINE_COLOR: '#ffffff'
 };
 
-// Biểu thức quy tắc phân loại màu sắc quy hoạch dựa theo từng loại đất cụ thể
 const COLOR_MATCH_EXPRESSION = [
-    'match',                                 /* Hàm so khớp điều kiện của MapLibre Style Specification */
-    ['get', 'Loại Đất'],                     /* Lấy giá trị thuộc tính 'Loại Đất' của từng thửa đất từ dữ liệu bản đồ */
-    'Đất ở tại đô thị', '#e063ce',            /* Nếu là Đất ở tại đô thị -> Tô màu hồng đậm (#ff007f) */
-    'Đất ở tại nông thôn', '#cf99c7',         /* Nếu là Đất ở tại nông thôn -> Tô màu cam (#ff5400) */
-    'Đất nuôi trồng thuỷ sản', '#00b4d8',    /* Nếu là Đất nuôi trồng thuỷ sản -> Tô màu xanh dương nhạt (#00b4d8) */
-    'Đất nuôi trồng thủy sản', '#00b4d8',    /* Dự phòng thêm trường hợp sai chính tả dấu/chữ -> Tô màu xanh dương nhạt */
-    'Đất trồng cây lâu năm', '#519e05',       /* Nếu là Đất trồng cây lâu năm -> Tô màu xanh lá mạ (#70e000) */
-    'Đất trồng cây hàng năm khác', '#519e05',/* Nếu là Đất trồng cây hàng năm khác -> Tô màu xanh nõn chuối (#9ef01a) */
-    'Đất trồng lúa', '#f5e753',              /* Nếu là Đất trồng lúa -> Tô màu vàng nhạt (#f5e753) */
-    'Đất chuyên trồng lúa nước', '#ffea00',    /* Nếu là Đất chuyên trồng lúa nước -> Tô màu vàng tươi (#ffea00) */
-    '#c2b9ab'                                /* Màu mặc định dự phòng nếu loại đất không nằm trong danh sách trên (màu cam vàng) */
+    'match',
+    ['get', 'Loại Đất'],
+    'Đất ở tại đô thị', '#e063ce',
+    'Đất ở tại nông thôn', '#cf99c7',
+    'Đất nuôi trồng thuỷ sản', '#00b4d8',
+    'Đất nuôi trồng thủy sản', '#00b4d8',
+    'Đất trồng cây lâu năm', '#519e05',
+    'Đất trồng cây hàng năm khác', '#519e05',
+    'Đất trồng lúa', '#f5e753',
+    'Đất chuyên trồng lúa nước', '#ffea00',
+    '#c2b9ab'
 ];
