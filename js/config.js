@@ -41,42 +41,42 @@ const CONFIG = {
     // Cập nhật đường dẫn Web URL của Sheet tại đây
     SHEET_DATA_URL: 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec',
 
-    // Cấu hình giao diện bản đồ kết hợp: Nền vệ tinh thuần túy (không nhãn) + Lớp phủ bản đồ đường/nhãn từ OSM
+    // Cấu hình giao diện: Nền vệ tinh sắc nét tuyệt đối + Lớp nhãn đường xá trong suốt (CartoDB Light Labels)
     MAP_STYLE: {
         'version': 8, /* Phiên bản định dạng cấu hình style của MapLibre GL */
         'sources': {
-            // 1. Nguồn ảnh vệ tinh thuần túy của Google (Dùng tham số lyrs=s để loại bỏ hoàn toàn chữ/nhãn dán)
-            'google-satellite-no-label': {
+            // 1. Nguồn ảnh vệ tinh thuần túy của Google (Sáng rõ, sắc nét, không bị dính chữ sẵn)
+            'google-satellite-pure': {
                 'type': 'raster',
                 'tiles': ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
                 'tileSize': 256
             },
-            // 2. Nguồn dữ liệu bản đồ giao thông/địa danh dạng vector từ OpenStreetMap (OSM)
-            'osm-vector-tiles': {
+            // 2. Nguồn nhãn đường xá/địa danh dạng trong suốt dựa trên dữ liệu OpenStreetMap
+            'osm-transparent-labels': {
                 'type': 'raster',
-                'tiles': ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                'tiles': ['https://a.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}@2x.png'],
                 'tileSize': 256,
-                'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             }
         },
         'layers': [
-            // Lớp hiển thị 1: Nền ảnh vệ tinh nằm dưới cùng
+            // Lớp 1: Ảnh vệ tinh nằm dưới cùng (Giữ nguyên độ nét 100%)
             {
                 'id': 'google-satellite-layer',
                 'type': 'raster',
-                'source': 'google-satellite-no-label',
+                'source': 'google-satellite-pure',
                 'minzoom': 0,
                 'maxzoom': 22
             },
-            // Lớp hiển thị 2: Bản đồ đường xá, nhãn tên từ OpenStreetMap phủ lên trên nền vệ tinh
+            // Lớp 2: Chỉ hiển thị tên đường, ranh giới và nhãn địa danh nổi lên trên (Nền hoàn toàn trong suốt)
             {
-                'id': 'osm-overlay-layer',
+                'id': 'osm-labels-overlay',
                 'type': 'raster',
-                'source': 'osm-vector-tiles',
+                'source': 'osm-transparent-labels',
                 'minzoom': 0,
                 'maxzoom': 22,
                 'paint': {
-                    'raster-opacity': 0.65 // Điều chỉnh độ đậm nhạt của lớp OSM (0.65 tương đương 65% để không làm chói mắt nền vệ tinh)
+                    'raster-opacity': 0.9 // Độ đậm của chữ/đường nét cho dễ nhìn trên nền vệ tinh
                 }
             }
         ]
