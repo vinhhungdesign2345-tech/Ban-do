@@ -41,26 +41,25 @@ const CONFIG = {
     // Cập nhật đường dẫn Web URL của Sheet tại đây
     SHEET_DATA_URL: 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec',
 
-    // Cấu hình giao diện: Nền vệ tinh sắc nét tuyệt đối + Lớp nhãn đường xá trong suốt (CartoDB Light Labels)
+    // Cấu hình giao diện: Tách biệt hoàn toàn Vệ tinh thuần túy (dưới) và Lớp nhãn ranh giới/phường xã chuẩn Google (trên)
     MAP_STYLE: {
         'version': 8, /* Phiên bản định dạng cấu hình style của MapLibre GL */
         'sources': {
-            // 1. Nguồn ảnh vệ tinh thuần túy của Google (Sáng rõ, sắc nét, không bị dính chữ sẵn)
+            // 1. Nguồn ảnh vệ tinh thuần túy (Không dính chữ)
             'google-satellite-pure': {
                 'type': 'raster',
                 'tiles': ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
                 'tileSize': 256
             },
-            // 2. Nguồn nhãn đường xá/địa danh dạng trong suốt dựa trên dữ liệu OpenStreetMap
-            'osm-transparent-labels': {
+            // 2. Nguồn chuyên dụng chỉ lấy các nhãn tên đường, tên phường xã, ranh giới từ Google Maps
+            'google-labels-overlay': {
                 'type': 'raster',
-                'tiles': ['https://a.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}@2x.png'],
-                'tileSize': 256,
-                'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                'tiles': ['https://mt1.google.com/vt/lyrs=h@186000000&hl=vi&x={x}&y={y}&z={z}'],
+                'tileSize': 256
             }
         },
         'layers': [
-            // Lớp 1: Ảnh vệ tinh nằm dưới cùng (Giữ nguyên độ nét 100%)
+            // Lớp 1: Nền vệ tinh sắc nét nằm dưới cùng
             {
                 'id': 'google-satellite-layer',
                 'type': 'raster',
@@ -68,15 +67,15 @@ const CONFIG = {
                 'minzoom': 0,
                 'maxzoom': 22
             },
-            // Lớp 2: Chỉ hiển thị tên đường, ranh giới và nhãn địa danh nổi lên trên (Nền hoàn toàn trong suốt)
+            // Lớp 2: Lớp nhãn tên đường, tên phường xã nổi bật, sắc nét hiển thị đè lên trên
             {
-                'id': 'osm-labels-overlay',
+                'id': 'google-labels-layer',
                 'type': 'raster',
-                'source': 'osm-transparent-labels',
+                'source': 'google-labels-overlay',
                 'minzoom': 0,
                 'maxzoom': 22,
                 'paint': {
-                    'raster-opacity': 0.9 // Độ đậm của chữ/đường nét cho dễ nhìn trên nền vệ tinh
+                    'raster-opacity': 0.95 // Độ hiển thị đậm rõ, giúp nhìn thấy rõ tên phường xã và đường sá
                 }
             }
         ]
@@ -89,17 +88,17 @@ const CONFIG = {
     OUTLINE_COLOR: '#ffffff'                 /* Màu đường viền bao quanh thửa đất (màu trắng) */
 };
 
-// Biểu thức quy tắc phân loại màu sắc quy hoạch dựa theo từng loại đất cụ thể
+// Biểu thức quy tắc phân loại màu sắc quy hoạch theo từng loại đất
 const COLOR_MATCH_EXPRESSION = [
-    'match',                                 /* Hàm so khớp điều kiện của MapLibre Style Specification */
-    ['get', 'Loại Đất'],                     /* Lấy giá trị thuộc tính 'Loại Đất' của từng thửa đất từ dữ liệu bản đồ */
-    'Đất ở tại đô thị', '#e063ce',           /* Nếu là Đất ở tại đô thị -> Tô màu hồng đậm */
-    'Đất ở tại nông thôn', '#cf99c7',        /* Nếu là Đất ở tại nông thôn -> Tô màu hồng nhạt */
-    'Đất nuôi trồng thuỷ sản', '#00b4d8',    /* Nếu là Đất nuôi trồng thuỷ sản -> Tô màu xanh dương nhạt */
-    'Đất nuôi trồng thủy sản', '#00b4d8',    /* Dự phòng trường hợp sai chính tả dấu/chữ */
-    'Đất trồng cây lâu năm', '#519e05',      /* Nếu là Đất trồng cây lâu năm -> Tô màu xanh lá mạ */
-    'Đất trồng cây hàng năm khác', '#519e05',/* Nếu là Đất trồng cây hàng năm khác -> Tô màu xanh nõn chuối */
-    'Đất trồng lúa', '#f5e753',              /* Nếu là Đất trồng lúa -> Tô màu vàng nhạt */
-    'Đất chuyên trồng lúa nước', '#ffea00',  /* Nếu là Đất chuyên trồng lúa nước -> Tô màu vàng tươi */
-    '#c2b9ab'                                /* Màu mặc định dự phòng nếu loại đất không nằm trong danh sách trên */
+    'match',                                 
+    ['get', 'Loại Đất'],                     
+    'Đất ở tại đô thị', '#e063ce',           
+    'Đất ở tại nông thôn', '#cf99c7',        
+    'Đất nuôi trồng thuỷ sản', '#00b4d8',    
+    'Đất nuôi trồng thủy sản', '#00b4d8',    
+    'Đất trồng cây lâu năm', '#519e05',      
+    'Đất trồng cây hàng năm khác', '#519e05',
+    'Đất trồng lúa', '#f5e753',              
+    'Đất chuyên trồng lúa nước', '#ffea00',  
+    '#c2b9ab'                                
 ];
