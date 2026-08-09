@@ -34,6 +34,14 @@ function closeParcelPanel() {
             // Đặt lại bộ lọc rỗng để gỡ bỏ đường viền nổi bật của thửa đất cũ
             mapInstance.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
         }
+
+        // 📏 XÓA DỮ LIỆU NHÃN KÍCH THƯỚC CÁC CẠNH THỬA ĐẤT KHI ĐÓNG PANEL
+        if (mapInstance.getSource('parcel-dimensions-source')) {
+            mapInstance.getSource('parcel-dimensions-source').setData({
+                type: 'FeatureCollection',
+                features: []
+            });
+        }
     }
 }
 
@@ -109,6 +117,34 @@ function initMap() {
             };
         }
 
+        // 📏 KHỞI TẠO NGUỒN VÀ LỚP HIỂN THỊ ĐỘ DÀI CÁC CẠNH THỬA ĐẤT BẰNG SYMBOL LAYER
+        if (!map.getSource('parcel-dimensions-source')) {
+            // Thêm nguồn dữ liệu GeoJSON rỗng ban đầu để chứa các đoạn thẳng cạnh thửa đất
+            map.addSource('parcel-dimensions-source', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+
+            // Thêm lớp biểu tượng (Symbol) để ghi chữ số độ dài chạy bám dọc theo từng cạnh
+            map.addLayer({
+                id: 'parcel-dimensions-layer',
+                type: 'symbol',
+                source: 'parcel-dimensions-source',
+                layout: {
+                    'text-field': ['get', 'length'],              // Lấy thuộc tính 'length' làm nội dung văn bản
+                    'text-size': 12,                              // Kích thước phông chữ nhãn độ dài
+                    'text-anchor': 'center',                      // Căn giữa văn bản theo chiều dài đoạn thẳng
+                    'symbol-placement': 'line',                   // Đặt nhãn nằm dọc và uốn theo chiều đường thẳng
+                    'text-rotation-alignment': 'map'             // Giữ hướng chữ xoay cố định theo góc xoay bản đồ
+                },
+                paint: {
+                    'text-color': '#ff1100',                      // Màu chữ độ dài (Màu đỏ cam nổi bật)
+                    'text-halo-color': '#ffffff',                 // Đường viền màu trắng bao quanh chữ giúp Dễ đọc
+                    'text-halo-width': 2                          // Độ rộng đường viền chữ
+                }
+            });
+        }
+
         // Khởi tạo bộ lọc hành chính tỉnh/xã sau khi bản đồ tải hoàn tất
         initFilter(map);
         // Khởi tạo tính năng tìm kiếm thửa đất sau khi bản đồ tải hoàn tất
@@ -129,6 +165,39 @@ function initMap() {
 
             const selectedFeature = e.features[0];       // Lấy thửa đất đầu tiên trong danh sách các đối tượng bị click
             const rawProps = selectedFeature.properties || {}; // Lấy toàn bộ tập dữ liệu thuộc tính đi kèm của thửa đất
+
+            // 📏 TÍCH HỢP TURF.JS TÍNH TOÁN VÀ HIỂN THỊ ĐỘ DÀI MỖI CẠNH CỦA THỬA ĐẤT
+            if (typeof turf !== 'undefined' && selectedFeature.geometry) {
+                try {
+                    // Phân tách polygon ranh giới thửa đất thành các đoạn thẳng cạnh độc lập (lineSegment)
+                    const lineSegments = turf.lineSegment(selectedFeature);
+                    const dimensionFeatures = [];
+
+                    lineSegments.features.forEach(segment => {
+                        // Tính chiều dài từng đoạn cạnh theo đơn vị mét
+                        const lengthMeters = turf.length(segment, { units: 'meters' });
+                        
+                        // Định dạng hiển thị độ dài ngắn gọn (ví dụ: 15.4m hoặc 8.25m)
+                        const formattedLength = lengthMeters >= 10 
+                            ? `${lengthMeters.toFixed(1)}m` 
+                            : `${lengthMeters.toFixed(2)}m`;
+
+                        // Gán thuộc tính chiều dài vừa tính vào Feature của đoạn thẳng
+                        segment.properties.length = formattedLength;
+                        dimensionFeatures.push(segment);
+                    });
+
+                    // Cập nhật tập hợp các cạnh vào nguồn dữ liệu bản đồ để hiển thị nhãn kích thước
+                    if (map.getSource('parcel-dimensions-source')) {
+                        map.getSource('parcel-dimensions-source').setData({
+                            type: 'FeatureCollection',
+                            features: dimensionFeatures
+                        });
+                    }
+                } catch (err) {
+                    console.error("Lỗi trong quá trình tính toán độ dài cạnh thửa đất:", err);
+                }
+            }
 
             // Trích xuất các trường thông tin chi tiết, hỗ trợ nhiều định dạng tên cột khác nhau từ nguồn dữ liệu
             const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
@@ -179,7 +248,7 @@ function initMap() {
     map.on('click', (e) => {
         // Nếu biến cờ xác nhận không có thửa đất nào được click trước đó
         if (!isFeatureClicked) {
-            closeParcelPanel(); // Gọi hàm đóng bảng thông tin và xóa trạng thái highlight hiện tại
+            closeParcelPanel(); // Gọi hàm đóng bảng thông tin, xóa highlight và ẩn nhãn kích thước cạnh
             // Nếu hàm tra cứu xã/phường theo tọa độ điểm tồn tại, tiến hành kích hoạt tra cứu theo vị trí click
             if (typeof selectPhuongFromPoint === 'function') {
                 selectPhuongFromPoint(e.lngLat.lng, e.lngLat.lat, map);
