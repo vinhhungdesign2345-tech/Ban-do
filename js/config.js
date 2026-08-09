@@ -1,6 +1,6 @@
 // js/config.js
 const CONFIG = {
-    // DANH SÁCH CÁC TỈNH TRÊN BẢN ĐỒ
+    // ... giữ nguyên danh sách PROVINCES như cũ ...
     PROVINCES: [
         { id: "AnGiang", name: "Tỉnh An Giang", file: "./geojson/An-Giang.json" },
         { id: "BacNinh", name: "Tỉnh Bắc Ninh", file: "./geojson/Bac-Ninh.json" },
@@ -48,6 +48,12 @@ const CONFIG = {
                 'tiles': ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'],
                 'tileSize': 256
             },
+            'osm-map': { // Nguồn OpenStreetMap
+                'type': 'raster',
+                'tiles': ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                'tileSize': 256,
+                'attribution': '&copy; OpenStreetMap contributors'
+            },
             'ha-tang-dien-source': {
                 'type': 'geojson',
                 'data': './geojson/Ca-Mau-ha-tang-dien.json'
@@ -55,37 +61,42 @@ const CONFIG = {
         },
         'layers': [
             {
-                'id': 'google-satellite-layer',      /* Lớp nền ảnh vệ tinh */
+                'id': 'google-satellite-layer',
                 'type': 'raster',
                 'source': 'google-satellite',
-                'minzoom': 0,
-                'maxzoom': 22
+                'minzoom': 0, 'maxzoom': 22
             },
             {
-                'id': 'ha-tang-dien-line',           /* Lớp hiển thị đường dây điện */
+                'id': 'osm-layer', // Lớp OSM (mặc định ẩn)
+                'type': 'raster',
+                'source': 'osm-map',
+                'layout': { 'visibility': 'none' },
+                'minzoom': 0, 'maxzoom': 22
+            },
+            {
+                'id': 'ha-tang-dien-line',
                 'type': 'line',
                 'source': 'ha-tang-dien-source',
-                'filter': ['==', '$type', 'LineString'], /* Chỉ hiển thị đối tượng dạng đường */
-                'minzoom': 0,
-                'maxzoom': 22,
+                'filter': ['==', '$type', 'LineString'],
+                'minzoom': 0, 'maxzoom': 22,
                 'paint': {
-                    'line-color': '#ffcc00',         /* Màu vàng */
-                    'line-width': 1,                 /* Độ rộng nét */
-                    'line-opacity': 0.5              /* Độ đậm nhạt */
+                    'line-color': '#ffcc00',
+                    'line-width': 1,
+                    'line-opacity': 0.5
                 }
             },
             {
-                'id': 'ha-tang-dien-points',         /* Lớp hiển thị các trụ điện */
+                'id': 'ha-tang-dien-points',
                 'type': 'circle',
                 'source': 'ha-tang-dien-source',
-                'filter': ['==', '$type', 'Point'],  /* Chỉ hiển thị đối tượng dạng điểm */
-                'minzoom': 14,                       /* Chỉ hiện khi zoom đủ gần để tránh rối */
+                'filter': ['==', '$type', 'Point'],
+                'minzoom': 14,
                 'maxzoom': 22,
                 'paint': {
-                    'circle-radius': 4,              /* Kích thước trụ điện */
-                    'circle-color': '#ff0000',       /* Màu đỏ cho trụ */
-                    'circle-stroke-width': 1,        /* Viền trụ */
-                    'circle-stroke-color': '#ffffff' /* Viền trắng để trụ nổi hơn */
+                    'circle-radius': 4,
+                    'circle-color': '#ff0000',
+                    'circle-stroke-width': 1,
+                    'circle-stroke-color': '#ffffff'
                 }
             }
         ]
