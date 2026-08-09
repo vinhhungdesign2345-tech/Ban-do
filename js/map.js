@@ -201,18 +201,13 @@ function initMap() {
                         const coords = segment.geometry.coordinates;
                         const midCoord = [(coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2];
 
-                        // Tạo phần tử HTML tùy chỉnh hiển thị số đo cạnh sắc nét, trực quan
-                        const el = document.createElement('div');
-                        el.style.background = 'rgba(255, 255, 255, 0.9)'; // Màu nền trắng trong suốt (độ mờ 0.9)
-                        el.style.border = '1px solid #ff1100';          // Độ dày và màu viền khung (Đỏ)
+                        // Tạo phần tử <span> thuần túy hiển thị con số kích thước (không khung nền, không border)
+                        const el = document.createElement('span');
                         el.style.color = '#ff1100';                     // Màu chữ số đo (Đỏ)
-                        el.style.padding = '2px 5px';                   // Khoảng cách đệm bên trong khung (trên/dưới 2px, trái/phải 5px)
-                        el.style.fontSize = '11px';                     // Cỡ chữ số đo (11 pixel)
+                        el.style.fontSize = '12px';                     // Cỡ chữ (12 pixel)
                         el.style.fontWeight = 'bold';                   // Độ đậm của chữ (In đậm)
-                        el.style.borderRadius = '4px';                  // Độ bo tròn 4 góc khung (4 pixel)
-                        el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';// Hiệu ứng bóng đổ dưới khung nhãn
                         el.style.whiteSpace = 'nowrap';                 // Không cho phép chữ bị ngắt xuống dòng
-                        el.innerText = formattedLength;                 // Gán giá trị chiều dài cạnh vào văn bản
+                        el.innerText = formattedLength;                 // Gán giá trị chiều dài cạnh (ví dụ: 30.4m)
 
                         // Ghim nhãn số đo cạnh lên bản đồ tại vị trí điểm giữa cạnh vừa tính
                         const popup = new maplibregl.Popup({
@@ -221,7 +216,7 @@ function initMap() {
                             className: 'edge-length-popup' // Tên lớp CSS định danh cho popup
                         })
                         .setLngLat(midCoord)        // Thiết lập tọa độ hiển thị là điểm giữa của cạnh
-                        .setDOMContent(el)          // Gắn phần tử HTML đã tạo vào popup
+                        .setDOMContent(el)          // Gắn phần tử HTML thuần số đã tạo vào popup
                         .addTo(map);                // Thêm popup trực tiếp lên bản đồ
 
                         activePopups.push(popup);   // Lưu trữ popup vào mảng quản lý chung
