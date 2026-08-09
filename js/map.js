@@ -97,7 +97,7 @@ function initMap() {
                     map.setLayoutProperty(satLayer, 'visibility', 'visible');
                     // Hiển thị lớp bản đồ vệ tinh lên
                     map.setLayoutProperty(osmLayer, 'visibility', 'none');
-                    // Đổi nhãn chữ trên nút thành gợi ý chuyển sang bản đồ OSM
+                    // Đổi nhãn chữ trên nút thành chuẩn "Chuyển sang Bản đồ OSM"
                     this.innerText = 'Chuyển sang Bản đồ OSM';
                 }
             });
