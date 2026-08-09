@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bản Đồ Quy Hoạch Cà Mau</title>
 
-    <!-- Thư viện MapLibre GL (hiển thị bản đồ vector/raster mã nguồn mở) & TurfJS (thư viện xử lý không gian địa lý GIS) -->
+    <!-- Thư viện MapLibre GL (hiển thị bản đồ vector/raster mã nguồn mở) -->
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+
+    <!-- Thư viện TurfJS (thư viện xử lý không gian địa lý GIS) -->
     <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 
     <!-- Liên kết tệp định dạng kiểu dáng CSS giao diện tùy chỉnh nội bộ -->
@@ -54,11 +56,11 @@
             <!-- Nội dung chi tiết các thuộc tính thửa đất sẽ được mã JavaScript đổ động vào đây -->
         </div>
     </div>
+
     <!-- Nút chuyển đổi nền bản đồ -->
-<!-- Sử dụng class để điều khiển vị trí từ file CSS, loại bỏ inline style -->
-<div class="map-layer-control">
-    <button id="toggleLayerBtn">Chuyển sang Bản đồ OSM</button>
-</div>
+    <div class="map-layer-control">
+        <button id="toggleLayerBtn">Chuyển sang Bản đồ OSM</button>
+    </div>
 
     <!-- Các tệp mã nguồn JavaScript mô-đun chức năng của ứng dụng (được tải theo đúng thứ tự phụ thuộc) -->
     <script src="js/config.js"></script>   <!-- Chứa cấu hình chung, thông tin tỉnh và bảng màu quy hoạch -->
