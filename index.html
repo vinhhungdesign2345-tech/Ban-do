@@ -55,10 +55,9 @@
         </div>
     </div>
     <!-- Nút chuyển đổi nền bản đồ -->
-<div class="map-layer-control" style="position: absolute; bottom: 20px; left: 10px; z-index: 1;">
-    <button id="toggleLayerBtn" style="padding: 10px; background: white; border: 1px solid #ccc; cursor: pointer; border-radius: 4px;">
-        Chuyển sang Bản đồ Đường phố
-    </button>
+<!-- Sử dụng class để điều khiển vị trí từ file CSS, loại bỏ inline style -->
+<div class="map-layer-control">
+    <button id="toggleLayerBtn">Chuyển sang Bản đồ Đường phố</button>
 </div>
 
     <!-- Các tệp mã nguồn JavaScript mô-đun chức năng của ứng dụng (được tải theo đúng thứ tự phụ thuộc) -->
