@@ -41,51 +41,52 @@ const CONFIG = {
     // Cập nhật đường dẫn Web URL của Sheet tại đây
     SHEET_DATA_URL: 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec',
 
-    // Cấu hình giao diện: Tách biệt hoàn toàn Vệ tinh thuần túy (dưới) và Lớp nhãn ranh giới/phường xã chuẩn Google (trên)
+    // Cấu hình giao diện: Nền vệ tinh Google sắc nét (không icon rườm rà) + Lớp đường nét vector tối giản từ dữ liệu OSM
     MAP_STYLE: {
-        'version': 8, /* Phiên bản định dạng cấu hình style của MapLibre GL */
+        'version': 8,
         'sources': {
-            // 1. Nguồn ảnh vệ tinh thuần túy (Không dính chữ)
-            'google-satellite-pure': {
+            // 1. Nguồn ảnh vệ tinh thuần túy của Google (giống ảnh 1.3 nhưng sạch sẽ không có các icon dịch vụ)
+            'google-satellite-clean': {
                 'type': 'raster',
                 'tiles': ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
                 'tileSize': 256
             },
-            // 2. Nguồn chuyên dụng chỉ lấy các nhãn tên đường, tên phường xã, ranh giới từ Google Maps
-            'google-labels-overlay': {
+            // 2. Nguồn nét đường và nhãn tối giản dạng trong suốt từ dữ liệu OSM (CartoDB Voyager Labels hoặc Stamen style)
+            'osm-lines-labels': {
                 'type': 'raster',
-                'tiles': ['https://mt1.google.com/vt/lyrs=h@186000000&hl=vi&x={x}&y={y}&z={z}'],
-                'tileSize': 256
+                'tiles': ['https://a.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}@2x.png'],
+                'tileSize': 256,
+                'attribution': '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             }
         },
         'layers': [
-            // Lớp 1: Nền vệ tinh sắc nét nằm dưới cùng
+            // Lớp 1: Nền vệ tinh nằm ở dưới cùng
             {
-                'id': 'google-satellite-layer',
+                'id': 'google-sat-layer',
                 'type': 'raster',
-                'source': 'google-satellite-pure',
+                'source': 'google-satellite-clean',
                 'minzoom': 0,
                 'maxzoom': 22
             },
-            // Lớp 2: Lớp nhãn tên đường, tên phường xã nổi bật, sắc nét hiển thị đè lên trên
+            // Lớp 2: Lớp đường sá và nhãn phong cách OSM phủ lên trên, làm nổi bật đường đi mà không che lấp vệ tinh
             {
-                'id': 'google-labels-layer',
+                'id': 'osm-overlay-layer',
                 'type': 'raster',
-                'source': 'google-labels-overlay',
+                'source': 'osm-lines-labels',
                 'minzoom': 0,
                 'maxzoom': 22,
                 'paint': {
-                    'raster-opacity': 0.95 // Độ hiển thị đậm rõ, giúp nhìn thấy rõ tên phường xã và đường sá
+                    'raster-opacity': 0.85 // Độ rõ nét của đường xá phía trên
                 }
             }
         ]
     },
 
-    MAP_CENTER: [105.15, 9.18],              /* Tọa độ trung tâm mặc định khởi tạo ban đầu cho toàn bản đồ [Kinh độ, Vĩ độ] */
-    MAP_ZOOM: 12,                            /* Mức độ phóng to (zoom level) mặc định khi vừa mở trang web */
-    FILL_COLOR: '#00ffcc',                   /* Màu tô nền mặc định cho các thửa đất/vùng chọn */
-    FILL_OPACITY: 0.3,                       /* Độ trong suốt của lớp màu tô nền (0.3 tương đương 30%) */
-    OUTLINE_COLOR: '#ffffff'                 /* Màu đường viền bao quanh thửa đất (màu trắng) */
+    MAP_CENTER: [105.15, 9.18],              /* Tọa độ trung tâm mặc định */
+    MAP_ZOOM: 12,                            /* Mức độ phóng to mặc định */
+    FILL_COLOR: '#00ffcc',                   /* Màu tô nền mặc định cho thửa đất */
+    FILL_OPACITY: 0.3,                       /* Độ trong suốt nền thửa đất */
+    OUTLINE_COLOR: '#ffffff'                 /* Màu viền thửa đất */
 };
 
 // Biểu thức quy tắc phân loại màu sắc quy hoạch theo từng loại đất
