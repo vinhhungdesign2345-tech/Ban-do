@@ -50,7 +50,7 @@ const CONFIG = {
             },
             'ha-tang-dien-source': {
                 'type': 'geojson',
-                'data': './geojson/ca-mau-ha-tang-dien.json'
+                'data': './geojson/Ca-Mau-ha-tang-dien.json'
             }
         },
         'layers': [
