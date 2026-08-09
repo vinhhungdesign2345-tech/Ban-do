@@ -75,14 +75,20 @@ function initMap() {
 
     // 🔄 TÍCH HỢP NÚT CHUYỂN ĐỔI LỚP NỀN BẢN ĐỒ (VỆ TINH GOOGLE <-> ĐƯỜNG PHỐ OSM)
     map.on('load', () => {
+        const satLayer = 'google-satellite-layer'; // Định danh lớp bản đồ vệ tinh
+        const osmLayer = 'osm-layer';             // Định danh lớp bản đồ đường phố OSM
+
+        // Ép trạng thái hiển thị chuẩn xác ngay khi bản đồ vừa load xong
+        map.setLayoutProperty(satLayer, 'visibility', 'visible');
+        map.setLayoutProperty(osmLayer, 'visibility', 'none');
+
         const toggleBtn = document.getElementById('toggleLayerBtn');
         if (toggleBtn) {
+            // Đồng bộ nhãn nút bấm ban đầu khớp với trạng thái hiển thị
+            toggleBtn.innerText = 'Chuyển sang Bản đồ OSM';
+
             // Lắng nghe hành động nhấn chuột vào nút chuyển đổi lớp bản đồ nền
-            toggleBtn.addEventListener('click', function() {
-                const satLayer = 'google-satellite-layer'; // Định danh lớp bản đồ vệ tinh
-                const osmLayer = 'osm-layer';             // Định danh lớp bản đồ đường phố OSM
-                
-                // Kiểm tra xem lớp vệ tinh hiện tại có đang hiển thị (visible) hay không
+            toggleBtn.onclick = function() {
                 const isSatVisible = map.getLayoutProperty(satLayer, 'visibility') === 'visible';
                 
                 if (isSatVisible) {
@@ -100,7 +106,7 @@ function initMap() {
                     // Đổi nhãn chữ trên nút thành chuẩn "Chuyển sang Bản đồ OSM"
                     this.innerText = 'Chuyển sang Bản đồ OSM';
                 }
-            });
+            };
         }
 
         // Khởi tạo bộ lọc hành chính tỉnh/xã sau khi bản đồ tải hoàn tất
