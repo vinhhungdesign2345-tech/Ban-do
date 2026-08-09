@@ -178,7 +178,7 @@ input {
     width: 90%;                    /* Chiều rộng khung chiếm 90% màn hình ở các thiết bị nhỏ */
     max-width: 450px;              /* Giới hạn chiều rộng tối đa của khung thông tin là 450 pixel */
     font-family: Arial, sans-serif; /* Quy định font chữ chuẩn cho toàn bộ panel */
-    font-size: 13px;               /* Kích thước chữ bên trong panel là 13px */
+    font-size: 11px;               /* Kích thước chữ bên trong panel là 11px */
     color: #1a1a1a;                /* Màu chữ hiển thị là màu đen đậm vừa (#1a1a1a) */
     box-sizing: border-box;        /* Tính toán kích thước khung bao gồm cả padding và border */
 }
