@@ -70,8 +70,8 @@ const CONFIG = {
                 'maxzoom': 22,
                 'paint': {
                     'line-color': '#ffcc00',         /* Màu vàng */
-                    'line-width': 2,                 /* Độ rộng nét */
-                    'line-opacity': 0.9              /* Độ đậm nhạt */
+                    'line-width': 1,                 /* Độ rộng nét */
+                    'line-opacity': 0.5              /* Độ đậm nhạt */
                 }
             },
             {
