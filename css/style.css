@@ -72,20 +72,20 @@ body {
 
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 .maplibregl-ctrl-top-right {
-    top: 150px !important;         /* Đẩy cụm điều hướng mặc định (nút định vị) xuống dưới thanh trượt để tránh che lấp */
-    right: 10px !important;        /* Cố định cách lề phải 12 pixel cho cân đối */
+    top: 180px !important;         /* Đẩy cụm điều hướng mặc định (nút định vị) xuống dưới thanh trượt để tránh che lấp */
+    right: 8px !important;        /* Cố định cách lề phải 12 pixel cho cân đối */
 }
 
-/* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC, NHỎ GỌN Ở GÓC PHẢI PHÍA TRÊN --- */
+/* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (GỌN GÀNG, KHÔNG HIỂN THỊ SỐ) --- */
 #opacity-control-panel {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
     top: 12px;                     /* Đặt sát phía trên góc phải */
     right: 12px;                   /* Cách mép phải 12 pixel */
     z-index: 1000;                 /* Độ ưu tiên hiển thị cao */
-    background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt đồng bộ với bảng trái */
+    background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt đồng bộ */
     backdrop-filter: blur(10px);   /* Hiệu ứng làm mờ nền */
     -webkit-backdrop-filter: blur(10px);
-    padding: 8px 4px;              /* Khoảng đệm gọn gàng */
+    padding: 6px 4px;              /* Khoảng đệm siêu gọn */
     border-radius: 8px;            /* Bo tròn góc 8px */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18); /* Đổ bóng nổi bật */
     display: flex;                 /* Sử dụng Flexbox để xếp dọc */
@@ -93,15 +93,18 @@ body {
     align-items: center;           /* Canh giữa các phần tử theo chiều ngang */
 }
 
+/* Ẩn hoàn toàn thẻ nhãn chứa chữ và con số độ mờ đi */
 #opacity-control-panel label {
-    font-size: 10px;               /* Cỡ chữ nhỏ gọn */
-    font-weight: bold;             /* In đậm nhãn */
-    color: #333;                   /* Màu chữ xám đậm */
-    margin-bottom: 6px;            /* Khoảng cách phía dưới nhãn */
-    writing-mode: vertical-lr;     /* Xoay chữ dọc theo chiều dọc của khung */
-    transform: rotate(180deg);     /* Xoay xuôi chiều chữ dễ đọc */
-    text-align: center;            /* Canh giữa chữ */
-    height: 50px;                  /* Chiều cao cố định cho phần hiển thị chữ nhãn */
+    display: none !important;      
+}
+
+#opacity-control-panel input[type="range"] {
+    writing-mode: vertical-lr;     /* Biến thanh trượt range thành dạng dọc */
+    direction: rtl;                /* Đảo chiều: kéo lên trên là tăng giá trị, kéo xuống là giảm */
+    width: 16px;                   /* Bề ngang thanh trượt nhỏ gọn */
+    height: 70px;                  /* Chiều dài thanh trượt vừa vặn */
+    cursor: default !important;    /* Giữ nguyên con trỏ chuột mặc định */
+    margin: 0;                     /* Loại bỏ khoảng cách thừa */
 }
 
 #opacity-control-panel input[type="range"] {
