@@ -48,14 +48,48 @@ function closeParcelPanel() {
     }
 }
 
+// --- HÀM ĐỒNG BỘ DỮ LIỆU THỰC ĐỊA (GHI CHÚ & ẢNH CHỤP) VỀ GOOGLE SHEETS ---
+async function syncDataToSheet() {
+    // Lấy tham chiếu đến ô nhập nội dung ghi chú thực địa
+    const noteInput = document.getElementById('txtFieldNote');
+    // Lấy tham chiếu đến ô chọn/chụp ảnh thực tế
+    const camInput = document.getElementById('camInput');
+
+    // Kiểm tra nếu chưa chọn thửa đất nào trên bản đồ thì thông báo lỗi và dừng lại
+    if (!window.selectedParcelProps) {
+        alert("Vui lòng chọn một thửa đất trên bản đồ trước khi cập nhật thực địa!");
+        return;
+    }
+
+    // Lấy giá trị ghi chú do người dùng nhập vào
+    const noteText = noteInput ? noteInput.value.trim() : "";
+    // Lấy file hình ảnh nếu người dùng đã chụp hoặc chọn từ thiết bị
+    const imageFile = camInput && camInput.files.length > 0 ? camInput.files[0] : null;
+
+    // Kiểm tra xem người dùng đã nhập ghi chú hoặc chọn ảnh chưa
+    if (!noteText && !imageFile) {
+        alert("Vui lòng nhập ghi chú hoặc chọn hình ảnh thực tế trước khi đồng bộ!");
+        return;
+    }
+
+    // Hiển thị thông báo đang tiến hành xử lý dữ liệu gửi đi
+    alert("Đang chuẩn bị dữ liệu đồng bộ về Google Sheets...");
+
+    // TODO: Bổ sung logic xử lý chuyển đổi file ảnh sang Base64 hoặc FormData 
+    // và gọi hàm API Apps Script tương ứng để lưu thông tin vào Google Sheets.
+    console.log("Đã ghi nhận dữ liệu thửa đất:", window.selectedParcelProps);
+    console.log("Nội dung ghi chú thực địa:", noteText);
+    console.log("File ảnh thực địa:", imageFile);
+}
+
 // --- HÀM KHỞI TẠO VÀ CẤU HÌNH TOÀN BỘ BẢN ĐỒ ---
 function initMap() {
     // Khởi tạo một đối tượng bản đồ MapLibre mới gắn vào thẻ div có id là 'map'
     const map = new maplibregl.Map({
-        container: 'map',                         // ID của thẻ HTML chứa bản đồ
-        style: CONFIG.MAP_STYLE,                  // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
-        center: CONFIG.MAP_CENTER,                // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
-        zoom: CONFIG.MAP_ZOOM                     // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
+        container: 'map',                            // ID của thẻ HTML chứa bản đồ
+        style: CONFIG.MAP_STYLE,                     // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
+        center: CONFIG.MAP_CENTER,                   // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
+        zoom: CONFIG.MAP_ZOOM                        // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
     });
 
     // Lưu trữ tham chiếu đối tượng bản đồ vào biến toàn cục window để các hàm khác có thể gọi lại
@@ -64,9 +98,9 @@ function initMap() {
     // 📍 TÍCH HỢP NÚT ĐỊNH VỊ VỊ TRÍ HIỆN TẠI CỦA NGƯỜI DÙNG
     const geolocate = new maplibregl.GeolocateControl({
         positionOptions: { 
-            enableHighAccuracy: true,       // Bật chế độ định vị vệ tinh độ chính xác cao nhất có thể
-            maximumAge: 0,                  // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
-            timeout: 20000                  // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
+            enableHighAccuracy: true,         // Bật chế độ định vị vệ tinh độ chính xác cao nhất có thể
+            maximumAge: 0,                    // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
+            timeout: 20000                    // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
         },
         trackUserLocation: true,            // Bật tính năng liên tục theo dõi sự di chuyển của người dùng trên bản đồ
         showUserHeading: true               // Hiển thị mũi tên chỉ hướng hướng quay của thiết bị di động
@@ -174,6 +208,9 @@ function initMap() {
             const selectedFeature = e.features[0];       // Lấy thửa đất đầu tiên trong danh sách các đối tượng bị click
             const rawProps = selectedFeature.properties || {}; // Lấy toàn bộ tập dữ liệu thuộc tính đi kèm của thửa đất
 
+            // Lưu trữ thông tin thửa đất đang được chọn vào biến toàn cục phục vụ tính năng cập nhật thực địa
+            window.selectedParcelProps = rawProps;
+
             // Xóa các nhãn số đo cạnh cũ nếu có trước khi vẽ mới
             clearLengthMarkers();
 
@@ -277,6 +314,7 @@ function initMap() {
     // Lắng nghe sự kiện click trực tiếp lên vùng trống của nền bản đồ (ngoài các thửa đất)
     map.on('click', (e) => {
         if (!isFeatureClicked) {
+            window.selectedParcelProps = null; // Xóa trạng thái lưu thửa đất khi click ra vùng trống
             closeParcelPanel();     // Đóng bảng thông tin thửa đất và gỡ bỏ highlight
             clearLengthMarkers();   // Xóa sạch nhãn số đo cạnh khi click ra ngoài
             
