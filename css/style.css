@@ -1,4 +1,4 @@
-/* css/style.css */
+/* --- css/style.css --- */
 
 /* --- CÀI ĐẶT CHUNG CHO TOÀN BỘ TRANG WEB --- */
 body { 
@@ -72,14 +72,14 @@ body {
 
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 .maplibregl-ctrl-top-right {
-    top: 300px !important;        /* Cách mép trên màn hình 300px */
-    right: 4px !important;        /* Cách lề phải 4px */
+    top: 200px !important;         /* Cách mép trên màn hình 200px */
+    right: 4px !important;         /* Cách lề phải 4px */
 }
 
 /* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (GỌN GÀNG, KHÔNG HIỂN THỊ SỐ) --- */
 #opacity-control-panel {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
-    top: 120px;                     /* Đặt sát phía trên góc phải */
+    top: 120px;                    /* Đặt sát phía trên góc phải */
     right: 14px;                   /* Cách mép phải 12 pixel */
     z-index: 1000;                 /* Độ ưu tiên hiển thị cao */
     background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt đồng bộ */
@@ -105,14 +105,6 @@ body {
     height: 70px;                  /* Chiều dài thanh trượt vừa vặn */
     cursor: default !important;    /* Giữ nguyên con trỏ chuột mặc định */
     margin: 0;                     /* Loại bỏ khoảng cách thừa */
-}
-
-#opacity-control-panel input[type="range"] {
-    writing-mode: vertical-lr;     /* Biến thanh trượt range thành dạng dọc */
-    direction: rtl;                /* Đảo chiều: kéo lên trên là tăng giá trị, kéo xuống là giảm */
-    width: 16px;                   /* Bề ngang thanh trượt nhỏ gọn */
-    height: 70px;                  /* Chiều dài thanh trượt vừa vặn */
-    cursor: default !important;    /* Giữ nguyên con trỏ chuột mặc định */
 }
 
 /* --- CÁC THÀNH PHẦN BỘ LỌC VÀ TÌM KIẾM --- */
@@ -290,8 +282,8 @@ input {
     }
 
     .map-control {
-        top: 8px;                          /* Đưa bảng điều khiển dịch lên sát mép trên màn hình điện thoại (8px) */
-        left: 8px;                         /* Đưa bảng điều khiển sát lề trái hơn (8px) */
+        top: 8px;                          /* Đặt bảng điều khiển dịch lên sát mép trên màn hình điện thoại (8px) */
+        left: 8px;                         /* Đặt bảng điều khiển sát lề trái hơn (8px) */
         width: calc(100% - 16px);          /* Tự động tính toán chiều rộng phủ kín màn hình trừ 2 bên lề */
         padding: 4px;                      /* Thu nhỏ khoảng đệm bên trong bảng điều khiển trên mobile */
     }
@@ -303,8 +295,15 @@ input {
         height: 30px;                      /* Thu nhỏ chiều cao các thành phần điều khiển xuống còn 30px */
     }
 
-    .maplibregl-ctrl-top-right {
-        top: 130px !important;             /* Đẩy cụm nút điều hướng bản đồ xuống thấp hơn trên mobile để tránh đè */
+    /* Đẩy thanh trượt độ mờ xuống thấp hơn bảng điều khiển để tránh bị che khuất trên mobile */
+    #opacity-control-panel {
+        top: 135px !important;             /* Đặt vị trí nằm dưới cụm dropdown tìm kiếm */
         right: 8px !important;             /* Cách lề phải màn hình di động một khoảng 8px */
+    }
+
+    /* Đẩy cụm nút điều hướng bản đồ xuống thấp hơn nữa để nhường chỗ cho thanh trượt độ mờ */
+    .maplibregl-ctrl-top-right {
+        top: 215px !important;             /* Đẩy cụm nút điều hướng bản đồ xuống thấp hẳn bên dưới thanh trượt */
+        right: 8px !important;             /* Cố định sát lề phải màn hình di động */
     }
 }
