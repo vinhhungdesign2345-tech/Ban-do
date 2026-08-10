@@ -303,7 +303,7 @@ input {
 
     /* Đẩy cụm nút điều hướng bản đồ xuống thấp hơn nữa để nhường chỗ cho thanh trượt độ mờ */
     .maplibregl-ctrl-top-right {
-        top: 215px !important;             /* Đẩy cụm nút điều hướng bản đồ xuống thấp hẳn bên dưới thanh trượt */
-        right: 8px !important;             /* Cố định sát lề phải màn hình di động */
+        top: 215px !important;             /* Cách mép trên màn hình di động 215px */
+        right: 4px !important;             /* Cách lề phải màn hình di động 4px */
     }
 }
