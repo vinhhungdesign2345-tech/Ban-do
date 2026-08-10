@@ -70,17 +70,11 @@ body {
     box-sizing: border-box;        /* Tính toán padding và border gộp chung vào kích thước width */
 }
 
-/* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
-.maplibregl-ctrl-top-right {
-    top: 200px !important;         /* Cách mép trên màn hình 200px */
-    right: 4px !important;         /* Cách lề phải 4px */
-}
-
-/* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (GỌN GÀNG, KHÔNG HIỂN THỊ SỐ) --- */
+/* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (ĐỒNG BỘ CHIỀU RỘNG VÀ LỀ PHẢI) --- */
 #opacity-control-panel {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
     top: 120px;                    /* Đặt sát phía trên góc phải */
-    right: 14px;                   /* Cách mép phải 12 pixel */
+    right: 10px;                   /* Cố định khoảng cách lề phải khớp hoàn hảo với nút định vị */
     z-index: 1000;                 /* Độ ưu tiên hiển thị cao */
     background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt đồng bộ */
     backdrop-filter: blur(10px);   /* Hiệu ứng làm mờ nền */
@@ -91,6 +85,8 @@ body {
     display: flex;                 /* Sử dụng Flexbox để xếp dọc */
     flex-direction: column;        /* Xếp các phần tử theo chiều dọc từ trên xuống */
     align-items: center;           /* Canh giữa các phần tử theo chiều ngang */
+    width: 34px;                   /* Cố định chiều rộng chuẩn xác để bằng với cụm nút định vị phía dưới */
+    box-sizing: border-box;        /* Bao gồm padding vào tổng kích thước width */
 }
 
 /* Ẩn hoàn toàn thẻ nhãn chứa chữ và con số độ mờ đi */
@@ -105,6 +101,22 @@ body {
     height: 70px;                  /* Chiều dài thanh trượt vừa vặn */
     cursor: default !important;    /* Giữ nguyên con trỏ chuột mặc định */
     margin: 0;                     /* Loại bỏ khoảng cách thừa */
+}
+
+/* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
+.maplibregl-ctrl-top-right {
+    top: 200px !important;         /* Cách mép trên màn hình 200px */
+    right: 10px !important;        /* Căn lề phải bằng với thanh trượt độ mờ ở trên */
+}
+
+/* Đồng bộ kích thước khung chứa nút điều khiển của MapLibre để thẳng hàng và cùng chiều rộng */
+.maplibregl-ctrl-top-right .maplibregl-ctrl {
+    margin-right: 0 !important;
+    width: 34px !important;        /* Ép chiều rộng bằng với khối thanh trượt độ mờ */
+    box-sizing: border-box !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18) !important;
+    overflow: hidden;
 }
 
 /* --- CÁC THÀNH PHẦN BỘ LỌC VÀ TÌM KIẾM --- */
@@ -295,15 +307,20 @@ input {
         height: 30px;                      /* Thu nhỏ chiều cao các thành phần điều khiển xuống còn 30px */
     }
 
-    /* Đẩy thanh trượt độ mờ xuống thấp hơn bảng điều khiển để tránh bị che khuất trên mobile */
+    /* Đặt vị trí thanh trượt độ mờ bên phải màn hình di động */
     #opacity-control-panel {
         top: 135px !important;             /* Đặt vị trí nằm dưới cụm dropdown tìm kiếm */
         right: 8px !important;             /* Cách lề phải màn hình di động một khoảng 8px */
+        width: 34px !important;            /* Cố định chiều rộng đồng nhất trên mobile */
     }
 
-    /* Đẩy cụm nút điều hướng bản đồ xuống thấp hơn nữa để nhường chỗ cho thanh trượt độ mờ */
+    /* Căn chỉnh cụm nút định vị gióng thẳng hàng dọc tuyệt đối và cùng chiều rộng với thanh trượt bên trên */
     .maplibregl-ctrl-top-right {
         top: 215px !important;             /* Cách mép trên màn hình di động 215px */
-        right: 4px !important;             /* Cách lề phải màn hình di động 4px */
+        right: 8px !important;             /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
+    }
+
+    .maplibregl-ctrl-top-right .maplibregl-ctrl {
+        width: 34px !important;            /* Đảm bảo nút định vị có cùng độ rộng trên mobile */
     }
 }
