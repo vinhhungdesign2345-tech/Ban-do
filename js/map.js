@@ -1,5 +1,17 @@
 // js/map.js
 
+// --- KHAI BÁO BIẾN TOÀN CỤC QUẢN LÝ NHÃN SỐ ĐO CẠNH VÀ ID THỬA ĐẤT ---
+let activeMarkers = [];         // Mảng lưu trữ các đối tượng Marker hiển thị kích thước cạnh trên bản đồ
+window.selectedThuaDatId = null; // Biến toàn cục lưu ID thửa đất đang được chọn để phục vụ đồng bộ thực địa
+
+// --- HÀM XÓA SẠCH CÁC NHÃN SỐ ĐO CẠNH TRÊN BẢN ĐỒ ---
+function clearLengthMarkers() {
+    // Duyệt qua từng marker đang hiển thị và xóa khỏi bản đồ
+    activeMarkers.forEach(marker => marker.remove());
+    // Làm rỗng mảng sau khi đã xóa hết
+    activeMarkers = [];
+}
+
 // --- HÀM ĐỊNH DẠNG SỐ CHUẨN VIỆT NAM (Ví dụ: 1.234,5) ---
 function formatNumberVN(val) {
     // Kiểm tra nếu giá trị rỗng, null, undefined hoặc dấu gạch ngang thì trả về dấu '-' mặc định
@@ -23,6 +35,12 @@ function closeParcelPanel() {
     // Nếu khung tồn tại, chuyển trạng thái hiển thị thành 'none' (ẩn đi)
     if (panel) panel.style.display = 'none';
 
+    // Đặt lại ID thửa đất về giá trị null khi đóng panel
+    window.selectedThuaDatId = null;
+
+    // 📏 GỌI HÀM XÓA SẠCH CÁC NHÃN KÍCH THƯỚC CẠNH NGAY KHI ĐÓNG PANEL
+    clearLengthMarkers();
+
     // Lấy đối tượng thể hiện bản đồ đang hoạt động được lưu toàn cục trong cửa sổ trình duyệt
     const mapInstance = window.currentMapInstance;
     if (mapInstance) {
@@ -38,7 +56,7 @@ function closeParcelPanel() {
             mapInstance.setFilter('sheet-thua-dat-highlight-line', ['==', ['get', 'ID Thửa Đất'], '']);
         }
 
-        // 📏 XÓA DỮ LIỆU NHÃN KÍCH THƯỚC CÁC CẠNH THỬA ĐẤT KHI ĐÓNG PANEL
+        // Xóa dữ liệu nguồn vẽ các điểm mốc cạnh trên bản đồ
         if (mapInstance.getSource('parcel-dimensions-source')) {
             mapInstance.getSource('parcel-dimensions-source').setData({
                 type: 'FeatureCollection',
@@ -52,10 +70,10 @@ function closeParcelPanel() {
 function initMap() {
     // Khởi tạo một đối tượng bản đồ MapLibre mới gắn vào thẻ div có id là 'map'
     const map = new maplibregl.Map({
-        container: 'map',                         // ID của thẻ HTML chứa bản đồ
-        style: CONFIG.MAP_STYLE,                  // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
-        center: CONFIG.MAP_CENTER,                // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
-        zoom: CONFIG.MAP_ZOOM                     // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
+        container: 'map',                              // ID của thẻ HTML chứa bản đồ
+        style: CONFIG.MAP_STYLE,                       // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
+        center: CONFIG.MAP_CENTER,                     // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
+        zoom: CONFIG.MAP_ZOOM                          // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
     });
 
     // Lưu trữ tham chiếu đối tượng bản đồ vào biến toàn cục window để các hàm khác có thể gọi lại
@@ -151,15 +169,6 @@ function initMap() {
         initThuaDatSearch(map);
     });
 
-    // Mảng lưu trữ các Marker hiển thị số đo độ dài cạnh trên bản đồ (thay thế hoàn toàn Popup cũ để bỏ khung nền trắng)
-    let activeMarkers = [];
-
-    // Hàm dọn dẹp và xóa các Marker hiển thị số đo cũ
-    function clearLengthMarkers() {
-        activeMarkers.forEach(marker => marker.remove()); // Xóa từng Marker khỏi bản đồ
-        activeMarkers = []; // Làm rỗng mảng lưu trữ
-    }
-
     // Khai báo danh sách các lớp thuộc tính thửa đất từ Google Sheets cần bắt sự kiện click
     const sheetLayers = ['sheet-thua-dat-fill', 'sheet-thua-dat-line'];
     let isFeatureClicked = false; // Biến cờ kiểm tra xem có thửa đất nào vừa được click hay chưa
@@ -174,7 +183,11 @@ function initMap() {
             const selectedFeature = e.features[0];       // Lấy thửa đất đầu tiên trong danh sách các đối tượng bị click
             const rawProps = selectedFeature.properties || {}; // Lấy toàn bộ tập dữ liệu thuộc tính đi kèm của thửa đất
 
-            // Xóa các nhãn số đo cạnh cũ nếu có trước khi vẽ mới
+            // Trích xuất ID Thửa Đất và gán vào biến toàn cục phục vụ tính năng cập nhật thực địa
+            const parcelId = rawProps['ID Thửa Đất'] || rawProps['id'] || '';
+            window.selectedThuaDatId = parcelId;
+
+            // Xóa sạch các nhãn số đo cạnh cũ trước khi vẽ nhãn mới cho thửa đất vừa chọn
             clearLengthMarkers();
 
             // 📏 TÍCH HỢP TURF.JS TÍNH TOÁN VÀ HIỂN THỊ ĐỘ DÀI MỖI CẠNH CỦA THỬA ĐẤT
@@ -215,10 +228,10 @@ function initMap() {
                             element: el,
                             anchor: 'center'
                         })
-                        .setLngLat(midCoord)        // Thiết lập tọa độ hiển thị là điểm giữa của cạnh
-                        .addTo(map);                // Thêm marker trực tiếp lên bản đồ
+                        .setLngLat(midCoord)         // Thiết lập tọa độ hiển thị là điểm giữa của cạnh
+                        .addTo(map);                 // Thêm marker trực tiếp lên bản đồ
 
-                        activeMarkers.push(marker); // Lưu trữ marker vào mảng quản lý chung
+                        activeMarkers.push(marker); // Lưu trữ marker vào mảng quản lý chung toàn cục
                     });
 
                     // Cập nhật dữ liệu vào nguồn bản đồ để vẽ các điểm mốc
@@ -242,7 +255,6 @@ function initMap() {
             const tenChu = rawProps['Tên Chủ'] || rawProps['Tên chủ'] || '-';
             const soDinhDanh = rawProps['Số định danh chủ đất'] || rawProps['Số định danh'] || 'Không có';
             const ghiChu = rawProps['Ghi Chú'] || rawProps['Ghi chú'] || 'Không có';
-            const parcelId = rawProps['ID Thửa Đất'] || rawProps['id'];
 
             // Thiết lập bộ lọc để làm nổi bật thửa đất được chọn dựa theo ID Thửa Đất hoặc Tên Chủ
             let selectFilter = parcelId ? ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId] : ['==', ['get', 'Tên Chủ'], tenChu];
@@ -251,7 +263,7 @@ function initMap() {
             if (map.getLayer('sheet-thua-dat-highlight-fill')) map.setFilter('sheet-thua-dat-highlight-fill', selectFilter);
             if (map.getLayer('sheet-thua-dat-highlight-line')) map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
 
-            // Xây dựng cấu trúc HTML nội dung hiển thị trong bảng thông tin thửa đất phía dưới màn hình
+            // Xây dựng cấu trúc HTML nội dung hiển thị trong bảng thông tin thửa đất phía dưới màn hình (kèm giao diện Cập nhật thực địa)
             const panelContent = `
                 <div><b>Số tờ:</b> ${soTo}</div>
                 <div><b>Số thửa:</b> ${soThua}</div>
@@ -260,6 +272,14 @@ function initMap() {
                 <div style="grid-column: span 2;"><b>Tên chủ:</b> ${tenChu}</div>
                 <div><b>Số định danh:</b> ${soDinhDanh}</div>
                 <div><b>Ghi chú:</b> ${ghiChu}</div>
+
+                <!-- PHẦN GIAO DIỆN CẬP NHẬT THỰC ĐỊA -->
+                <div id="field-work-section" style="grid-column: span 2; margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 8px;">
+                    <b>Cập nhật thực địa:</b>
+                    <textarea id="txtFieldNote" placeholder="Nhập ghi chú thực địa..." style="width: 100%; margin-top: 5px; padding: 5px;"></textarea>
+                    <input type="file" id="camInput" accept="image/*" capture="environment" style="margin-top: 5px; width: 100%;">
+                    <button id="syncFieldDataBtn" style="margin-top: 8px; width: 100%; padding: 6px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Đồng bộ về Sheet</button>
+                </div>
             `;
 
             // Đưa nội dung thông tin vào khung giao diện tương ứng trên HTML
@@ -267,6 +287,14 @@ function initMap() {
             const panelEl = document.getElementById('parcel-info-panel');
             if (panelContentEl) panelContentEl.innerHTML = panelContent;
             if (panelEl) panelEl.style.display = 'block'; // Hiển thị bảng thông tin lên màn hình
+
+            // GẮN SỰ KIỆN CLICK CHO NÚT ĐỒNG BỘ DỮ LIỆU THỰC ĐỊA VỀ GOOGLE SHEETS
+            const syncBtn = document.getElementById('syncFieldDataBtn');
+            if (syncBtn && typeof syncDataToSheet === 'function') {
+                syncBtn.onclick = function() {
+                    syncDataToSheet(); // Gọi hàm đồng bộ được viết ở tệp js/sheet.js
+                };
+            }
         });
 
         // Thay đổi con trỏ chuột thành dạng mặc định khi rê chuột vào hoặc ra khỏi thửa đất
@@ -277,8 +305,7 @@ function initMap() {
     // Lắng nghe sự kiện click trực tiếp lên vùng trống của nền bản đồ (ngoài các thửa đất)
     map.on('click', (e) => {
         if (!isFeatureClicked) {
-            closeParcelPanel();     // Đóng bảng thông tin thửa đất và gỡ bỏ highlight
-            clearLengthMarkers();   // Xóa sạch nhãn số đo cạnh khi click ra ngoài
+            closeParcelPanel();     // Đóng bảng thông tin thửa đất, gỡ bỏ highlight và tự động xóa nhãn cạnh
             
             // Nếu hàm xử lý chọn Phường/Xã từ tọa độ điểm tồn tại, gọi hàm tra cứu hành chính
             if (typeof selectPhuongFromPoint === 'function') {
