@@ -44,7 +44,7 @@ body {
     font-size: 11px;               /* Kích thước chữ hiển thị trong nút là 11px */
     font-weight: bold;             /* Định dạng chữ in đậm */
     color: #333;                   /* Màu chữ bên trong nút là màu xám đậm (#333) */
-    transition: background-color 0.2s ease, border-color 0.2s ease; /* Hiệu ứng chuyển màu mượt mà */
+    transition: background-color 0.2s ease, border-color 0.2s ease; /* Hiệu ứng chuyển màu mượt mà trong 0.2 giây */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Đổ bóng nhẹ phía dưới nút tạo chiều sâu */
 }
 
@@ -53,7 +53,7 @@ body {
     border-color: #b0b0b0;         /* Đổi màu viền đậm hơn một chút khi rê chuột */
 }
 
-/* --- BẢNG ĐIỀU KHIỂN DROPDOWN GỌN GÀNG (GÓC TRÊN TRÁI) --- */
+/* --- BẢNG ĐIỀU KHIỂN DROPDOWN GỌN GÀNG --- */
 .map-control {
     position: absolute;            /* Đặt vị trí tuyệt đối ở góc trên bên trái bản đồ */
     top: 12px;                     /* Cách mép trên 12 pixel */
@@ -70,10 +70,10 @@ body {
     box-sizing: border-box;        /* Tính toán padding và border gộp chung vào kích thước width */
 }
 
-/* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (ĐỒNG BỘ CHIỀU RỘNG VÀ LỀ PHẢI) --- */
+/* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (GÓC TRÊN PHẢI) --- */
 #opacity-control-panel {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
-    top: 120px;                    /* Đặt sát phía trên góc phải */
+    top: 120px;                    /* Đặt vị trí cách mép trên 120px */
     right: 10px;                   /* Cố định khoảng cách lề phải khớp hoàn hảo với nút định vị */
     z-index: 1000;                 /* Độ ưu tiên hiển thị cao */
     background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt đồng bộ */
@@ -89,7 +89,7 @@ body {
     box-sizing: border-box;        /* Bao gồm padding vào tổng kích thước width */
 }
 
-/* Ẩn hoàn toàn thẻ nhãn chứa chữ và con số độ mờ đi */
+/* Ẩn hoàn toàn thẻ nhãn chứa chữ và con số độ mờ nếu có */
 #opacity-control-panel label {
     display: none !important;      
 }
@@ -105,11 +105,11 @@ body {
 
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 .maplibregl-ctrl-top-right {
-    top: 200px !important;         /* Cách mép trên màn hình 200px */
+    top: 200px !important;         /* Đặt vị trí cách mép trên 200px (nằm ngay phía dưới thanh trượt độ mờ) */
     right: 10px !important;        /* Căn lề phải bằng với thanh trượt độ mờ ở trên */
 }
 
-/* Đồng bộ kích thước khung chứa nút điều khiển của MapLibre để thẳng hàng và cùng chiều rộng */
+/* Đồng bộ kích thước khung chứa nút điều khiển của MapLibre để thẳng hàng và cùng chiều rộng chuẩn 34px */
 .maplibregl-ctrl-top-right .maplibregl-ctrl {
     margin-right: 0 !important;
     width: 34px !important;        /* Ép chiều rộng bằng với khối thanh trượt độ mờ */
@@ -196,14 +196,14 @@ body {
     cursor: not-allowed;           /* Đổi kiểu con trỏ chuột thành dạng cấm khi rê vào */
 }
 
-/* --- ÉP CON TRỎ CHUỘT MẶC ĐỊNH (MŨI TÊN) CHO TOÀN BỘ GIAO DIỆN --- */
+/* --- ÉP CON TRỎ CHUỘT MẶC ĐỊNH (MŨI TÊN) --- */
 #map, 
 .maplibregl-canvas-container, 
 .maplibregl-canvas,
 button, 
 select, 
 input {
-    cursor: default !important;    /* Buộc toàn bộ các thành phần bản đồ giữ nguyên hình mũi tên mặc định */
+    cursor: default !important;    /* Buộc toàn bộ các thành phần bản đồ, nút, ô nhập liệu giữ nguyên hình mũi tên mặc định */
 }
 
 /* --- KHUNG THÔNG TIN THỬA ĐẤT DƯỚI MÀN HÌNH (PC) --- */
@@ -263,6 +263,12 @@ input {
     white-space: nowrap;           /* Buộc nội dung trong mỗi ô lưới nằm gọn trên một dòng */
 }
 
+/* --- LOẠI BỎ HOÀN TOÀN DÒNG CẬP NHẬT THỰC ĐỊA BÊN DƯỚI --- */
+.parcel-panel .panel-body ~ div,
+.parcel-panel > div:not(.panel-header):not(.panel-body) {
+    display: none !important;
+}
+
 /* --- TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI / MOBILE --- */
 @media screen and (max-width: 768px) {
     .parcel-panel {
@@ -314,7 +320,7 @@ input {
         width: 34px !important;            /* Cố định chiều rộng đồng nhất trên mobile */
     }
 
-    /* Căn chỉnh cụm nút định vị gióng thẳng hàng dọc tuyệt đối và cùng chiều rộng với thanh trượt bên trên */
+    /* Căn chỉnh cụm nút định vị gióng thẳng hàng dọc tuyệt đối và cùng chiều rộng với thanh trượt bên trên trên mobile */
     .maplibregl-ctrl-top-right {
         top: 215px !important;             /* Cách mép trên màn hình di động 215px */
         right: 8px !important;             /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
