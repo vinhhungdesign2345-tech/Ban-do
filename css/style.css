@@ -72,8 +72,8 @@ body {
 
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 .maplibregl-ctrl-top-right {
-    top: 130px !important;         /* Đẩy cụm điều hướng mặc định (nút định vị) xuống dưới thanh trượt để tránh che lấp */
-    right: 12px !important;        /* Cố định cách lề phải 12 pixel cho cân đối */
+    top: 150px !important;         /* Đẩy cụm điều hướng mặc định (nút định vị) xuống dưới thanh trượt để tránh che lấp */
+    right: 10px !important;        /* Cố định cách lề phải 12 pixel cho cân đối */
 }
 
 /* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC, NHỎ GỌN Ở GÓC PHẢI PHÍA TRÊN --- */
