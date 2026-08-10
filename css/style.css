@@ -72,15 +72,15 @@ body {
 
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 .maplibregl-ctrl-top-right {
-    top: 180px !important;         /* Đẩy cụm điều hướng mặc định (nút định vị) xuống dưới thanh trượt để tránh che lấp */
-    right: 8px !important;        /* Cố định cách lề phải 12 pixel cho cân đối */
+    top: 180px !important;        /* Cách mép trên màn hình 180px */
+    right: 8px !important;        /* Cách lề phải 8px */
 }
 
 /* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (GỌN GÀNG, KHÔNG HIỂN THỊ SỐ) --- */
 #opacity-control-panel {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
-    top: 12px;                     /* Đặt sát phía trên góc phải */
-    right: 12px;                   /* Cách mép phải 12 pixel */
+    top: 120px;                     /* Đặt sát phía trên góc phải */
+    right: 14px;                   /* Cách mép phải 12 pixel */
     z-index: 1000;                 /* Độ ưu tiên hiển thị cao */
     background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt đồng bộ */
     backdrop-filter: blur(10px);   /* Hiệu ứng làm mờ nền */
