@@ -263,12 +263,6 @@ input {
     white-space: nowrap;           /* Buộc nội dung trong mỗi ô lưới nằm gọn trên một dòng */
 }
 
-/* --- LOẠI BỎ HOÀN TOÀN DÒNG CẬP NHẬT THỰC ĐỊA BÊN DƯỚI --- */
-.parcel-panel .panel-body ~ div,
-.parcel-panel > div:not(.panel-header):not(.panel-body) {
-    display: none !important;
-}
-
 /* --- TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI / MOBILE --- */
 @media screen and (max-width: 768px) {
     .parcel-panel {
