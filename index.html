@@ -5,69 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bản Đồ Quy Hoạch Cà Mau</title>
 
-    <!-- Thư viện MapLibre GL (hiển thị bản đồ vector/raster mã nguồn mở) -->
+    <!-- Thư viện MapLibre GL: Thư viện mã nguồn mở để hiển thị bản đồ vector/raster tương tác cao -->
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 
-    <!-- Thư viện TurfJS (thư viện xử lý không gian địa lý GIS) -->
+    <!-- Thư viện TurfJS: Thư viện chuyên dụng để phân tích và xử lý không gian địa lý GIS phía client -->
     <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 
-    <!-- Liên kết tệp định dạng kiểu dáng CSS giao diện tùy chỉnh nội bộ -->
+    <!-- Liên kết tệp định dạng kiểu dáng CSS giao diện tùy chỉnh riêng của ứng dụng -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-   <!-- Khung chứa các điều khiển bộ lọc và tìm kiếm đặt nổi trên bản đồ -->
-   <div class="map-control">
-     <div class="filter-row">
-         <!-- Ô tìm kiếm thửa đất và nút bấm Tìm -->
-         <div class="filter-item" style="width: 100%; display: flex; gap: 6px;">
-             <input type="text" id="searchThuaDatInput" placeholder="Tìm theo tên, mã ĐD, tờ/thửa (VD: 7/29)..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
-             <button id="searchThuaDatBtn" style="padding: 8px 16px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">Tìm</button>
-         </div>
+    <!-- Khung chứa các điều khiển bộ lọc tìm kiếm và hành chính đặt nổi trên góc bản đồ -->
+    <div class="map-control">
+        <div class="filter-row">
+            
+            <!-- Ô tìm kiếm thửa đất (hỗ trợ tìm theo tên chủ, mã định danh, số tờ/số thửa) và nút bấm Tìm -->
+            <div class="filter-item" style="width: 100%; display: flex; gap: 6px;">
+                <input type="text" id="searchThuaDatInput" placeholder="Tìm theo tên, mã ĐD, tờ/thửa (VD: 7/29)..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+                <button id="searchThuaDatBtn" style="padding: 8px 16px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">Tìm</button>
+            </div>
 
-         <!-- Dropdown 1: Lựa chọn Tỉnh / Thành phố -->
-         <div class="filter-item">
-             <select id="tinhFilter">
-                 <option value="">-- Tỉnh / TP --</option>
-             </select>
-         </div>
+            <!-- Dropdown 1: Menu lựa chọn Tỉnh / Thành phố -->
+            <div class="filter-item">
+                <select id="tinhFilter">
+                    <option value="">-- Tỉnh / TP --</option>
+                </select>
+            </div>
 
-         <!-- Dropdown 2: Lựa chọn Phường / Xã (mặc định bị khóa 'disabled' khi chưa chọn tỉnh) -->
-         <div class="filter-item">
-             <select id="phuongFilter" disabled>
-                 <option value="">-- Phường / Xã --</option>
-             </select>
-         </div>
-     </div>
- </div>
-
-    <!-- Thẻ div hiển thị toàn bộ khung bản đồ tương tác -->
-    <div id="map"></div>
-
-    <!-- Khung bảng panel hiển thị chi tiết thông tin thửa đất ở phía dưới màn hình (mặc định ẩn đi với style="display: none;") -->
-    <div id="parcel-info-panel" class="parcel-panel" style="display: none;">
-        <div class="panel-header">
-            <span><b>THÔNG TIN THỬA ĐẤT</b></span>
-            <!-- Nút bấm dấu nhân (X) để đóng bảng thông tin, gọi hàm closeParcelPanel() -->
-            <button onclick="closeParcelPanel()" class="close-btn">&times;</button>
-        </div>
-        <div id="panel-content" class="panel-body">
-            <!-- Nội dung chi tiết các thuộc tính thửa đất sẽ được mã JavaScript đổ động vào đây -->
+            <!-- Dropdown 2: Menu lựa chọn Phường / Xã (mặc định bị khóa 'disabled' cho đến khi người dùng chọn Tỉnh) -->
+            <div class="filter-item">
+                <select id="phuongFilter" disabled>
+                    <option value="">-- Phường / Xã --</option>
+                </select>
+            </div>
+            
         </div>
     </div>
 
-    <!-- Nút chuyển đổi nền bản đồ -->
+    <!-- Thẻ div đóng vai trò là khung chứa toàn bộ không gian bản đồ tương tác -->
+    <div id="map"></div>
+
+    <!-- Khung panel hiển thị chi tiết thông tin thửa đất ở phía dưới màn hình (mặc định ẩn đi với style="display: none;") -->
+    <div id="parcel-info-panel" class="parcel-panel" style="display: none;">
+        <div class="panel-header">
+            <span><b>THÔNG TIN THỬA ĐẤT</b></span>
+            <!-- Nút bấm dấu nhân (&times;) để đóng bảng thông tin, kích hoạt gọi hàm closeParcelPanel() -->
+            <button onclick="closeParcelPanel()" class="close-btn">&times;</button>
+        </div>
+        
+        <!-- Phần nội dung chi tiết các thuộc tính thửa đất sẽ được mã JavaScript đổ động vào đây -->
+        <div id="panel-content" class="panel-body"></div>
+
+        <!-- PHẦN BỔ SUNG: Khung cập nhật thực địa (cho phép nhập ghi chú và chụp ảnh trực tiếp từ điện thoại đồng bộ về Sheets) -->
+        <div id="field-work-section" style="margin-top: 10px; border-top: 1px dashed #ccc; padding: 10px 12px 12px 12px; background: #f9f9f9; grid-column: span 2;">
+            <b style="font-size: 13px; color: #333;">Cập nhật thực địa (Di động):</b><br>
+            
+            <!-- Ô nhập nội dung ghi chú mới ngoài thực địa -->
+            <textarea id="txtFieldNote" placeholder="Nhập ghi chú thực tế..." style="width: 100%; height: 50px; margin-top: 6px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 12px;"></textarea><br>
+            
+            <!-- Nút chọn file / chụp ảnh trực tiếp từ camera điện thoại (capture="environment" ưu tiên mở camera sau) -->
+            <input type="file" id="camInput" accept="image/*" capture="environment" style="margin-top: 6px; width: 100%; font-size: 11px;">
+            
+            <!-- Nút bấm thực hiện tiến trình đồng bộ dữ liệu văn bản và hình ảnh về Google Sheets thông qua Apps Script -->
+            <button onclick="syncDataToSheet()" style="margin-top: 8px; width: 100%; background: #28a745; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px;">Đồng bộ về Google Sheets</button>
+        </div>
+    </div>
+
+    <!-- Nút bấm chuyển đổi nền bản đồ giữa lớp Vệ tinh Google và lớp Đường phố OSM -->
     <div class="map-layer-control">
         <button id="toggleLayerBtn">Chuyển sang Bản đồ OSM</button>
     </div>
 
-    <!-- Các tệp mã nguồn JavaScript mô-đun chức năng của ứng dụng (được tải theo đúng thứ tự phụ thuộc) -->
-    <script src="js/config.js"></script>   <!-- Chứa cấu hình chung, thông tin tỉnh và bảng màu quy hoạch -->
-    <script src="js/api.js"></script>      <!-- Chứa hàm gọi API / tải dữ liệu GeoJSON -->
-    <script src="js/sheet.js"></script>    <!-- Chứa hàm tải dữ liệu thửa đất từ Google Sheets và quản lý ẩn hiện lớp -->
-    <script src="js/province.js"></script> <!-- Chứa logic xử lý chọn tỉnh/xã, lọc không gian bằng TurfJS -->
-    <script src="js/searchThuaDat.js"></script> <!-- Chứa logic tìm kiếm thửa đất theo tên, mã ĐD, tờ/thửa -->
-    <script src="js/map.js"></script>      <!-- Khởi tạo bản đồ MapLibre, gán sự kiện click thửa đất và click vùng trống -->
+    <!-- CÁC TỆP MÃ NGUỒN JAVASCRIPT (Được tải theo đúng thứ tự phụ thuộc logic của ứng dụng) -->
+    <script src="js/config.js"></script>       <!-- Chứa các biến cấu hình chung, thông tin tỉnh và bảng màu quy hoạch -->
+    <script src="js/api.js"></script>          <!-- Chứa các hàm gọi API / tải dữ liệu định dạng GeoJSON -->
+    <script src="js/sheet.js"></script>        <!-- Chứa hàm tải dữ liệu thửa đất từ Google Sheets và quản lý ẩn hiện lớp bản đồ -->
+    <script src="js/province.js"></script>     <!-- Chứa logic xử lý chọn tỉnh/xã, lọc không gian không gian bằng TurfJS -->
+    <script src="js/searchThuaDat.js"></script> <!-- Chứa logic tìm kiếm thửa đất theo tên, mã định danh, số tờ/số thửa -->
+    <script src="js/map.js"></script>          <!-- Khởi tạo bản đồ MapLibre, gán sự kiện click thửa đất, vẽ kích thước cạnh và xử lý vùng trống -->
 </body>
 </html>
