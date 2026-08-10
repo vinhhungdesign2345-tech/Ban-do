@@ -70,7 +70,7 @@ function closeParcelPanel() {
 function initMap() {
     // Khởi tạo một đối tượng bản đồ MapLibre mới gắn vào thẻ div có id là 'map'
     const map = new maplibregl.Map({
-        container: 'map',                              // ID của thẻ HTML chứa bản đồ
+        container: 'map',                             // ID của thẻ HTML chứa bản đồ
         style: CONFIG.MAP_STYLE,                       // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
         center: CONFIG.MAP_CENTER,                     // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
         zoom: CONFIG.MAP_ZOOM                          // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
@@ -82,7 +82,7 @@ function initMap() {
     // 📍 TÍCH HỢP NÚT ĐỊNH VỊ VỊ TRÍ HIỆN TẠI CỦA NGƯỜI DÙNG
     const geolocate = new maplibregl.GeolocateControl({
         positionOptions: { 
-            enableHighAccuracy: true,       // Bật chế độ định vị vệ tinh độ chính xác cao nhất có thể
+            enableHighAccuracy: true,         // Bật chế độ định vị vệ tinh độ chính xác cao nhất có thể
             maximumAge: 0,                  // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
             timeout: 20000                  // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
         },
@@ -104,7 +104,7 @@ function initMap() {
         }
     });
 
-    // 🔄 TÍCH HỢP NÚT CHUYỂN ĐỔI LỚP NỀN BẢN ĐỒ (VỆ TINH GOOGLE <-> ĐƯỜNG PHỐ OSM)
+    // 🔄 TÍCH HỢP NÚT CHUYỂN ĐỔI LỚP NỀN BẢN ĐỒ VÀ THANH TRƯỢT ĐỘ MỜ (OPACITY)
     map.on('load', () => {
         const satLayer = 'google-satellite-layer'; // Định danh lớp bản đồ vệ tinh
         const osmLayer = 'osm-layer';               // Định danh lớp bản đồ đường phố OSM
@@ -137,6 +137,27 @@ function initMap() {
                     map.setLayoutProperty(osmLayer, 'visibility', 'none');
                     // Đổi nhãn chữ trên nút thành chuẩn "Chuyển sang Bản đồ OSM"
                     this.innerText = 'Chuyển sang Bản đồ OSM';
+                }
+            };
+        }
+
+        // 🎚️ XỬ LÝ SỰ KIỆN THANH TRƯỢT ĐIỀU CHỈNH ĐỘ MỜ (OPACITY) CÁC THỬA ĐẤT
+        const opacitySlider = document.getElementById('opacitySlider');
+        const opacityValueLabel = document.getElementById('opacityValue');
+
+        if (opacitySlider) {
+            opacitySlider.oninput = function() {
+                const val = parseFloat(this.value);
+                if (opacityValueLabel) opacityValueLabel.innerText = val;
+
+                // Thay đổi độ mờ phần tô màu thửa đất thông thường (sheet-thua-dat-fill)
+                if (map.getLayer('sheet-thua-dat-fill')) {
+                    map.setPaintProperty('sheet-thua-dat-fill', 'fill-opacity', val);
+                }
+                
+                // Thay đổi độ mờ phần tô màu thửa đất đang chọn (highlight fill) đậm hơn một chút
+                if (map.getLayer('sheet-thua-dat-highlight-fill')) {
+                    map.setPaintProperty('sheet-thua-dat-highlight-fill', 'fill-opacity', Math.min(val + 0.2, 1.0));
                 }
             };
         }
@@ -228,8 +249,8 @@ function initMap() {
                             element: el,
                             anchor: 'center'
                         })
-                        .setLngLat(midCoord)         // Thiết lập tọa độ hiển thị là điểm giữa của cạnh
-                        .addTo(map);                 // Thêm marker trực tiếp lên bản đồ
+                        .setLngLat(midCoord)           // Thiết lập tọa độ hiển thị là điểm giữa của cạnh
+                        .addTo(map);                   // Thêm marker trực tiếp lên bản đồ
 
                         activeMarkers.push(marker); // Lưu trữ marker vào mảng quản lý chung toàn cục
                     });
@@ -305,7 +326,7 @@ function initMap() {
     // Lắng nghe sự kiện click trực tiếp lên vùng trống của nền bản đồ (ngoài các thửa đất)
     map.on('click', (e) => {
         if (!isFeatureClicked) {
-            closeParcelPanel();     // Đóng bảng thông tin thửa đất, gỡ bỏ highlight và tự động xóa nhãn cạnh
+            closeParcelPanel();      // Đóng bảng thông tin thửa đất, gỡ bỏ highlight và tự động xóa nhãn cạnh
             
             // Nếu hàm xử lý chọn Phường/Xã từ tọa độ điểm tồn tại, gọi hàm tra cứu hành chính
             if (typeof selectPhuongFromPoint === 'function') {
