@@ -72,8 +72,8 @@ body {
 
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 .maplibregl-ctrl-top-right {
-    top: 180px !important;        /* Cách mép trên màn hình 180px */
-    right: 8px !important;        /* Cách lề phải 8px */
+    top: 200px !important;        /* Cách mép trên màn hình 200px */
+    right: 6px !important;        /* Cách lề phải 6px */
 }
 
 /* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (GỌN GÀNG, KHÔNG HIỂN THỊ SỐ) --- */
