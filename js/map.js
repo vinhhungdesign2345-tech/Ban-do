@@ -2,7 +2,7 @@
 
 // --- KHAI BÁO BIẾN TOÀN CỤC QUẢN LÝ NHÃN SỐ ĐO CẠNH VÀ ID THỬA ĐẤT ---
 let activeMarkers = [];         // Mảng lưu trữ các đối tượng Marker hiển thị kích thước cạnh trên bản đồ
-window.selectedThuaDatId = null; // Biến toàn cục lưu ID thửa đất đang được chọn để phục vụ đồng bộ thực địa
+window.selectedThuaDatId = null; // Biến toàn cục lưu ID thửa đất đang được chọn
 
 // --- HÀM XÓA SẠCH CÁC NHÃN SỐ ĐO CẠNH TRÊN BẢN ĐỒ ---
 function clearLengthMarkers() {
@@ -70,10 +70,10 @@ function closeParcelPanel() {
 function initMap() {
     // Khởi tạo một đối tượng bản đồ MapLibre mới gắn vào thẻ div có id là 'map'
     const map = new maplibregl.Map({
-        container: 'map',                             // ID của thẻ HTML chứa bản đồ
-        style: CONFIG.MAP_STYLE,                       // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
-        center: CONFIG.MAP_CENTER,                     // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
-        zoom: CONFIG.MAP_ZOOM                          // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
+        container: 'map',                         // ID của thẻ HTML chứa bản đồ
+        style: CONFIG.MAP_STYLE,                    // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
+        center: CONFIG.MAP_CENTER,                    // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
+        zoom: CONFIG.MAP_ZOOM                       // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
     });
 
     // Lưu trữ tham chiếu đối tượng bản đồ vào biến toàn cục window để các hàm khác có thể gọi lại
@@ -82,12 +82,12 @@ function initMap() {
     // 📍 TÍCH HỢP NÚT ĐỊNH VỊ VỊ TRÍ HIỆN TẠI CỦA NGƯỜI DÙNG
     const geolocate = new maplibregl.GeolocateControl({
         positionOptions: { 
-            enableHighAccuracy: true,         // Bật chế độ định vị vệ tinh độ chính xác cao nhất có thể
-            maximumAge: 0,                  // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
-            timeout: 20000                  // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
+            enableHighAccuracy: true,          // Bật chế độ định vị vệ tinh độ chính xác cao nhất có thể
+            maximumAge: 0,                   // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
+            timeout: 20000                   // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
         },
-        trackUserLocation: true,            // Bật tính năng liên tục theo dõi sự di chuyển của người dùng trên bản đồ
-        showUserHeading: true               // Hiển thị mũi tên chỉ hướng hướng quay của thiết bị di động
+        trackUserLocation: true,             // Bật tính năng liên tục theo dõi sự di chuyển của người dùng trên bản đồ
+        showUserHeading: true                // Hiển thị mũi tên chỉ hướng hướng quay của thiết bị di động
     });
     
     // Thêm điều khiển định vị vào góc trên bên phải của bản đồ
@@ -107,7 +107,7 @@ function initMap() {
     // 🔄 TÍCH HỢP NÚT CHUYỂN ĐỔI LỚP NỀN BẢN ĐỒ VÀ THANH TRƯỢT ĐỘ MỜ (OPACITY)
     map.on('load', () => {
         const satLayer = 'google-satellite-layer'; // Định danh lớp bản đồ vệ tinh
-        const osmLayer = 'osm-layer';               // Định danh lớp bản đồ đường phố OSM
+        const osmLayer = 'osm-layer';                // Định danh lớp bản đồ đường phố OSM
 
         // Ép trạng thái hiển thị chuẩn xác ngay khi bản đồ vừa load xong
         map.setLayoutProperty(satLayer, 'visibility', 'visible');
@@ -204,7 +204,7 @@ function initMap() {
             const selectedFeature = e.features[0];       // Lấy thửa đất đầu tiên trong danh sách các đối tượng bị click
             const rawProps = selectedFeature.properties || {}; // Lấy toàn bộ tập dữ liệu thuộc tính đi kèm của thửa đất
 
-            // Trích xuất ID Thửa Đất và gán vào biến toàn cục phục vụ tính năng cập nhật thực địa
+            // Trích xuất ID Thửa Đất và gán vào biến toàn cục
             const parcelId = rawProps['ID Thửa Đất'] || rawProps['id'] || '';
             window.selectedThuaDatId = parcelId;
 
@@ -235,16 +235,16 @@ function initMap() {
                         const coords = segment.geometry.coordinates;
                         const midCoord = [(coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2];
 
-                        // Tạo phần tử div thuần túy hiển thị con số (màu trắng, in đậm, có viền bóng đen, không nền)
+                        // Tạo phần tử div thuần túy hiển thị con số
                         const el = document.createElement('div');
                         el.style.color = '#ffffff';                     // Màu chữ số đo (Trắng)
                         el.style.fontSize = '12px';                     // Cỡ chữ (12 pixel)
                         el.style.fontWeight = 'Bold';                   // Độ đậm của chữ (In đậm)
-                        el.style.textShadow = '1px 1px 2px #000000, -1px -1px 2px #000000, 1px -1px 2px #000000, -1px 1px 2px #000000'; // Hiệu ứng viền bóng đen giúp nổi bật trên mọi nền
+                        el.style.textShadow = '1px 1px 2px #000000, -1px -1px 2px #000000, 1px -1px 2px #000000, -1px 1px 2px #000000'; // Hiệu ứng viền bóng đen
                         el.style.whiteSpace = 'nowrap';                 // Không cho phép chữ bị ngắt xuống dòng
-                        el.innerText = formattedLength;                 // Gán giá trị chiều dài cạnh (ví dụ: 30.4m)
+                        el.innerText = formattedLength;                 // Gán giá trị chiều dài cạnh
 
-                        // Sử dụng maplibregl.Marker để ghim trực tiếp lên bản đồ mà không có khung nền trắng
+                        // Sử dụng maplibregl.Marker để ghim trực tiếp lên bản đồ
                         const marker = new maplibregl.Marker({
                             element: el,
                             anchor: 'center'
@@ -284,7 +284,7 @@ function initMap() {
             if (map.getLayer('sheet-thua-dat-highlight-fill')) map.setFilter('sheet-thua-dat-highlight-fill', selectFilter);
             if (map.getLayer('sheet-thua-dat-highlight-line')) map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
 
-            // Xây dựng cấu trúc HTML nội dung hiển thị trong bảng thông tin thửa đất phía dưới màn hình (kèm giao diện Cập nhật thực địa)
+            // Xây dựng cấu trúc HTML nội dung hiển thị trong bảng thông tin thửa đất (ĐÃ BỎ HOÀN TOÀN PHẦN CẬP NHẬT THỰC ĐỊA)
             const panelContent = `
                 <div><b>Số tờ:</b> ${soTo}</div>
                 <div><b>Số thửa:</b> ${soThua}</div>
@@ -293,14 +293,6 @@ function initMap() {
                 <div style="grid-column: span 2;"><b>Tên chủ:</b> ${tenChu}</div>
                 <div><b>Số định danh:</b> ${soDinhDanh}</div>
                 <div><b>Ghi chú:</b> ${ghiChu}</div>
-
-                <!-- PHẦN GIAO DIỆN CẬP NHẬT THỰC ĐỊA -->
-                <div id="field-work-section" style="grid-column: span 2; margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 8px;">
-                    <b>Cập nhật thực địa:</b>
-                    <textarea id="txtFieldNote" placeholder="Nhập ghi chú thực địa..." style="width: 100%; margin-top: 5px; padding: 5px;"></textarea>
-                    <input type="file" id="camInput" accept="image/*" capture="environment" style="margin-top: 5px; width: 100%;">
-                    <button id="syncFieldDataBtn" style="margin-top: 8px; width: 100%; padding: 6px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Đồng bộ về Sheet</button>
-                </div>
             `;
 
             // Đưa nội dung thông tin vào khung giao diện tương ứng trên HTML
@@ -308,14 +300,6 @@ function initMap() {
             const panelEl = document.getElementById('parcel-info-panel');
             if (panelContentEl) panelContentEl.innerHTML = panelContent;
             if (panelEl) panelEl.style.display = 'block'; // Hiển thị bảng thông tin lên màn hình
-
-            // GẮN SỰ KIỆN CLICK CHO NÚT ĐỒNG BỘ DỮ LIỆU THỰC ĐỊA VỀ GOOGLE SHEETS
-            const syncBtn = document.getElementById('syncFieldDataBtn');
-            if (syncBtn && typeof syncDataToSheet === 'function') {
-                syncBtn.onclick = function() {
-                    syncDataToSheet(); // Gọi hàm đồng bộ được viết ở tệp js/sheet.js
-                };
-            }
         });
 
         // Thay đổi con trỏ chuột thành dạng mặc định khi rê chuột vào hoặc ra khỏi thửa đất
