@@ -1,4 +1,4 @@
-// js/map.js
+﻿// js/map.js
 
 // --- KHAI BÁO BIẾN TOÀN CỤC QUẢN LÝ NHÃN SỐ ĐO CẠNH VÀ ID THỬA ĐẤT ---
 let activeMarkers = [];         // Mảng lưu trữ các đối tượng Marker hiển thị kích thước cạnh trên bản đồ
@@ -70,10 +70,10 @@ function closeParcelPanel() {
 function initMap() {
     // Khởi tạo một đối tượng bản đồ MapLibre mới gắn vào thẻ div có id là 'map'
     const map = new maplibregl.Map({
-        container: 'map',                   // ID của thẻ HTML chứa bản đồ
-        style: CONFIG.MAP_STYLE,                // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
-        center: CONFIG.MAP_CENTER,                // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
-        zoom: CONFIG.MAP_ZOOM                   // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
+        container: 'map',                         // ID của thẻ HTML chứa bản đồ
+        style: CONFIG.MAP_STYLE,                    // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
+        center: CONFIG.MAP_CENTER,                    // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
+        zoom: CONFIG.MAP_ZOOM                       // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
     });
 
     // Lưu trữ tham chiếu đối tượng bản đồ vào biến toàn cục window để các hàm khác có thể gọi lại
@@ -83,11 +83,11 @@ function initMap() {
     const geolocate = new maplibregl.GeolocateControl({
         positionOptions: { 
             enableHighAccuracy: true,          // Bật chế độ định vị vệ tinh độ chính xác cao nhất có thể
-            maximumAge: 0,                     // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
-            timeout: 20000                     // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
+            maximumAge: 0,                   // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
+            timeout: 20000                   // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
         },
-        trackUserLocation: true,               // Bật tính năng liên tục theo dõi sự di chuyển của người dùng trên bản đồ
-        showUserHeading: true                  // Hiển thị mũi tên chỉ hướng hướng quay của thiết bị di động
+        trackUserLocation: true,             // Bật tính năng liên tục theo dõi sự di chuyển của người dùng trên bản đồ
+        showUserHeading: true                // Hiển thị mũi tên chỉ hướng hướng quay của thiết bị di động
     });
     
     // Thêm điều khiển định vị vào góc trên bên phải của bản đồ
@@ -237,11 +237,11 @@ function initMap() {
 
                         // Tạo phần tử div thuần túy hiển thị con số
                         const el = document.createElement('div');
-                        el.style.color = '#ffffff';                 // Màu chữ số đo (Trắng)
-                        el.style.fontSize = '12px';                 // Cỡ chữ (12 pixel)
-                        el.style.fontWeight = 'Bold';               // Độ đậm của chữ (In đậm)
+                        el.style.color = '#ffffff';                     // Màu chữ số đo (Trắng)
+                        el.style.fontSize = '12px';                     // Cỡ chữ (12 pixel)
+                        el.style.fontWeight = 'Bold';                   // Độ đậm của chữ (In đậm)
                         el.style.textShadow = '1px 1px 2px #000000, -1px -1px 2px #000000, 1px -1px 2px #000000, -1px 1px 2px #000000'; // Hiệu ứng viền bóng đen
-                        el.style.whiteSpace = 'nowrap';             // Không cho phép chữ bị ngắt xuống dòng
+                        el.style.whiteSpace = 'nowrap';                 // Không cho phép chữ bị ngắt xuống dòng
                         el.innerText = formattedLength;                 // Gán giá trị chiều dài cạnh
 
                         // Sử dụng maplibregl.Marker để ghim trực tiếp lên bản đồ
@@ -284,7 +284,7 @@ function initMap() {
             if (map.getLayer('sheet-thua-dat-highlight-fill')) map.setFilter('sheet-thua-dat-highlight-fill', selectFilter);
             if (map.getLayer('sheet-thua-dat-highlight-line')) map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
 
-            // Xây dựng cấu trúc HTML nội dung hiển thị trong bảng thông tin thửa đất
+            // Xây dựng cấu trúc HTML nội dung hiển thị trong bảng thông tin thửa đất (ĐÃ BỎ HOÀN TOÀN PHẦN CẬP NHẬT THỰC ĐỊA)
             const panelContent = `
                 <div><b>Số tờ:</b> ${soTo}</div>
                 <div><b>Số thửa:</b> ${soThua}</div>
@@ -307,35 +307,12 @@ function initMap() {
         map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = 'default');
     });
 
-    // --- LẮNG NGHE SỰ KIỆN CLICK TRỰC TIẾP LÊN VÙNG TRỐNG CỦA NỀN BẢN ĐỒ (ĐÃ TỐI ƯU SIÊU TỐC) ---
+    // Lắng nghe sự kiện click trực tiếp lên vùng trống của nền bản đồ (ngoài các thửa đất)
     map.on('click', (e) => {
         if (!isFeatureClicked) {
             closeParcelPanel();      // Đóng bảng thông tin thửa đất, gỡ bỏ highlight và tự động xóa nhãn cạnh
             
-            // 🚀 TỐI ƯU 1: Kiểm tra mức zoom. Chỉ cho phép tra cứu khi zoom từ cấp 11 trở lên để tránh quét nặng
-            if (map.getZoom() < 11) {
-                console.log("Vui lòng phóng to bản đồ hơn để tra cứu ranh giới hành chính.");
-                return;
-            }
-
-            // 🚀 TỐI ƯU 2: Sử dụng queryRenderedFeatures để quét cực nhanh trên layer ranh giới đang hiển thị sẵn
-            const renderedFeatures = map.queryRenderedFeatures(e.point, {
-                layers: ['thua-dat-layer'] // Tên layer ranh giới/thửa đất đang được render trên bản đồ
-            });
-
-            if (renderedFeatures.length > 0) {
-                const p = renderedFeatures[0].properties || {};
-                const matchedPhuong = p.name || p.dia_chi || p.Phuong || p.Xa || p.NAME_2 || p.NAME_3;
-                
-                if (matchedPhuong && typeof selectPhuongFromPointFast === 'function') {
-                    // Gọi hàm xử lý nhanh với tên phường đã bắt được ngay lập tức
-                    selectPhuongFromPointFast(matchedPhuong, map);
-                    isFeatureClicked = false;
-                    return;
-                }
-            }
-
-            // Fallback dự phòng: Nếu chưa render kịp layer thì mới chạy hàm quét không gian cũ
+            // Nếu hàm xử lý chọn Phường/Xã từ tọa độ điểm tồn tại, gọi hàm tra cứu hành chính
             if (typeof selectPhuongFromPoint === 'function') {
                 selectPhuongFromPoint(e.lngLat.lng, e.lngLat.lat, map);
             }
