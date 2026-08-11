@@ -1,4 +1,4 @@
-// js/province.js
+﻿// js/province.js
 
 // Biến toàn cục lưu trữ dữ liệu ranh giới GeoJSON của tỉnh đang được chọn
 let currentGeoData = null;
@@ -130,44 +130,6 @@ async function selectPhuongFromPoint(lng, lat, map) {
 }
 
 /**
- * 1.1 HÀM TỐI ƯU SIÊU TỐC: CHỌN PHƯỜNG/XÃ DỰA TRÊN LỚP ĐANG RENDER SẴN TRÊN MÀN HÌNH
- * @param {string} matchedPhuong - Tên phường/xã lấy trực tiếp từ thuộc tính rendered features
- * @param {Object} map - Đối tượng bản đồ MapLibre
- */
-async function selectPhuongFromPointFast(matchedPhuong, map) {
-    const phuongSelect = document.getElementById('phuongFilter');
-    
-    if (matchedPhuong && phuongSelect) {
-        phuongSelect.value = matchedPhuong; // Gán trực tiếp giá trị xã/phường vào dropdown
-
-        // Thiết lập biểu thức lọc ranh giới trên bản đồ
-        const filterExpr = [
-            'any',
-            ['==', ['get', 'name'], matchedPhuong],
-            ['==', ['get', 'dia_chi'], matchedPhuong],
-            ['==', ['get', 'Phuong'], matchedPhuong],
-            ['==', ['get', 'Xa'], matchedPhuong]
-        ];
-
-        // Thiết lập biểu thức lọc dữ liệu thửa đất từ Google Sheets theo tên phường
-        const sheetFilterExpr = [
-            '==', ['get', 'Địa Chỉ Thửa Đất'], matchedPhuong
-        ];
-
-        // Áp dụng bộ lọc lên các lớp ranh giới
-        if (map.getLayer('thua-dat-layer')) map.setFilter('thua-dat-layer', filterExpr);
-        if (map.getLayer('thua-dat-line-layer')) map.setFilter('thua-dat-line-layer', filterExpr);
-
-        // Gọi tải dữ liệu thửa đất từ Google Sheets tương ứng với khu vực
-        await loadThuaDatFromSheet(map);
-
-        // Áp dụng bộ lọc lên các lớp thửa đất
-        if (map.getLayer('sheet-thua-dat-fill')) map.setFilter('sheet-thua-dat-fill', sheetFilterExpr);
-        if (map.getLayer('sheet-thua-dat-line')) map.setFilter('sheet-thua-dat-line', sheetFilterExpr);
-    }
-}
-
-/**
  * 2. HÀM TẢI DỮ LIỆU RANH GIỚI TỈNH KHI NGƯỜI DÙNG CHỌN TRỰC TIẾP TỪ DROPDOWN GIAO DIỆN
  * @param {string} provinceId - Mã định danh (ID) của tỉnh được chọn từ thẻ select
  * @param {Object} map - Đối tượng bản đồ MapLibre
@@ -272,7 +234,7 @@ function initFilter(map) {
     // Vòng lặp duyệt qua danh sách cấu hình tỉnh trong CONFIG.PROVINCES để đổ dữ liệu vào thẻ select
     CONFIG.PROVINCES.forEach(p => {
         const opt = document.createElement('option');
-        opt.value = p.id;      // Giá trị option là mã ID của tỉnh
+        opt.value = p.id;     // Giá trị option là mã ID của tỉnh
         opt.textContent = p.name; // Tên hiển thị của tỉnh trên giao diện
         tinhSelect.appendChild(opt);
     });
