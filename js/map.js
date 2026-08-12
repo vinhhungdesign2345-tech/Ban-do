@@ -1,7 +1,7 @@
-﻿// js/map.js
+// js/map.js
 
 // --- KHAI BÁO BIẾN TOÀN CỤC QUẢN LÝ NHÃN SỐ ĐO CẠNH VÀ ID THỬA ĐẤT ---
-let activeMarkers = [];         // Mảng lưu trữ các đối tượng Marker hiển thị kích thước cạnh trên bản đồ
+let activeMarkers = [];          // Mảng lưu trữ các đối tượng Marker hiển thị kích thước cạnh trên bản đồ
 window.selectedThuaDatId = null; // Biến toàn cục lưu ID thửa đất đang được chọn
 
 // --- HÀM XÓA SẠCH CÁC NHÃN SỐ ĐO CẠNH TRÊN BẢN ĐỒ ---
@@ -71,26 +71,40 @@ function initMap() {
     // Khởi tạo một đối tượng bản đồ MapLibre mới gắn vào thẻ div có id là 'map'
     const map = new maplibregl.Map({
         container: 'map',                         // ID của thẻ HTML chứa bản đồ
-        style: CONFIG.MAP_STYLE,                    // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
-        center: CONFIG.MAP_CENTER,                    // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
-        zoom: CONFIG.MAP_ZOOM                       // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
+        style: CONFIG.MAP_STYLE,                  // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
+        center: CONFIG.MAP_CENTER,                // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
+        zoom: CONFIG.MAP_ZOOM                     // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
     });
 
     // Lưu trữ tham chiếu đối tượng bản đồ vào biến toàn cục window để các hàm khác có thể gọi lại
     window.currentMapInstance = map;
 
+    // 📏 KHỞI TẠO VÀ TÍCH HỢP CÔNG CỤ ĐO ĐẠC (MAPLIBRE GL DRAW) GIỐNG GOOGLE MAPS
+    const draw = new MapboxDraw({
+        displayControlsDefault: false, // Ẩn các nút mặc định không cần thiết của thư viện Draw
+        controls: {
+            polygon: true,     // Bật nút đo diện tích vùng (vẽ đa giác)
+            line_string: true, // Bật nút đo khoảng cách đường thẳng/đường gấp khúc
+            trash: true        // Bật nút xóa đối tượng đang đo trên bản đồ
+        },
+        defaultMode: 'simple_select'
+    });
+
+    // Thêm công cụ đo đạc vào góc trên bên phải của bản đồ
+    map.addControl(draw, 'top-right');
+
     // 📍 TÍCH HỢP NÚT ĐỊNH VỊ VỊ TRÍ HIỆN TẠI CỦA NGƯỜI DÙNG
     const geolocate = new maplibregl.GeolocateControl({
         positionOptions: { 
             enableHighAccuracy: true,          // Bật chế độ định vị vệ tinh độ chính xác cao nhất có thể
-            maximumAge: 0,                   // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
-            timeout: 20000                   // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
+            maximumAge: 0,                     // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
+            timeout: 20000                     // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
         },
-        trackUserLocation: true,             // Bật tính năng liên tục theo dõi sự di chuyển của người dùng trên bản đồ
-        showUserHeading: true                // Hiển thị mũi tên chỉ hướng hướng quay của thiết bị di động
+        trackUserLocation: true,               // Bật tính năng liên tục theo dõi sự di chuyển của người dùng trên bản đồ
+        showUserHeading: true                  // Hiển thị mũi tên chỉ hướng quay của thiết bị di động
     });
     
-    // Thêm điều khiển định vị vào góc trên bên phải của bản đồ
+    // Thêm điều khiển định vị vào góc trên bên phải của bản đồ (ngay dưới cụm công cụ đo)
     map.addControl(geolocate, 'top-right');
 
     // Lắng nghe sự kiện khi hệ thống đã xác định thành công vị trí của người dùng
