@@ -1,7 +1,7 @@
-﻿// js/map.js
+// js/map.js
 
 // --- KHAI BÁO BIẾN TOÀN CỤC QUẢN LÝ NHÃN SỐ ĐO CẠNH VÀ ID THỬA ĐẤT ---
-let activeMarkers = [];         // Mảng lưu trữ các đối tượng Marker hiển thị kích thước cạnh trên bản đồ
+let activeMarkers = [];          // Mảng lưu trữ các đối tượng Marker hiển thị kích thước cạnh trên bản đồ
 window.selectedThuaDatId = null; // Biến toàn cục lưu ID thửa đất đang được chọn
 
 // --- HÀM XÓA SẠCH CÁC NHÃN SỐ ĐO CẠNH TRÊN BẢN ĐỒ ---
@@ -12,19 +12,20 @@ function clearLengthMarkers() {
     activeMarkers = [];
 }
 
-// --- HÀM ĐỊNH DẠNG SỐ CHUẨN VIỆT NAM (Ví dụ: 1.234,5) ---
+// --- HÀM ĐỊNH DẠNG SỐ CHUẨN VIỆT NAM (HỖ TRỢ GIỮ NGUYÊN SỐ THỰC) ---
 function formatNumberVN(val) {
     // Kiểm tra nếu giá trị rỗng, null, undefined hoặc dấu gạch ngang thì trả về dấu '-' mặc định
     if (val === null || val === undefined || val === '' || val === '-') return '-';
     
-    // Ép kiểu giá trị sang chuỗi và thay thế dấu phẩy (nếu có) thành dấu chấm để chuẩn hóa số thực
-    const num = parseFloat(String(val).replace(',', '.'));
+    // Chuyển đổi giá trị sang chuỗi, thay thế dấu phẩy thành dấu chấm để chuẩn hóa số thực
+    const stringVal = String(val).replace(',', '.');
+    const num = parseFloat(stringVal);
     
     // Nếu giá trị sau khi chuyển đổi không phải là số hợp lệ (NaN), trả về nguyên bản giá trị ban đầu
     if (isNaN(num)) return val;
 
-    // Trả về chuỗi số đã được định dạng theo chuẩn địa phương Việt Nam (có dấu chấm phân cách hàng nghìn)
-    return num.toLocaleString('vi-VN');
+    // Trả về chuỗi số đã được định dạng theo chuẩn địa phương Việt Nam (giữ lại tối đa 2 chữ số thập phân nếu có)
+    return num.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
 // --- HÀM ĐÓNG BẢNG THÔNG TIN VÀ XÓA TRẠNG THÁI LÀM NỔI BẬT (HIGHLIGHT) THỬA ĐẤT ---
@@ -71,9 +72,9 @@ function initMap() {
     // Khởi tạo một đối tượng bản đồ MapLibre mới gắn vào thẻ div có id là 'map'
     const map = new maplibregl.Map({
         container: 'map',                         // ID của thẻ HTML chứa bản đồ
-        style: CONFIG.MAP_STYLE,                    // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
-        center: CONFIG.MAP_CENTER,                    // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
-        zoom: CONFIG.MAP_ZOOM                       // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
+        style: CONFIG.MAP_STYLE,                  // Giao diện/phong cách bản đồ được lấy từ tệp cấu hình chung (config.js)
+        center: CONFIG.MAP_CENTER,                // Tọa độ trung tâm mặc định khi khởi tạo bản đồ
+        zoom: CONFIG.MAP_ZOOM                     // Mức độ phóng to (zoom) mặc định ban đầu của bản đồ
     });
 
     // Lưu trữ tham chiếu đối tượng bản đồ vào biến toàn cục window để các hàm khác có thể gọi lại
@@ -83,11 +84,11 @@ function initMap() {
     const geolocate = new maplibregl.GeolocateControl({
         positionOptions: { 
             enableHighAccuracy: true,          // Bật chế độ định vị vệ tinh độ chính xác cao nhất có thể
-            maximumAge: 0,                   // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
-            timeout: 20000                   // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
+            maximumAge: 0,                     // Không sử dụng dữ liệu vị trí được lưu trong bộ nhớ đệm cũ
+            timeout: 20000                     // Thời gian tối đa chờ phản hồi tín hiệu định vị là 20 giây (20000ms)
         },
-        trackUserLocation: true,             // Bật tính năng liên tục theo dõi sự di chuyển của người dùng trên bản đồ
-        showUserHeading: true                // Hiển thị mũi tên chỉ hướng hướng quay của thiết bị di động
+        trackUserLocation: true,               // Bật tính năng liên tục theo dõi sự di chuyển của người dùng trên bản đồ
+        showUserHeading: true                  // Hiển thị mũi tên chỉ hướng quay của thiết bị di động
     });
     
     // Thêm điều khiển định vị vào góc trên bên phải của bản đồ
@@ -267,11 +268,14 @@ function initMap() {
                 }
             }
 
-            // Trích xuất các trường thông tin chi tiết của thửa đất để hiển thị lên bảng thông tin
+            // Trích xuất các trường thông tin chi tiết của thửa đất (quét rộng các biến thể tên cột từ Google Sheets)
             const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
             const soThua = rawProps['Số thửa'] || rawProps['So thua'] || '-';
-            const rawDienTich = rawProps['Diện tích'] || rawProps['Dien tich'] || '-';
-            const dienTich = formatNumberVN(rawDienTich); // Định dạng diện tích theo chuẩn Việt Nam
+            
+            // Khắc phục lỗi hiển thị 1 m² bằng cách kiểm tra đa dạng biến thể khóa tên cột diện tích
+            const rawDienTich = rawProps['Diện tích'] || rawProps['Dien tich'] || rawProps['dien_tich'] || rawProps['DienTich'] || '-';
+            const dienTich = formatNumberVN(rawDienTich); // Định dạng diện tích theo chuẩn Việt Nam, giữ chính xác số thực
+            
             const loaiDat = rawProps['Loại Đất'] || rawProps['Loại Đất:'] || rawProps['Loại đất'] || rawProps['loai_dat'] || '-';
             const tenChu = rawProps['Tên Chủ'] || rawProps['Tên chủ'] || '-';
             const soDinhDanh = rawProps['Số định danh chủ đất'] || rawProps['Số định danh'] || 'Không có';
@@ -284,7 +288,7 @@ function initMap() {
             if (map.getLayer('sheet-thua-dat-highlight-fill')) map.setFilter('sheet-thua-dat-highlight-fill', selectFilter);
             if (map.getLayer('sheet-thua-dat-highlight-line')) map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
 
-            // Xây dựng cấu trúc HTML nội dung hiển thị trong bảng thông tin thửa đất (ĐÃ BỎ HOÀN TOÀN PHẦN CẬP NHẬT THỰC ĐỊA)
+            // Xây dựng cấu trúc HTML nội dung hiển thị trong bảng thông tin thửa đất
             const panelContent = `
                 <div><b>Số tờ:</b> ${soTo}</div>
                 <div><b>Số thửa:</b> ${soThua}</div>
