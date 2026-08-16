@@ -268,12 +268,19 @@ function initMap() {
                 }
             }
 
-            // Trích xuất các trường thông tin chi tiết của thửa đất (quét rộng các biến thể tên cột từ Google Sheets)
+            // Trích xuất các trường thông tin chi tiết của thửa đất
             const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
             const soThua = rawProps['Số thửa'] || rawProps['So thua'] || '-';
             
-            // Khắc phục lỗi hiển thị 1 m² bằng cách kiểm tra đa dạng biến thể khóa tên cột diện tích
-            const rawDienTich = rawProps['Diện tích'] || rawProps['Dien tich'] || rawProps['dien_tich'] || rawProps['DienTich'] || '-';
+            // Quét toàn diện tất cả biến thể tên cột diện tích (hỗ trợ cả trường hợp bị xuống dòng \n trong GeoJSON)
+            const rawDienTich = rawProps['Diện tích'] || 
+                                rawProps['Dien tich'] || 
+                                rawProps['dien_tich'] || 
+                                rawProps['DienTich'] || 
+                                rawProps['DIỆN TÍCH'] || 
+                                rawProps['Diện tích\nm²'] || 
+                                rawProps['Diện\ntích'] || '-';
+                                
             const dienTich = formatNumberVN(rawDienTich); // Định dạng diện tích theo chuẩn Việt Nam, giữ chính xác số thực
             
             const loaiDat = rawProps['Loại Đất'] || rawProps['Loại Đất:'] || rawProps['Loại đất'] || rawProps['loai_dat'] || '-';
