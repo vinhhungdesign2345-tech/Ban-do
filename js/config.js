@@ -3,9 +3,11 @@
 const CONFIG = {
     // --- DANH SÁCH CÁC TỈNH/THÀNH PHỐ VÀ ĐƯỜNG DẪN TỆP TÀI NGUYÊN GEOJSON ---
     PROVINCES: [
-        { id: "AnGiang", name: "Tỉnh An Giang", file: "./geojson/An-Giang.json" },
+        { id: "CaMau", name: "1.Tỉnh Cà Mau", file: "./geojson/Ca-Mau.json" },
+        { id: "AnGiang", name: "2.Tỉnh An Giang", file: "./geojson/An-Giang.json" },
+        { id: "TPCanTho", name: "3.Thành Phố Cần Thơ", file: "./geojson/TP-Can-Tho.json" },
         { id: "BacNinh", name: "Tỉnh Bắc Ninh", file: "./geojson/Bac-Ninh.json" },
-        { id: "CaMau", name: "Tỉnh Cà Mau", file: "./geojson/Ca-Mau.json" },
+        
         { id: "CaoBang", name: "Tỉnh Cao Bằng", file: "./geojson/Cao-Bang.json" },
         { id: "DakLak", name: "Tỉnh Dak Lak", file: "./geojson/Dak-Lak.json" },
         { id: "DienBien", name: "Tỉnh Điện Biên", file: "./geojson/Dien-Bien.json" },
@@ -25,7 +27,7 @@ const CONFIG = {
         { id: "QuangNinh", name: "Tỉnh Quảng Ninh", file: "./geojson/Quang-Ninh.json" },
         { id: "QuangTri", name: "Tỉnh Quảng Trị", file: "./geojson/Quang-Tri.json" },
         { id: "SonLa", name: "Tỉnh Sơn La", file: "./geojson/Son-La.json" },
-        { id: "TPCanTho", name: "Thành Phố Cần Thơ", file: "./geojson/TP-Can-Tho.json" },
+        
         { id: "TPDaNang", name: "Thành Phố Đà Nẵng", file: "./geojson/TP-Da-Nang.json" },
         { id: "TPDongNai", name: "Thành Phố Đồng Nai", file: "./geojson/TP-Dong-Nai.json" },
         { id: "TPHaNoi", name: "Thành Phố Hà Nội", file: "./geojson/TP-Ha-Noi.json" },
