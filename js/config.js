@@ -6,39 +6,55 @@ const CONFIG = {
         { id: "CaMau", name: "1.Tỉnh Cà Mau", file: "./geojson/Ca-Mau.json" },
         { id: "AnGiang", name: "2.Tỉnh An Giang", file: "./geojson/An-Giang.json" },
         { id: "TPCanTho", name: "3.Thành Phố Cần Thơ", file: "./geojson/TP-Can-Tho.json" },
+        { id: "VinhLong", name: "4.Vĩnh Long", file: "./geojson/Vinh-Long.json" },
+        { id: "DongThap", name: "5.Tỉnh Đồng Tháp", file: "./geojson/Dong-Thap.json" },
+        { id: "TPHaiPhong", name: "6.Thành Phố Hải Phòng", file: "./geojson/TP-Hai-Phong.json" },
+        { id: "TayNinh", name: "7.Tỉnh Tây Ninh", file: "./geojson/Tay-Ninh.json" },
+        { id: "TPDongNai", name: "8.Thành Phố Đồng Nai", file: "./geojson/TP-Dong-Nai.json" },
+        { id: "LamDong", name: "9.Tỉnh Lâm Đồng", file: "./geojson/Lam-Dong.json" },
+        { id: "KhanhHoa", name: "10.Tỉnh Khánh Hòa", file: "./geojson/Khanh-Hoa.json" },
+        { id: "DakLak", name: "11.Tỉnh Dak Lak", file: "./geojson/Dak-Lak.json" },
+        { id: "GiaLai", name: "12.Tỉnh Gia Lai", file: "./geojson/Gia-Lai.json" },
+        { id: "QuangNgai", name: "13.Tỉnh Quảng Ngãi", file: "./geojson/Quang-Ngai.json" },
+        { id: "TPDaNang", name: "14.Thành Phố Đà Nẵng", file: "./geojson/TP-Da-Nang.json" },
+        { id: "TPHue", name: "15.Thành Phố Huế", file: "./geojson/TP-Hue.json" },
+        { id: "QuangTri", name: "16.Tỉnh Quảng Trị", file: "./geojson/Quang-Tri.json" },
+
+
+        
         { id: "BacNinh", name: "Tỉnh Bắc Ninh", file: "./geojson/Bac-Ninh.json" },
         
         { id: "CaoBang", name: "Tỉnh Cao Bằng", file: "./geojson/Cao-Bang.json" },
-        { id: "DakLak", name: "Tỉnh Dak Lak", file: "./geojson/Dak-Lak.json" },
+        
         { id: "DienBien", name: "Tỉnh Điện Biên", file: "./geojson/Dien-Bien.json" },
-        { id: "DongThap", name: "Tỉnh Đồng Tháp", file: "./geojson/Dong-Thap.json" },
-        { id: "GiaLai", name: "Tỉnh Gia Lai", file: "./geojson/Gia-Lai.json" },
+        
+        
         { id: "HaTinh", name: "Tỉnh Hà Tĩnh", file: "./geojson/Ha-Tinh.json" },
         { id: "HungYen", name: "Tỉnh Hưng Yên", file: "./geojson/Hung-Yen.json" },
-        { id: "KhanhHoa", name: "Tỉnh Khánh Hòa", file: "./geojson/Khanh-Hoa.json" },
+        
         { id: "LaiChau", name: "Tỉnh Lai Châu", file: "./geojson/Lai-Chau.json" },
-        { id: "LamDong", name: "Tỉnh Lâm Đồng", file: "./geojson/Lam-Dong.json" },
+        
         { id: "LangSon", name: "Tỉnh Lạng Sơn", file: "./geojson/Lang-Son.json" },
         { id: "LaoCai", name: "Tỉnh Lào Cai", file: "./geojson/Lao-Cai.json" },
         { id: "NgheAn", name: "Tỉnh Nghệ An", file: "./geojson/Nghe-An.json" },
         { id: "NinhBinh", name: "Tỉnh Ninh Bình", file: "./geojson/Ninh_Binh.json" },
         { id: "PhuTho", name: "Tỉnh Phú Thọ", file: "./geojson/Phu-Tho.json" },
-        { id: "QuangNgai", name: "Tỉnh Quảng Ngãi", file: "./geojson/Quang-Ngai.json" },
+        
         { id: "QuangNinh", name: "Tỉnh Quảng Ninh", file: "./geojson/Quang-Ninh.json" },
-        { id: "QuangTri", name: "Tỉnh Quảng Trị", file: "./geojson/Quang-Tri.json" },
+        
         { id: "SonLa", name: "Tỉnh Sơn La", file: "./geojson/Son-La.json" },
         
-        { id: "TPDaNang", name: "Thành Phố Đà Nẵng", file: "./geojson/TP-Da-Nang.json" },
-        { id: "TPDongNai", name: "Thành Phố Đồng Nai", file: "./geojson/TP-Dong-Nai.json" },
+        
+        
         { id: "TPHaNoi", name: "Thành Phố Hà Nội", file: "./geojson/TP-Ha-Noi.json" },
-        { id: "TPHaiPhong", name: "Thành Phố Hải Phòng", file: "./geojson/TP-Hai-Phong.json" },
+        
         { id: "TPHoChiMinh", name: "Thành Phố Hồ Chí Minh", file: "./geojson/TP-Ho-Chi-Minh.json" },
-        { id: "TPHue", name: "Thành Phố Huế", file: "./geojson/TP-Hue.json" },
-        { id: "TayNinh", name: "Tỉnh Tây Ninh", file: "./geojson/Tay-Ninh.json" },
+        
+        
         { id: "ThaiNguyen", name: "Tỉnh Thái Nguyên", file: "./geojson/Thai-Nguyên.json" },
         { id: "ThanhHoa", name: "Tỉnh Thanh Hóa", file: "./geojson/Thanh-Hoa.json" },
         { id: "TuyenQuang", name: "Tuyên Quang", file: "./geojson/Tuyen-Quang.json" },
-        { id: "VinhLong", name: "Vĩnh Long", file: "./geojson/Vinh-Long.json" },
+        
     ],
 
     // --- ĐƯỜNG DẪN APIS GOOGLE APPS SCRIPT TRUY XUẤT DỮ LIỆU THỬA ĐẤT ---
