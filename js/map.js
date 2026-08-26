@@ -67,12 +67,17 @@ function updateMeasureGeometry(map) {
     // Tạo các Marker điểm mốc có thể kéo thả (draggable) trên bản đồ
     measureCoordinates.forEach((coord, index) => {
         const el = document.createElement('div');
-        el.style.width = '12px';
-        el.style.height = '12px';
+        el.style.width = '14px';
+        el.style.height = '14px';
         el.style.backgroundColor = '#ffffff';
         el.style.border = '2px solid #ff0055';
         el.style.borderRadius = '50%';
         el.style.cursor = 'grab';
+        el.style.boxShadow = '0 0 4px rgba(0,0,0,0.4)';
+
+        // Ngăn chặn sự kiện click lan truyền ra bản đồ khi người dùng tương tác/kéo thả điểm mốc
+        el.addEventListener('mousedown', (e) => e.stopPropagation());
+        el.addEventListener('click', (e) => e.stopPropagation());
 
         const marker = new maplibregl.Marker({
             element: el,
@@ -81,11 +86,21 @@ function updateMeasureGeometry(map) {
         .setLngLat(coord)
         .addTo(map);
 
-        // Lắng nghe sự kiện kéo thả điểm mốc
+        // Lắng nghe sự kiện bắt đầu kéo
+        marker.on('dragstart', () => {
+            el.style.cursor = 'grabbing';
+        });
+
+        // Lắng nghe sự kiện đang kéo thả điểm mốc
         marker.on('drag', () => {
             const lngLat = marker.getLngLat();
             measureCoordinates[index] = [lngLat.lng, lngLat.lat];
             updateMeasureGeometry(map); // Tự động cập nhật lại đường và số đo khi kéo
+        });
+
+        // Lắng nghe sự kiện kết thúc kéo
+        marker.on('dragend', () => {
+            el.style.cursor = 'grab';
         });
 
         measurePointMarkers.push(marker);
@@ -119,11 +134,12 @@ function updateMeasureGeometry(map) {
             el.style.color = '#ff0055';
             el.style.fontSize = '12px';
             el.style.fontWeight = 'Bold';
-            el.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
-            el.style.padding = '1px 4px';
+            el.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+            el.style.padding = '2px 5px';
             el.style.borderRadius = '3px';
             el.style.border = '1px solid #ff0055';
             el.style.whiteSpace = 'nowrap';
+            el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
             el.innerText = segText;
 
             const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
