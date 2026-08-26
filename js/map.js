@@ -1,8 +1,11 @@
 // js/map.js
 
-// --- KHAI BÁO BIẾN TOÀN CỤC QUẢN LÝ NHÃN SỐ ĐO CẠNH VÀ ID THỬA ĐẤT ---
+// --- KHAI BÁO BIẾN TOÀN CỤC QUẢN LÝ NHÃN SỐ ĐO CẠNH, THỬA ĐẤT VÀ TÍNH NĂNG ĐO ---
 let activeMarkers = [];          // Mảng lưu trữ các đối tượng Marker hiển thị kích thước cạnh trên bản đồ
 window.selectedThuaDatId = null; // Biến toàn cục lưu ID thửa đất đang được chọn
+
+let isMeasuring = false;         // Trạng thái bật/tắt tính năng đo khoảng cách
+let measureCoordinates = [];     // Mảng lưu trữ các điểm mốc người dùng click lên bản đồ để đo đạc
 
 // --- HÀM XÓA SẠCH CÁC NHÃN SỐ ĐO CẠNH TRÊN BẢN ĐỒ ---
 function clearLengthMarkers() {
@@ -62,6 +65,83 @@ function closeParcelPanel() {
             mapInstance.getSource('parcel-dimensions-source').setData({
                 type: 'FeatureCollection',
                 features: [] // Làm trống danh sách các đoạn thẳng kích thước
+            });
+        }
+    }
+}
+
+// --- HÀM CẬP NHẬT ĐƯỜNG ĐO VÀ TÍNH TOÁN KHOẢNG CÁCH BẰNG TURF.JS ---
+function updateMeasureGeometry(map) {
+    const features = [];
+
+    // Tạo các điểm mốc (điểm chấm tròn) tại vị trí người dùng click
+    measureCoordinates.forEach(coord => {
+        features.push({
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: coord },
+            properties: {}
+        });
+    });
+
+    // Nếu có từ 2 điểm trở lên, tạo đường gấp khúc nối các điểm và tính tổng chiều dài
+    if (measureCoordinates.length >= 2) {
+        const lineFeature = {
+            type: 'Feature',
+            geometry: { type: 'LineString', coordinates: measureCoordinates },
+            properties: {}
+        };
+        features.push(lineFeature);
+
+        // Sử dụng thư viện Turf.js để tính tổng chiều dài đoạn đường (mét)
+        const lengthMeters = turf.length(lineFeature, { units: 'meters' });
+        let distanceText = '';
+        
+        if (lengthMeters >= 1000) {
+            distanceText = `${(lengthMeters / 1000).toFixed(2)} km`;
+        } else {
+            distanceText = `${lengthMeters.toFixed(1)} m`;
+        }
+
+        // Đưa kết quả đo ra khung hiển thị trên giao diện HTML
+        const resultBox = document.getElementById('measure-result-box');
+        const resultEl = document.getElementById('measure-result');
+        if (resultBox) resultBox.style.display = 'block';
+        if (resultEl) resultEl.innerText = distanceText;
+    }
+
+    // Đẩy dữ liệu hình học đo đạc vào nguồn bản đồ để hiển thị trực quan
+    if (map.getSource('measure-source')) {
+        map.getSource('measure-source').setData({
+            type: 'FeatureCollection',
+            features: features
+        });
+    }
+}
+
+// --- HÀM HỦY VÀ LÀM SẠCH TRẠNG THÁI ĐO KHOẢNG CÁCH ---
+function resetMeasure(map) {
+    isMeasuring = false;
+    measureCoordinates = [];
+    
+    // Khôi phục lại trạng thái giao diện nút bấm ban đầu
+    const measureBtn = document.getElementById('measureDistBtn');
+    if (measureBtn) {
+        measureBtn.style.backgroundColor = '#ffffff';
+        measureBtn.style.color = '#333';
+        measureBtn.innerText = '📏 Đo khoảng cách';
+    }
+    
+    // Ẩn khung kết quả đo đạc đi
+    const resultBox = document.getElementById('measure-result-box');
+    if (resultBox) resultBox.style.display = 'none';
+
+    if (map) {
+        map.getCanvas().style.cursor = 'default';
+        // Xóa trắng nguồn dữ liệu vẽ trên bản đồ
+        if (map.getSource('measure-source')) {
+            map.getSource('measure-source').setData({
+                type: 'FeatureCollection',
+                features: []
             });
         }
     }
@@ -185,6 +265,57 @@ function initMap() {
             });
         }
 
+        // 📐 KHỞI TẠO NGUỒN VÀ LỚP CHO TÍNH NĂNG ĐO KHOẢNG CÁCH
+        if (!map.getSource('measure-source')) {
+            map.addSource('measure-source', {
+                type: 'geojson',
+                data: { type: 'FeatureCollection', features: [] }
+            });
+
+            // Lớp vẽ đường nét đứt màu đỏ nối các điểm đo
+            map.addLayer({
+                id: 'measure-lines',
+                type: 'line',
+                source: 'measure-source',
+                filter: ['==', '$type', 'LineString'],
+                paint: {
+                    'line-color': '#ff0055',
+                    'line-width': 3,
+                    'line-dasharray': [2, 2]
+                }
+            });
+
+            // Lớp vẽ các điểm mốc (vertex) tại vị trí người dùng chấm điểm
+            map.addLayer({
+                id: 'measure-points',
+                type: 'circle',
+                source: 'measure-source',
+                filter: ['==', '$type', 'Point'],
+                paint: {
+                    'circle-radius': 5,
+                    'circle-color': '#ffffff',
+                    'circle-stroke-width': 2,
+                    'circle-stroke-color': '#ff0055'
+                }
+            });
+        }
+
+        // Lắng nghe sự kiện click vào nút Đo khoảng cách trên giao diện
+        const measureBtn = document.getElementById('measureDistBtn');
+        if (measureBtn) {
+            measureBtn.onclick = function() {
+                isMeasuring = !isMeasuring;
+                if (isMeasuring) {
+                    this.style.backgroundColor = '#e0e0e0';
+                    this.style.color = '#d93025';
+                    this.innerText = '🛑 Hủy đo';
+                    map.getCanvas().style.cursor = 'crosshair'; // Đổi con trỏ chuột thành hình dấu cộng (+)
+                } else {
+                    resetMeasure(map);
+                }
+            };
+        }
+
         // Khởi tạo bộ lọc hành chính tỉnh/xã sau khi bản đồ tải hoàn tất
         initFilter(map);
         // Khởi tạo tính năng tìm kiếm thửa đất sau khi bản đồ tải hoàn tất
@@ -199,6 +330,9 @@ function initMap() {
     sheetLayers.forEach(layerId => {
         // Lắng nghe sự kiện click chuột vào một thửa đất trên lớp chỉ định
         map.on('click', layerId, (e) => {
+            // Nếu đang trong chế độ đo khoảng cách thì bỏ qua không chọn thửa đất
+            if (isMeasuring) return;
+
             if (!e.features || !e.features.length) return;
             isFeatureClicked = true; // Đánh dấu là đã click trúng thửa đất
 
@@ -318,8 +452,16 @@ function initMap() {
         map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = 'default');
     });
 
-    // Lắng nghe sự kiện click trực tiếp lên vùng trống của nền bản đồ (ngoài các thửa đất)
+    // Lắng nghe sự kiện click trực tiếp lên toàn bộ vùng bản đồ
     map.on('click', (e) => {
+        // Nếu đang bật chế độ đo khoảng cách, ghi nhận tọa độ điểm click để vẽ đường đo
+        if (isMeasuring) {
+            const coords = [e.lngLat.lng, e.lngLat.lat];
+            measureCoordinates.push(coords);
+            updateMeasureGeometry(map);
+            return;
+        }
+
         if (!isFeatureClicked) {
             closeParcelPanel();      // Đóng bảng thông tin thửa đất, gỡ bỏ highlight và tự động xóa nhãn cạnh
             
