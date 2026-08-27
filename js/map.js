@@ -74,7 +74,7 @@ function closeParcelPanel() {
     }
 }
 
-// --- HÀM CẬP NHẬT HÌNH HỌC VÀ NHÃN ĐO ĐẠC (HIỂN THỊ ĐỦ CẠNH KHÉP KÍN VÀ DIỆN TÍCH LÊN MAP) ---
+// --- HÀM CẬP NHẬT HÌNH HỌC VÀ NHÃN ĐO ĐẠC (HIỂN THỊ ĐỦ CẠNH KHÉP KÍN, DIỆN TÍCH VÀ CHU VI TẠI ĐIỂM CUỐI) ---
 function updateMeasureGeometry(map, skipRecreateMarkers = false) {
     const features = [];
     
@@ -102,7 +102,6 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
             marker.on('dragstart', () => {
                 window._isDraggingMarker = true;
                 if (map.dragPan) map.dragPan.disable();
-                // Lưu trạng thái trước khi kéo thả điểm
                 pushMeasureState();
             });
 
@@ -138,7 +137,6 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
         let renderCoords = [...measureCoordinates];
         let isClosed = false;
 
-        // Kiểm tra nếu điểm cuối trùng với điểm đầu hoặc tự động khép kín polygon
         if (measureCoordinates.length >= 3) {
             const first = measureCoordinates[0];
             const last = measureCoordinates[measureCoordinates.length - 1];
@@ -168,37 +166,41 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
         }
 
         if (typeof turf !== 'undefined') {
-            // Xử lý tạo các đoạn thẳng bao gồm cả đoạn khép kín từ điểm cuối về điểm đầu
             let segmentsToRender = [];
+            let totalPerimeter = 0;
             
             for (let i = 0; i < renderCoords.length - 1; i++) {
-                segmentsToRender.push({
+                const seg = {
                     type: 'Feature',
                     geometry: {
                         type: 'LineString',
                         coordinates: [renderCoords[i], renderCoords[i+1]]
                     },
                     properties: {}
-                });
+                };
+                segmentsToRender.push(seg);
+                totalPerimeter += turf.length(seg, { units: 'meters' });
             }
 
-            // Nếu từ 3 điểm trở lên, đảm bảo vẽ thêm cạnh nối từ điểm cuối về điểm đầu (khép kín)
+            // Nếu từ 3 điểm trở lên, cộng thêm đoạn nối từ điểm cuối về điểm đầu (khép kín) vào chu vi tổng
             if (renderCoords.length >= 3) {
                 const first = renderCoords[0];
                 const last = renderCoords[renderCoords.length - 1];
                 if (first[0] !== last[0] || first[1] !== last[1]) {
-                    segmentsToRender.push({
+                    const closingSeg = {
                         type: 'Feature',
                         geometry: {
                             type: 'LineString',
                             coordinates: [last, first]
                         },
                         properties: {}
-                    });
+                    };
+                    segmentsToRender.push(closingSeg);
+                    totalPerimeter += turf.length(closingSeg, { units: 'meters' });
                 }
             }
 
-            // Hiển thị nhãn độ dài cho tất cả các cạnh (bao gồm cạnh khép kín)
+            // Hiển thị nhãn độ dài cho tất cả các cạnh
             segmentsToRender.forEach(segment => {
                 const segLength = turf.length(segment, { units: 'meters' });
                 const segText = segLength >= 1000 ? `${(segLength / 1000).toFixed(2)} km` : `${segLength.toFixed(1)} m`;
@@ -225,7 +227,7 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
                 measureMarkers.push(marker);
             });
 
-            // Ghi diện tích trực tiếp lên vùng đang chọn trên map (nếu đủ từ 3 điểm trở lên)
+            // Ghi diện tích trực tiếp lên vùng đang chọn (Đã bỏ hẳn chữ S, chỉ còn số và m²)
             if (measureCoordinates.length >= 3) {
                 try {
                     const closedCoords = [...measureCoordinates];
@@ -239,7 +241,7 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
                     const centroid = turf.centroid(polygon);
                     const centerCoord = centroid.geometry.coordinates;
 
-                    const areaText = areaSqm >= 10000 ? `S: ${(areaSqm / 10000).toFixed(2)} ha` : `S: ${areaSqm.toFixed(1)} m²`;
+                    const areaText = areaSqm >= 10000 ? `${(areaSqm / 10000).toFixed(2)} ha` : `${areaSqm.toFixed(1)} m²`;
 
                     const areaEl = document.createElement('div');
                     areaEl.style.color = '#ffffff';
@@ -258,8 +260,35 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
                         .addTo(map);
 
                     measureMarkers.push(areaMarker);
+
+                    // Hiển thị thêm độ dài tổng (chu vi) ngay bên cạnh ĐIỂM CUỐI CÙNG
+                    const lastPointCoord = measureCoordinates[measureCoordinates.length - 1];
+                    const perimeterText = totalPerimeter >= 1000 ? `Chu vi: ${(totalPerimeter / 1000).toFixed(2)} km` : `Chu vi: ${totalPerimeter.toFixed(1)} m`;
+
+                    const perimEl = document.createElement('div');
+                    perimEl.style.color = '#d93025';
+                    perimEl.style.fontSize = '12px';
+                    perimEl.style.fontWeight = 'Bold';
+                    perimEl.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                    perimEl.style.padding = '2px 6px';
+                    perimEl.style.borderRadius = '4px';
+                    perimEl.style.border = '1px solid #d93025';
+                    perimEl.style.whiteSpace = 'nowrap';
+                    perimEl.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
+                    perimEl.innerText = perimeterText;
+
+                    const perimMarker = new maplibregl.Marker({ 
+                        element: perimEl, 
+                        anchor: 'bottom-left', 
+                        offset: [15, -15] // Đặt lệch sang bên cạnh điểm cuối cùng
+                    })
+                    .setLngLat(lastPointCoord)
+                    .addTo(map);
+
+                    measureMarkers.push(perimMarker);
+
                 } catch (err) {
-                    console.error("Lỗi tính và hiển thị diện tích đo đạc:", err);
+                    console.error("Lỗi tính và hiển thị diện tích/chu vi đo đạc:", err);
                 }
             }
         }
@@ -443,7 +472,7 @@ function initMap() {
             };
         }
 
-        // Hỗ trợ phím tắt Ctrl+Z (Undo) và Ctrl+Shift+Z / Ctrl+Y (Redo) chuẩn theo stack trạng thái
+        // Hỗ trợ phím tắt Ctrl+Z (Undo) và Ctrl+Shift+Z / Ctrl+Y (Redo)
         window.addEventListener('keydown', (e) => {
             if (!isMeasuring) return;
 
@@ -477,7 +506,7 @@ function initMap() {
 
     sheetLayers.forEach(layerId => {
         map.on('click', layerId, (e) => {
-            if (isMeasuring) return; // Nếu đang trong chế độ đo thì bỏ qua click chọn thửa đất
+            if (isMeasuring) return; 
 
             if (!e.features || !e.features.length) return;
             isFeatureClicked = true; 
@@ -490,7 +519,6 @@ function initMap() {
 
             clearLengthMarkers();
 
-            // 📏 TÍCH HỢP TURF.JS TÍNH TOÁN VÀ HIỂN THỊ ĐỘ DÀI MỖI CẠNH CỦA THỬA ĐẤT
             if (typeof turf !== 'undefined' && selectedFeature.geometry) {
                 try {
                     const lineSegments = turf.lineSegment(selectedFeature);
@@ -581,14 +609,12 @@ function initMap() {
         map.on('mouseleave', layerId, () => map.getCanvas().style.cursor = 'default');
     });
 
-    // Lắng nghe sự kiện click trực tiếp lên vùng trống của bản đồ hoặc thao tác đo khoảng cách
     map.on('click', (e) => {
         if (isMeasuring) {
             if (window._isDraggingMarker) return;
 
             const coords = [e.lngLat.lng, e.lngLat.lat];
             
-            // Tự động khép kín polygon nếu click gần điểm đầu tiên (dưới 5 mét)
             if (measureCoordinates.length >= 2 && typeof turf !== 'undefined') {
                 const firstCoord = measureCoordinates[0];
                 const distanceToFirst = turf.distance(
