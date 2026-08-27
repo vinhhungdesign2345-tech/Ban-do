@@ -68,29 +68,29 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
         measureCoordinates.forEach((coord, index) => {
             const el = document.createElement('div');
             el.className = 'measure-point-marker';
-            el.style.width = '14px';
-            el.style.height = '14px';
+            el.style.width = '16px';
+            el.style.height = '16px';
             el.style.backgroundColor = index === 0 ? '#ff0055' : '#ffffff';
             el.style.border = '2px solid #ff0055';
             el.style.borderRadius = '50%';
             el.style.cursor = 'grab';
-            el.style.boxShadow = '0 0 4px rgba(0,0,0,0.4)';
+            el.style.boxShadow = '0 0 6px rgba(0,0,0,0.5)';
             el.style.zIndex = '1000';
             el.title = `Điểm ${index + 1}\n- Kéo thả để di chuyển\n- Click để XÓA điểm`;
 
-            // CHẶN TRIỆT ĐỂ BỌT SỰ KIỆN ĐỂ TRÁNH XUNG ĐỘT KÉO THẢ VỚI BẢN ĐỒ
-            el.addEventListener('mousedown', (e) => {
-                e.stopPropagation();
-            });
-            el.addEventListener('touchstart', (e) => {
-                e.stopPropagation();
+            // QUAN TRỌNG: Chặn đứng sự kiện lan truyền để MapLibre không nuốt thao tác kéo thả của Marker
+            const stopPropagationEvents = ['mousedown', 'mouseup', 'click', 'dblclick', 'contextmenu', 'pointerdown', 'pointerup', 'touchstart', 'touchend', 'touchmove'];
+            stopPropagationEvents.forEach(eventType => {
+                el.addEventListener(eventType, (e) => {
+                    e.stopPropagation();
+                });
             });
 
-            // Click trực tiếp vào điểm mốc để xóa điểm đó
+            // Xử lý sự kiện click riêng để xóa điểm mốc khi người dùng click vào
             el.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (isMeasuring) {
-                    redoCoordinates = []; // Reset redo stack khi thay đổi thủ công
+                    redoCoordinates = [];
                     measureCoordinates.splice(index, 1);
                     updateMeasureGeometry(map, false);
                 }
@@ -98,29 +98,32 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
 
             const marker = new maplibregl.Marker({
                 element: el,
-                draggable: true
+                draggable: true,
+                pitchAlignment: 'viewport',
+                rotationAlignment: 'viewport'
             })
             .setLngLat(coord)
             .addTo(map);
 
-            marker.on('dragstart', (e) => {
+            marker.on('dragstart', () => {
                 window._isDraggingMarker = true;
                 el.style.cursor = 'grabbing';
-                // Tạm tắt tính năng kéo bản đồ của maplibre khi đang kéo marker
+                // Vô hiệu hóa tạm thời chức năng pan (di chuyển) bản đồ để kéo mượt mà
                 if (map.dragPan) map.dragPan.disable();
             });
 
-            marker.on('drag', (e) => {
+            marker.on('drag', () => {
                 const lngLat = marker.getLngLat();
                 measureCoordinates[index] = [lngLat.lng, lngLat.lat];
-                updateMeasureGeometry(map, true); // Cập nhật hình học nhanh không tạo lại DOM marker
+                updateMeasureGeometry(map, true); // Cập nhật hình học nhanh không cần vẽ lại DOM marker
             });
 
-            marker.on('dragend', (e) => {
+            marker.on('dragend', () => {
                 window._isDraggingMarker = false;
                 el.style.cursor = 'grab';
+                // Bật lại chức năng di chuyển bản đồ sau khi kéo xong
                 if (map.dragPan) map.dragPan.enable();
-                redoCoordinates = []; // Reset redo stack
+                redoCoordinates = [];
                 updateMeasureGeometry(map, false);
             });
 
@@ -422,8 +425,8 @@ function initMap() {
             const isCtrlOrMeta = e.ctrlKey || e.metaKey;
             const keyLower = e.key.toLowerCase();
 
-            // Ctrl + Shift + Z (hoặc Ctrl + Y) -> Redo
-            if (isCtrlOrMeta && (e.shiftKey && keyLower === 'z' || keyLower === 'y')) {
+            // Ctrl + Shift + Z (hoặc Ctrl + Y) -> Redo (hoàn tác hành động vừa hoàn tác)
+            if (isCtrlOrMeta && ((e.shiftKey && keyLower === 'z') || keyLower === 'y')) {
                 e.preventDefault();
                 if (redoCoordinates.length > 0) {
                     const restoredCoord = redoCoordinates.pop();
@@ -431,7 +434,7 @@ function initMap() {
                     updateMeasureGeometry(map, false);
                 }
             } 
-            // Ctrl + Z -> Undo
+            // Ctrl + Z -> Undo (hoàn tác hành động vừa làm)
             else if (isCtrlOrMeta && keyLower === 'z') {
                 e.preventDefault();
                 if (measureCoordinates.length > 0) {
@@ -562,7 +565,7 @@ function initMap() {
             }
 
             measureCoordinates.push(coords);
-            redoCoordinates = []; // Reset redo khi thêm điểm mới
+            redoCoordinates = []; // Reset redo stack khi thêm điểm mới
             updateMeasureGeometry(map, false);
             return;
         }
