@@ -71,16 +71,48 @@
         </div>
     </div>
 
-    <!-- Cụm công cụ góc dưới bản đồ: Gồm nút chuyển đổi lớp nền bản đồ và nút kích hoạt đo khoảng cách -->
-    <div class="map-layer-control" style="display: flex; gap: 8px; align-items: center;">
-        <!-- Nút bấm chuyển đổi qua lại giữa lớp bản đồ vệ tinh và bản đồ đường nét OSM -->
-        <button id="toggleLayerBtn">Chuyển sang Bản đồ OSM</button>
-        
-        <!-- 📏 NÚT BẤM KÍCH HOẠT TÍNH NĂNG ĐO KHOẢNG CÁCH / ĐO DIỆN TÍCH VÙNG KHÉP KÍN -->
-        <button id="measureDistBtn" style="padding: 8px 12px; background-color: #ffffff; color: #333; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 1px 4px rgba(0,0,0,0.3);">
-            📏 Đo khoảng cách
-        </button>
-    </div>
+    <!-- Cụm công cụ đặt ở góc dưới bên trái bản đồ: Chứa nút chuyển lớp nền và nút đo khoảng cách -->
+<div class="map-layer-control" style="display: flex; gap: 8px; align-items: center;">
+    
+    <!-- Nút bấm chuyển đổi qua lại giữa lớp bản đồ vệ tinh và bản đồ đường nét OSM -->
+    <button id="toggleLayerBtn" style="
+        padding: 8px 12px;                  /* Khoảng cách đệm bên trong nút */
+        height: 38px;                       /* Cố định chiều cao đồng bộ chuẩn tuyệt đối */
+        background-color: #ffffff;          /* Màu nền trắng */
+        color: #333;                        /* Màu chữ xám đậm */
+        border: 1px solid #ccc;             /* Viền xám nhạt */
+        border-radius: 4px;                 /* Bo tròn góc 4px */
+        cursor: pointer;                    /* Hiển thị con trỏ dạng bàn tay khi di chuột vào */
+        font-weight: bold;                  /* Chữ in đậm */
+        font-size: 13px;                    /* Cỡ chữ 13px */
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng nhẹ nổi lên trên bản đồ */
+        box-sizing: border-box;             /* Tính kích thước bao gồm cả viền và padding */
+        white-space: nowrap;                /* Không cho phép chữ tự động xuống dòng */
+    ">
+        Chuyển sang Bản đồ OSM
+    </button>
+    
+    <!-- 📏 Nút bấm kích hoạt tính năng đo khoảng cách và diện tích vùng khép kín -->
+    <button id="measureDistBtn" style="
+        padding: 8px 12px;                  /* Khoảng cách đệm bên trong nút */
+        height: 38px;                       /* Cố định chiều cao đồng bộ chuẩn tuyệt đối bằng nút bên cạnh */
+        background-color: #ffffff;          /* Màu nền trắng */
+        color: #333;                        /* Màu chữ xám đậm */
+        border: 1px solid #ccc;             /* Viền xám nhạt */
+        border-radius: 4px;                 /* Bo tròn góc 4px */
+        cursor: pointer;                    /* Hiển thị con trỏ dạng bàn tay khi di chuột vào */
+        font-weight: bold;                  /* Chữ in đậm */
+        font-size: 13px;                    /* Cỡ chữ 13px */
+        box-shadow: 0 1px 4px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng nhẹ */
+        box-sizing: border-box;             /* Tính kích thước bao gồm cả viền và padding */
+        white-space: nowrap;                /* Không cho phép chữ tự động xuống dòng */
+        display: flex;                      /* Sử dụng Flexbox để căn chỉnh biểu tượng và chữ thẳng hàng */
+        align-items: center;                /* Căn giữa theo chiều dọc */
+        gap: 4px;                           /* Khoảng cách giữa icon cây thước và chữ là 4px */
+    ">
+        📏 Đo khoảng cách
+    </button>
+</div>
 
       <!-- 🎚️ KHUNG THANH TRƯỢT ĐIỀU CHỈNH ĐỘ MỜ (OPACITY) DẠNG DỌC ĐẶT Ở GÓC PHẢI BẢN ĐỒ -->
     <div id="opacity-control-panel">
