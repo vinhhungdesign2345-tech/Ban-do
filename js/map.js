@@ -58,53 +58,56 @@ function closeParcelPanel() {
 }
 
 // --- HÀM CẬP NHẬT ĐƯỜNG ĐO, HIỂN THỊ SỐ ĐO TỪNG ĐOẠN VÀ TÍNH TỔNG KHOẢNG CÁCH/DIỆN TÍCH ---
-function updateMeasureGeometry(map) {
+function updateMeasureGeometry(map, skipRecreateMarkers = false) {
     const features = [];
     
-    // Xóa các nhãn cũ trên bản đồ trước khi vẽ lại
-    clearMeasureMarkers();
+    if (!skipRecreateMarkers) {
+        clearMeasureMarkers();
 
-    // Tạo các Marker điểm mốc có thể kéo thả (draggable) trên bản đồ
-    measureCoordinates.forEach((coord, index) => {
-        const el = document.createElement('div');
-        el.style.width = '14px';
-        el.style.height = '14px';
-        el.style.backgroundColor = '#ffffff';
-        el.style.border = '2px solid #ff0055';
-        el.style.borderRadius = '50%';
-        el.style.cursor = 'grab';
-        el.style.boxShadow = '0 0 4px rgba(0,0,0,0.4)';
-
-        // Ngăn chặn sự kiện click lan truyền ra bản đồ khi người dùng tương tác/kéo thả điểm mốc
-        el.addEventListener('mousedown', (e) => e.stopPropagation());
-        el.addEventListener('click', (e) => e.stopPropagation());
-
-        const marker = new maplibregl.Marker({
-            element: el,
-            draggable: true // Cho phép kéo thả điểm mốc để chỉnh sửa
-        })
-        .setLngLat(coord)
-        .addTo(map);
-
-        // Lắng nghe sự kiện bắt đầu kéo
-        marker.on('dragstart', () => {
-            el.style.cursor = 'grabbing';
-        });
-
-        // Lắng nghe sự kiện đang kéo thả điểm mốc
-        marker.on('drag', () => {
-            const lngLat = marker.getLngLat();
-            measureCoordinates[index] = [lngLat.lng, lngLat.lat];
-            updateMeasureGeometry(map); // Tự động cập nhật lại đường và số đo khi kéo
-        });
-
-        // Lắng nghe sự kiện kết thúc kéo
-        marker.on('dragend', () => {
+        // Tạo các Marker điểm mốc có thể kéo thả (draggable) trên bản đồ
+        measureCoordinates.forEach((coord, index) => {
+            const el = document.createElement('div');
+            el.style.width = '14px';
+            el.style.height = '14px';
+            el.style.backgroundColor = '#ffffff';
+            el.style.border = '2px solid #ff0055';
+            el.style.borderRadius = '50%';
             el.style.cursor = 'grab';
+            el.style.boxShadow = '0 0 4px rgba(0,0,0,0.4)';
+
+            const marker = new maplibregl.Marker({
+                element: el,
+                draggable: true
+            })
+            .setLngLat(coord)
+            .addTo(map);
+
+            marker.on('dragstart', () => {
+                el.style.cursor = 'grabbing';
+            });
+
+            // Khi đang kéo: chỉ cập nhật mảng tọa độ và vẽ lại đường tuyến/nhãn phụ nhanh, không rebuild lại marker điểm
+            marker.on('drag', () => {
+                const lngLat = marker.getLngLat();
+                measureCoordinates[index] = [lngLat.lng, lngLat.lat];
+                updateMeasureGeometry(map, true); 
+            });
+
+            marker.on('dragend', () => {
+                el.style.cursor = 'grab';
+                updateMeasureGeometry(map, false); // Tái tạo lại toàn bộ khi thả chuột xong
+            });
+
+            measurePointMarkers.push(marker);
         });
+    } else {
+        // Nếu chỉ update ngầm khi đang kéo, ta vẫn phải xóa nhãn số đo cũ của cạnh để vẽ nhãn mới
+        measureMarkers.forEach(marker => marker.remove());
+        measureMarkers = [];
+    }
 
-        measurePointMarkers.push(marker);
-
+    // Đẩy các điểm vào danh sách feature để vẽ
+    measureCoordinates.forEach(coord => {
         features.push({
             type: 'Feature',
             geometry: { type: 'Point', coordinates: coord },
@@ -176,7 +179,6 @@ function updateMeasureGeometry(map) {
             }
         }
 
-        // Đưa kết quả tổng khoảng cách và diện tích ra khung popup dưới màn hình
         const resultBox = document.getElementById('measure-result-box');
         const resultEl = document.getElementById('measure-result');
         if (resultBox) resultBox.style.display = 'block';
@@ -348,7 +350,7 @@ function initMap() {
                 e.preventDefault();
                 if (measureCoordinates.length > 0) {
                     measureCoordinates.pop(); // Xóa điểm mốc cuối cùng
-                    updateMeasureGeometry(map);
+                    updateMeasureGeometry(map, false);
                 }
             }
         });
@@ -454,7 +456,7 @@ function initMap() {
         if (isMeasuring) {
             const coords = [e.lngLat.lng, e.lngLat.lat];
             measureCoordinates.push(coords);
-            updateMeasureGeometry(map);
+            updateMeasureGeometry(map, false);
             return;
         }
 
