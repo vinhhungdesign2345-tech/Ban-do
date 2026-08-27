@@ -49,7 +49,7 @@ function closeParcelPanel() {
     }
 }
 
-// --- HÀM CẬP NHẬT ĐƯỜNG ĐO VÀ ĐIỂM MỐC KÉO THẢ (SỬ DỤNG MARKER CHUẨN CỦA MAPLIBRE) ---
+// --- HÀM CẬP NHẬT ĐƯỜNG ĐO VÀ ĐIỂM MỐC KÉO THẢ ---
 function updateMeasureGeometry(map, skipRecreateMarkers = false) {
     const features = [];
     
@@ -57,7 +57,6 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
         clearMeasureMarkers();
 
         measureCoordinates.forEach((coord, index) => {
-            // Sử dụng Marker chuẩn không cần custom element phức tạp để đảm bảo tính năng kéo thả hoạt động hoàn hảo 100%
             const marker = new maplibregl.Marker({
                 draggable: true,
                 color: index === 0 ? '#ff0055' : '#3388ff'
@@ -65,7 +64,6 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
             .setLngLat(coord)
             .addTo(map);
 
-            // Gán sự kiện click trực tiếp vào marker chuẩn để xóa điểm
             marker.getElement().addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (isMeasuring) {
@@ -77,13 +75,13 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
 
             marker.on('dragstart', () => {
                 window._isDraggingMarker = true;
-                if (map.dragPan) map.dragPan.disable(); // Tạm khóa di chuyển bản đồ để kéo điểm mốc mượt mà
+                if (map.dragPan) map.dragPan.disable();
             });
 
             marker.on('drag', () => {
                 const lngLat = marker.getLngLat();
                 measureCoordinates[index] = [lngLat.lng, lngLat.lat];
-                updateMeasureGeometry(map, true); // Cập nhật nhanh hình học không tạo lại marker
+                updateMeasureGeometry(map, true);
             });
 
             marker.on('dragend', () => {
@@ -376,14 +374,13 @@ function initMap() {
             };
         }
 
-        // --- BỘ PHÍM TẮT: CTRL + Z (UNDO) VÀ CTRL + SHIFT + Z (REDO) ---
+        // --- PHÍM TẮT: CTRL + Z VÀ CTRL + SHIFT + Z ---
         window.addEventListener('keydown', (e) => {
             if (!isMeasuring) return;
 
             const isCtrlOrMeta = e.ctrlKey || e.metaKey;
             const keyLower = e.key.toLowerCase();
 
-            // Ctrl + Shift + Z hoặc Ctrl + Y -> Redo (hoàn tác hành động vừa hoàn tác)
             if (isCtrlOrMeta && ((e.shiftKey && keyLower === 'z') || keyLower === 'y')) {
                 e.preventDefault();
                 if (redoCoordinates.length > 0) {
@@ -392,7 +389,6 @@ function initMap() {
                     updateMeasureGeometry(map, false);
                 }
             } 
-            // Ctrl + Z -> Undo (hoàn tác điểm vừa chấm)
             else if (isCtrlOrMeta && keyLower === 'z') {
                 e.preventDefault();
                 if (measureCoordinates.length > 0) {
@@ -468,8 +464,11 @@ function initMap() {
 
             const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
             const soThua = rawProps['Số thửa'] || rawProps['So thua'] || '-';
-            const rawDienTich = rawProps['Diện tích'] || rawProps['Dien tich'] || rawProps['dien_tich'] || rawProps['DienTich'] || '-';
+            
+            // TỰ ĐỘNG QUÉT TOÀN BỘ CÁC BIẾN DIỆN TÍCH PHỔ BIẾN TRONG DỮ LIỆU
+            const rawDienTich = rawProps['Diện tích'] || rawProps['Dien tich'] || rawProps['dien_tich'] || rawProps['DienTich'] || rawProps['dien-tich'] || rawProps['Area'] || rawProps['area'] || '-';
             const dienTich = formatNumberVN(rawDienTich);
+
             const loaiDat = rawProps['Loại Đất'] || rawProps['Loại đất'] || '-';
             const tenChu = rawProps['Tên Chủ'] || rawProps['Tên chủ'] || '-';
             const soDinhDanh = rawProps['Số định danh chủ đất'] || rawProps['Số định danh'] || 'Không có';
