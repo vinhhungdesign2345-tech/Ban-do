@@ -7,9 +7,17 @@ window.selectedThuaDatId = null; // Biến toàn cục lưu ID thửa đất đa
 // --- BIẾN TOÀN CỤC CHO TÍNH NĂNG ĐO KHOẢNG CÁCH / DIỆN TÍCH ---
 let isMeasuring = false;         
 let measureCoordinates = [];     
-let redoCoordinates = [];        
 let measureMarkers = [];         // Lưu trữ các marker nhãn số đo cạnh và diện tích khi đo
 let measurePointMarkers = [];    // Lưu trữ các marker điểm mốc kéo thả khi đo
+
+// --- QUẢN LÝ LỊCH SỬ UNDO / REDO THÔNG MINH (LƯU TRẠNG THÁI MẢNG TỌA ĐỘ) ---
+let measureHistory = [];         // Mảng lưu lịch sử các trạng thái tọa độ để Undo
+let measureRedoStack = [];       // Mảng lưu lịch sử để Redo
+
+function pushMeasureState() {
+    measureHistory.push([...measureCoordinates]);
+    measureRedoStack = []; // Xóa stack redo mỗi khi có hành động thêm/sửa/xóa mới
+}
 
 // --- HÀM XÓA SẠCH CÁC NHÃN SỐ ĐO CẠNH TRÊN BẢN ĐỒ ---
 function clearLengthMarkers() {
@@ -81,11 +89,11 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
             .setLngLat(coord)
             .addTo(map);
 
-            // Click vào điểm mốc khi đang đo sẽ xóa điểm đó
+            // Click vào điểm mốc khi đang đo sẽ xóa điểm đó (Có lưu lịch sử để Undo chính xác điểm vừa xóa)
             marker.getElement().addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (isMeasuring) {
-                    redoCoordinates = [];
+                    pushMeasureState();
                     measureCoordinates.splice(index, 1);
                     updateMeasureGeometry(map, false);
                 }
@@ -94,6 +102,8 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
             marker.on('dragstart', () => {
                 window._isDraggingMarker = true;
                 if (map.dragPan) map.dragPan.disable();
+                // Lưu trạng thái trước khi kéo thả điểm
+                pushMeasureState();
             });
 
             marker.on('drag', () => {
@@ -105,7 +115,6 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
             marker.on('dragend', () => {
                 window._isDraggingMarker = false;
                 if (map.dragPan) map.dragPan.enable();
-                redoCoordinates = [];
                 updateMeasureGeometry(map, false);
             });
 
@@ -268,7 +277,8 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
 function resetMeasure(map) {
     isMeasuring = false;
     measureCoordinates = [];
-    redoCoordinates = [];
+    measureHistory = [];
+    measureRedoStack = [];
     clearMeasureMarkers();
     
     const measureBtn = document.getElementById('measureDistBtn');
@@ -433,7 +443,7 @@ function initMap() {
             };
         }
 
-        // Hỗ trợ phím tắt Ctrl+Z (Undo) và Ctrl+Shift+Z / Ctrl+Y (Redo) khi đang đo
+        // Hỗ trợ phím tắt Ctrl+Z (Undo) và Ctrl+Shift+Z / Ctrl+Y (Redo) chuẩn theo stack trạng thái
         window.addEventListener('keydown', (e) => {
             if (!isMeasuring) return;
 
@@ -442,17 +452,17 @@ function initMap() {
 
             if (isCtrlOrMeta && ((e.shiftKey && keyLower === 'z') || keyLower === 'y')) {
                 e.preventDefault();
-                if (redoCoordinates.length > 0) {
-                    const restoredCoord = redoCoordinates.pop();
-                    measureCoordinates.push(restoredCoord);
+                if (measureRedoStack.length > 0) {
+                    measureHistory.push([...measureCoordinates]);
+                    measureCoordinates = measureRedoStack.pop();
                     updateMeasureGeometry(map, false);
                 }
             } 
             else if (isCtrlOrMeta && keyLower === 'z') {
                 e.preventDefault();
-                if (measureCoordinates.length > 0) {
-                    const removedCoord = measureCoordinates.pop();
-                    redoCoordinates.push(removedCoord);
+                if (measureHistory.length > 0) {
+                    measureRedoStack.push([...measureCoordinates]);
+                    measureCoordinates = measureHistory.pop();
                     updateMeasureGeometry(map, false);
                 }
             }
@@ -588,14 +598,15 @@ function initMap() {
                 );
                 
                 if (distanceToFirst < 5) {
+                    pushMeasureState();
                     measureCoordinates.push([...firstCoord]);
                     updateMeasureGeometry(map, false);
                     return;
                 }
             }
 
+            pushMeasureState();
             measureCoordinates.push(coords);
-            redoCoordinates = []; 
             updateMeasureGeometry(map, false);
             return;
         }
