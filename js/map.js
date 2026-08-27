@@ -64,7 +64,7 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
     if (!skipRecreateMarkers) {
         clearMeasureMarkers();
 
-        // Tạo các Marker điểm mốc có thể kéo thả hoặc click chuột phải/click đúp để xóa điểm bất kỳ
+        // Tạo các Marker điểm mốc có thể kéo thả hoặc click chuột/chuột phải để xóa điểm bất kỳ
         measureCoordinates.forEach((coord, index) => {
             const el = document.createElement('div');
             el.style.width = '14px';
@@ -104,6 +104,7 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
             .addTo(map);
 
             marker.on('dragstart', () => {
+                window._isDraggingMarker = true; // Khóa cờ để ngăn sự kiện click bản đồ kích hoạt nhầm khi đang kéo
                 el.style.cursor = 'grabbing';
             });
 
@@ -114,6 +115,7 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
             });
 
             marker.on('dragend', () => {
+                window._isDraggingMarker = false; // Mở khóa cờ khi thả chuột xong
                 el.style.cursor = 'pointer';
                 updateMeasureGeometry(map, false);
             });
@@ -141,7 +143,6 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
         if (measureCoordinates.length >= 3) {
             const first = measureCoordinates[0];
             const last = measureCoordinates[measureCoordinates.length - 1];
-            // Nếu điểm cuối trùng điểm đầu hoặc người dùng bấm lại vào điểm đầu tiên
             if ((first[0] === last[0] && first[1] === last[1])) {
                 isClosed = true;
             }
@@ -168,7 +169,7 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
             const first = closedPolygonCoords[0];
             const last = closedPolygonCoords[closedPolygonCoords.length - 1];
             if (first[0] !== last[0] || first[1] !== last[1]) {
-                closedPolygonCoords.push(first); // Tự động khép kín vòng polygon để đo diện tích
+                closedPolygonCoords.push(first);
             }
             features.push({
                 type: 'Feature',
@@ -529,9 +530,12 @@ function initMap() {
 
     map.on('click', (e) => {
         if (isMeasuring) {
+            // Nếu đang thao tác kéo thả marker thì bỏ qua sự kiện click bản đồ để tránh xung đột
+            if (window._isDraggingMarker) return;
+
             const coords = [e.lngLat.lng, e.lngLat.lat];
             
-            // Nếu đã có từ 2 điểm trở lên và người dùng click gần điểm đầu tiên (trong bán kính nhỏ), tự động khép kín vùng
+            // Nếu đã có từ 2 điểm trở lên và người dùng click gần điểm đầu tiên (trong bán kính < 5 mét), tự động khép kín vùng
             if (measureCoordinates.length >= 2) {
                 const firstCoord = measureCoordinates[0];
                 const distanceToFirst = turf.distance(
@@ -540,9 +544,8 @@ function initMap() {
                     { units: 'meters' }
                 );
                 
-                // Nếu khoảng cách tới điểm đầu < 5 mét thì coi như bấm vào điểm đầu để khép vòng
                 if (distanceToFirst < 5) {
-                    measureCoordinates.push([...firstCoord]); // Thêm lại tọa độ điểm đầu vào cuối mảng
+                    measureCoordinates.push([...firstCoord]); // Thêm lại tọa độ điểm đầu vào cuối mảng để khép vòng
                     updateMeasureGeometry(map, false);
                     return;
                 }
