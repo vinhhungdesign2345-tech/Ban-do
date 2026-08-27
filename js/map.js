@@ -49,7 +49,6 @@ function closeParcelPanel() {
     }
 }
 
-// --- HÀM CẬP NHẬT ĐƯỜNG ĐO VÀ ĐIỂM MỐC KÉO THẢ ---
 function updateMeasureGeometry(map, skipRecreateMarkers = false) {
     const features = [];
     
@@ -374,7 +373,6 @@ function initMap() {
             };
         }
 
-        // --- PHÍM TẮT: CTRL + Z VÀ CTRL + SHIFT + Z ---
         window.addEventListener('keydown', (e) => {
             if (!isMeasuring) return;
 
@@ -465,7 +463,7 @@ function initMap() {
             const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
             const soThua = rawProps['Số thửa'] || rawProps['So thua'] || '-';
             
-            // TỰ ĐỘNG QUÉT TOÀN BỘ CÁC BIẾN DIỆN TÍCH PHỔ BIẾN TRONG DỮ LIỆU
+            // Đảm bảo quét đầy đủ toàn bộ các tên thuộc tính diện tích có thể có trong file dữ liệu của bạn
             const rawDienTich = rawProps['Diện tích'] || rawProps['Dien tich'] || rawProps['dien_tich'] || rawProps['DienTich'] || rawProps['dien-tich'] || rawProps['Area'] || rawProps['area'] || '-';
             const dienTich = formatNumberVN(rawDienTich);
 
