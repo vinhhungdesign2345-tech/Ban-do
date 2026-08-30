@@ -1,5 +1,5 @@
 /**
- * Mô-đun: Tra cứu giá đất theo tên đường (Đã tối ưu hóa tìm kiếm không bị kẹt lỗi)
+ * Mô-đun: Tra cứu giá đất theo tên đường (Đã cập nhật chuẩn logic lọc theo Phường/Xã và tìm kiếm toàn bộ nội dung liên quan)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
@@ -41,39 +41,50 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loadGiaDatFromSheet();
 
-    // Hàm thực hiện tìm kiếm tuyến đường
+    // Hàm thực hiện tìm kiếm tuyến đường theo đúng Phường/Xã đã chọn
     function thucHienTimKiemDuong() {
         const keyword = duongInput.value.toLowerCase().trim();
-        const selectedPhuong = phuongSelect.value ? phuongSelect.value.toLowerCase().trim() : "";
-
-        if (!keyword) return;
-
-        // Tìm kiếm linh hoạt: Ưu tiên khớp cả Phường và Tên đường; nếu người dùng chưa chọn kỹ phường thì quét theo tên đường
-        let matchedRow = null;
-        if (selectedPhuong) {
-            matchedRow = giaDatRecords.find(item => 
-                item.duong.toLowerCase().includes(keyword) && 
-                item.phuong.toLowerCase().includes(selectedPhuong)
-            );
-        }
-        
-        // Nếu không thấy theo phường, quét rộng ra toàn bộ danh sách theo tên đường
-        if (!matchedRow) {
-            matchedRow = giaDatRecords.find(item => item.duong.toLowerCase().includes(keyword));
-        }
+        const selectedPhuong = phuongSelect.value ? phuongSelect.value.trim() : "";
 
         resultPanel.style.display = "block";
-        if (matchedRow) {
-            duongInput.value = matchedRow.duong;
-            popupList.style.display = "none";
-            resultPanel.innerHTML = `
-                <div style="font-weight: bold; color: #1a73e8; margin-bottom: 2px;">📍 ${matchedRow.duong} (${matchedRow.phuong || 'Toàn khu vực'})</div>
-                <div style="color: #555; margin-bottom: 2px;"><b>Đoạn:</b> ${matchedRow.doan || 'Toàn tuyến'}</div>
-                <div style="color: #d9534f; font-weight: bold;"><b>Giá đất:</b> ${matchedRow.gia}</div>
-            `;
+
+        // Kiểm tra nếu chưa chọn Phường/Xã
+        if (!selectedPhuong) {
+            resultPanel.innerHTML = `<div style="color: #d9534f;">Vui lòng chọn Phường/Xã trước khi tra cứu giá đất!</div>`;
+            return;
+        }
+
+        if (!keyword) {
+            resultPanel.innerHTML = `<div style="color: #d9534f;">Vui lòng nhập tên đường cần tra cứu.</div>`;
+            return;
+        }
+
+        // BẮT BUỘC: Lọc tất cả các dòng trong Sheet có cột Phường trùng khớp với Phường đang chọn (không phân biệt hoa thường)
+        // và tên đường chứa từ khóa người dùng nhập vào
+        const matchedRows = giaDatRecords.filter(item => 
+            item.phuong.toLowerCase() === selectedPhuong.toLowerCase() && 
+            item.duong.toLowerCase().includes(keyword)
+        );
+
+        popupList.style.display = "none";
+
+        if (matchedRows.length > 0) {
+            // Hiển thị tất cả các đoạn/kết quả liên quan tìm được
+            let htmlContent = `<div style="font-weight: bold; color: #1a73e8; margin-bottom: 4px;">📍 Kết quả tại: ${selectedPhuong}</div>`;
+            
+            matchedRows.forEach(row => {
+                htmlContent += `
+                    <div style="border-top: 1px solid #eee; padding-top: 4px; margin-top: 4px;">
+                        <div style="color: #333;"><b>Đường:</b> ${row.duong}</div>
+                        <div style="color: #555;"><b>Đoạn:</b> ${row.doan || 'Toàn tuyến'}</div>
+                        <div style="color: #d9534f; font-weight: bold;"><b>Giá đất:</b> ${row.gia}</div>
+                    </div>
+                `;
+            });
+
+            resultPanel.innerHTML = htmlContent;
         } else {
-            popupList.style.display = "none";
-            resultPanel.innerHTML = `<div style="color: #d9534f;">Không tìm thấy tuyến đường "${keyword}" trong cơ sở dữ liệu giá đất.</div>`;
+            resultPanel.innerHTML = `<div style="color: #d9534f;">Không tìm thấy tuyến đường "${keyword}" thuộc khu vực "${selectedPhuong}" trong cơ sở dữ liệu giá đất.</div>`;
         }
     }
 
@@ -86,18 +97,25 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!selectedPhuong) {
                 duongInput.value = "";
                 resultPanel.style.display = "none";
+                popupList.style.display = "none";
             }
         });
 
-        // Gõ phím hiển thị Popup gợi ý
+        // Gõ phím hiển thị Popup gợi ý (chỉ gợi ý các đường thuộc đúng Phường đang chọn)
         duongInput.addEventListener("input", function () {
             const keyword = this.value.toLowerCase().trim();
-            if (!keyword) {
+            const selectedPhuong = phuongSelect.value ? phuongSelect.value.trim() : "";
+
+            if (!keyword || !selectedPhuong) {
                 popupList.style.display = "none";
                 return;
             }
 
-            const matchedRows = giaDatRecords.filter(item => item.duong.toLowerCase().includes(keyword));
+            // Lọc danh sách gợi ý theo đúng Phường và chứa từ khóa tên đường
+            const matchedRows = giaDatRecords.filter(item => 
+                item.phuong.toLowerCase() === selectedPhuong.toLowerCase() && 
+                item.duong.toLowerCase().includes(keyword)
+            );
 
             if (matchedRows.length > 0) {
                 popupList.innerHTML = "";
@@ -108,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     divItem.style.padding = "8px 10px";
                     divItem.style.cursor = "pointer";
                     divItem.style.borderBottom = "1px solid #eee";
-                    divItem.innerHTML = `<b>${row.duong}</b> <span style="font-size: 11px; color: #666;">(${row.phuong} - ${row.doan})</span>`;
+                    divItem.innerHTML = `<b>${row.duong}</b> <span style="font-size: 11px; color: #666;">(${row.doan})</span>`;
 
                     divItem.addEventListener("mouseenter", () => divItem.style.backgroundColor = "#f1f3f4");
                     divItem.addEventListener("mouseleave", () => divItem.style.backgroundColor = "#fff");
