@@ -1,5 +1,5 @@
 /**
- * Mô-đun: Tra cứu giá đất theo tên đường (Hiển thị trọn vẹn 4 cột C, D, E, F cho từng đoạn của tuyến đường)
+ * Mô-đun: Tra cứu giá đất theo tên đường (Đã khớp chuẩn xác index các cột C, D, E, F từ Sheet)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let giaDatRecords = [];
 
+    // Hàm loại bỏ dấu tiếng Việt để so khớp không lỗi
     function removeDiacritics(str) {
         return (str || "")
             .toString()
@@ -34,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và ánh xạ chuẩn xác tuyệt đối các cột: Phường(A), Đường(C), Từ(D), Đến(E), Giá(F)
+    // Tải dữ liệu và bóc tách chuẩn xác vị trí các cột từ Google Sheet
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -46,17 +47,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
 
                     if (Array.isArray(item)) {
-                        phuong = item[0] || ""; // Cột A
-                        duong = item[2] || "";  // Cột C
-                        tu = item[3] || "";     // Cột D
-                        den = item[4] || "";    // Cột E
-                        gia = item[5] || "";    // Cột F
+                        // Khớp đúng cấu trúc mảng thực tế từ Sheet (có cột Phường, STT, rồi mới đến C, D, E, F)
+                        phuong = item[0] || ""; 
+                        duong = item[3] || item[2] || ""; // Cột C (Đường)
+                        tu = item[4] || item[3] || "";    // Cột D (Từ)
+                        den = item[5] || item[4] || "";   // Cột E (Đến)
+                        gia = item[6] || item[5] || "";   // Cột F (Giá)
                     } else if (typeof item === "object" && item !== null) {
                         phuong = item.phuong || item.Phuong || item[0] || "";
-                        duong = item.duong || item.Duong || item[2] || "";
-                        tu = item.tu || item.Tu || item[3] || "";
-                        den = item.den || item.Den || item[4] || "";
-                        gia = item.gia || item.Gia || item[5] || "";
+                        duong = item.duong || item.Duong || item.duongtuyenlohk || item["Đường, tuyến lộ, khu vực"] || "";
+                        tu = item.tu || item.Tu || item.doan || item.Doan || item["Từ"] || "";
+                        den = item.den || item.Den || item["Đến"] || "";
+                        gia = item.gia || item.Gia || item["Giá đất năm 2026"] || "";
                     }
 
                     return {
@@ -73,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (err) {
             console.warn("Dùng dữ liệu mẫu dự phòng do lỗi API:", err);
             giaDatRecords = [
-                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Huỳnh Thúc Kháng", den: "Kênh Cổng Đôi", gia: "12.600" }
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Huỳnh Thúc Kháng", den: "Kênh Cống Đôi (tên cũ: Hết ranh Bệnh viện đa khoa Cà Mau)", gia: "12.600" }
             ];
         }
         updateInputState();
@@ -81,6 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loadGiaDatFromSheet();
 
+    // Thực hiện tìm kiếm và hiển thị đầy đủ thông tin của dòng đó
     function thucHienTimKiemDuong() {
         const keywordClean = removeDiacritics(duongInput.value);
         const selectedPhuongClean = removeDiacritics(phuongSelect.value);
@@ -98,30 +101,30 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Lọc chính xác: Phường khớp VÀ Tên đường (cột C) chứa từ khóa tìm kiếm
+        // Lọc: Phường khớp VÀ từ khóa xuất hiện ở bất kỳ cột nào trong hàng đó
         const matchedRows = giaDatRecords.filter(item => {
             const itemPhuongClean = removeDiacritics(item.phuong);
             const itemDuongClean = removeDiacritics(item.duong);
+            const itemTuClean = removeDiacritics(item.tu);
+            const itemDenClean = removeDiacritics(item.den);
 
             const matchPhuong = itemPhuongClean.includes(selectedPhuongClean) || selectedPhuongClean.includes(itemPhuongClean);
-            const matchDuong = itemDuongClean.includes(keywordClean);
+            const matchKeyword = itemDuongClean.includes(keywordClean) || itemTuClean.includes(keywordClean) || itemDenClean.includes(keywordClean);
 
-            return matchPhuong && matchDuong;
+            return matchPhuong && matchKeyword;
         });
 
         if (popupList) popupList.style.display = "none";
 
         if (matchedRows.length > 0) {
-            let htmlContent = `<div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px; font-size: 13px;">📍 Kết quả: ${duongInput.value} (${matchedRows.length} đoạn)</div>`;
+            let htmlContent = `<div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px; font-size: 13px;">📍 Kết quả tại: ${phuongSelect.value} (${matchedRows.length} dòng)</div>`;
             
-            // Duyệt qua từng đoạn của tuyến đường, mỗi đoạn bắt buộc hiển thị đủ 4 dòng tương ứng 4 cột C, D, E, F
-            matchedRows.forEach((row, index) => {
+            matchedRows.forEach(row => {
                 htmlContent += `
                     <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 8px; margin-bottom: 8px; font-size: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); line-height: 1.5;">
-                        <div style="font-weight: bold; color: #333; margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 2px;">Đoạn số ${index + 1}</div>
                         <div style="color: #000; margin-bottom: 2px;"><b>Đường:</b> ${row.duong || '---'}</div>
                         <div style="color: #333; margin-bottom: 2px;"><b>Từ:</b> ${row.tu || '---'}</div>
-                        <div style="color: #333; margin-bottom: 2px;"><b>Đến:</b> ${row.den || '---'}</div>
+                        <div style="color: #333; margin-bottom: 4px;"><b>Đến:</b> ${row.den || '---'}</div>
                         <div style="color: #d9534f; font-weight: bold; border-top: 1px dashed #eee; padding-top: 4px;"><b>Giá:</b> ${row.gia || '---'}</div>
                     </div>
                 `;
@@ -129,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             resultPanel.innerHTML = htmlContent;
         } else {
-            resultPanel.innerHTML = `<div style="color: #d9534f; padding: 5px;">Không tìm thấy đường "${duongInput.value}" trong khu vực này.</div>`;
+            resultPanel.innerHTML = `<div style="color: #d9534f; padding: 5px;">Không tìm thấy nội dung liên quan đến "${duongInput.value}" trong khu vực này.</div>`;
         }
     }
 
@@ -150,33 +153,31 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            // Gợi ý popup chỉ lấy theo tên đường (cột C)
             const matchedRows = giaDatRecords.filter(item => {
                 const itemPhuongClean = removeDiacritics(item.phuong);
                 const itemDuongClean = removeDiacritics(item.duong);
+                const itemTuClean = removeDiacritics(item.tu);
+                const itemDenClean = removeDiacritics(item.den);
                 const matchPhuong = itemPhuongClean.includes(selectedPhuongClean) || selectedPhuongClean.includes(itemPhuongClean);
-                return matchPhuong && itemDuongClean.includes(keywordClean);
+                return matchPhuong && (itemDuongClean.includes(keywordClean) || itemTuClean.includes(keywordClean) || itemDenClean.includes(keywordClean));
             });
 
-            // Lọc danh sách đường duy nhất để hiển thị gợi ý gọn gàng
-            const uniqueRoads = [...new Set(matchedRows.map(r => r.duong))];
-
-            if (uniqueRoads.length > 0) {
+            if (matchedRows.length > 0) {
                 popupList.innerHTML = "";
                 popupList.style.display = "block";
 
-                uniqueRoads.forEach(roadName => {
+                matchedRows.forEach(row => {
                     const divItem = document.createElement("div");
                     divItem.style.padding = "8px 10px";
                     divItem.style.cursor = "pointer";
                     divItem.style.borderBottom = "1px solid #eee";
-                    divItem.innerHTML = `<b>${roadName}</b>`;
+                    divItem.innerHTML = `<b>${row.duong}</b> <span style="font-size: 11px; color: #666;">(Từ: ${row.tu})</span>`;
 
                     divItem.addEventListener("mouseenter", () => divItem.style.backgroundColor = "#f1f3f4");
                     divItem.addEventListener("mouseleave", () => divItem.style.backgroundColor = "#fff");
 
                     divItem.addEventListener("click", function () {
-                        duongInput.value = roadName;
+                        duongInput.value = row.duong;
                         popupList.style.display = "none";
                         thucHienTimKiemDuong();
                     });
