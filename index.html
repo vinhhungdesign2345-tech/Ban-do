@@ -4,22 +4,22 @@
     <!-- Thiết lập bảng mã ký tự tiếng Việt chuẩn UTF-8 -->
     <meta charset="UTF-8">
     
-    <!-- Cấu hình khung nhìn tương thích trên thiết bị di động (Responsive), khóa tỉ lệ phóng to/thu nhỏ mặc định -->
+    <!-- Cấu hình khung nhìn tương thích trên thiết bị di động (Responsive) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Tiêu đề trang web hiển thị trên tab trình duyệt -->
     <title>Bản Đồ Quy Hoạch Cà Mau</title>
 
-    <!-- Thư viện MapLibre GL CSS (Định dạng giao diện và các điều khiển bản đồ vector/raster mã nguồn mở) -->
+    <!-- Thư viện MapLibre GL CSS (Định dạng giao diện và các điều khiển bản đồ) -->
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     
     <!-- Thư viện MapLibre GL JS (Công cụ cốt lõi điều khiển bản đồ tương tác) -->
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 
-    <!-- Thư viện TurfJS (Thư viện chuyên dụng xử lý toán học không gian địa lý, tính khoảng cách, diện tích GIS) -->
+    <!-- Thư viện TurfJS (Xử lý toán học không gian địa lý, khoảng cách, diện tích GIS) -->
     <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 
-    <!-- Liên kết tệp định dạng kiểu dáng CSS giao diện tùy chỉnh nội bộ của ứng dụng -->
+    <!-- Liên kết tệp định dạng kiểu dáng CSS giao diện tùy chỉnh -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -30,7 +30,7 @@
             
             <!-- Ô tìm kiếm thửa đất toàn cục và nút bấm thực hiện tìm kiếm -->
             <div class="filter-item" style="width: 100%; display: flex; gap: 6px;">
-                <!-- Trường nhập từ khóa: Hỗ trợ tìm theo tên, mã định danh, số tờ/số thửa (Ví dụ: 7/29) -->
+                <!-- Trường nhập từ khóa: Hỗ trợ tìm theo tên, mã định danh, số tờ/số thửa -->
                 <input type="text" id="searchThuaDatInput" placeholder="Tìm theo tên, mã ĐD, tờ/thửa (VD: 7/29)..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
                 
                 <!-- Nút bấm kích hoạt tiến trình tìm kiếm thửa đất -->
@@ -44,7 +44,7 @@
                 </select>
             </div>
 
-            <!-- Dropdown 2: Danh sách lựa chọn cấp hành chính Phường / Xã (mặc định bị khóa 'disabled' cho tới khi chọn Tỉnh) -->
+            <!-- Dropdown 2: Danh sách lựa chọn cấp hành chính Phường / Xã (bị khóa mặc định) -->
             <div class="filter-item">
                 <select id="phuongFilter" disabled>
                     <option value="">-- Phường / Xã --</option>
@@ -53,109 +53,94 @@
 
             <!-- Ô nhập tên đường tra cứu giá đất (Hoạt động như Ctrl+F) -->
             <div class="filter-item" style="position: relative;">
-            <input type="text" id="duongFilter" placeholder="Nhập tên đường tra cứu giá đất..." disabled style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+                <input type="text" id="duongFilter" placeholder="Nhập tên đường tra cứu giá đất..." disabled style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
     
-             <!-- Popup nổi liệt kê kết quả tìm kiếm tuyến đường -->
-             <div id="duongPopupList" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 2px;">
+                <!-- Popup nổi liệt kê kết quả tìm kiếm tuyến đường -->
+                <div id="duongPopupList" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 2px;">
+                </div>
             </div>
-            </div>
+
+        </div> <!-- Kết thúc thẻ .filter-row -->
 
         <!-- Khung panel nhỏ hiển thị kết quả giá đất khi người dùng chọn Phường và Tuyến đường -->
         <div id="giaDatResultPanel" style="display: none; margin-top: 8px; padding: 8px 10px; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         </div>
-    </div>
+    </div> <!-- Kết thúc thẻ .map-control -->
 
     <!-- Thẻ div chứa toàn bộ khung hiển thị bản đồ tương tác trực tuyến -->
     <div id="map"></div>
 
-    <!-- Khung bảng panel nổi hiển thị chi tiết thông tin thuộc tính thửa đất khi người dùng click chọn trên bản đồ -->
+    <!-- Khung bảng panel nổi hiển thị chi tiết thông tin thuộc tính thửa đất khi click chọn trên bản đồ -->
     <div id="parcel-info-panel" class="parcel-panel" style="display: none;">
         <!-- Phần tiêu đề của bảng thông tin -->
         <div class="panel-header">
             <span><b>THÔNG TIN THỬA ĐẤT</b></span>
             
-            <!-- Nút bấm dấu nhân (&times;) để đóng bảng thông tin, gọi trực tiếp hàm closeParcelPanel() -->
+            <!-- Nút bấm đóng bảng thông tin, gọi trực tiếp hàm closeParcelPanel() -->
             <button onclick="closeParcelPanel()" class="close-btn">&times;</button>
         </div>
         
-        <!-- Phần thân bảng: Chứa nội dung chi tiết các thuộc tính sẽ được mã JavaScript đổ động vào -->
+        <!-- Phần thân bảng: Chứa nội dung chi tiết thuộc tính thửa đất -->
         <div id="panel-content" class="panel-body">
         </div>
     </div>
 
-    <!-- Cụm công cụ đặt ở góc dưới bên trái bản đồ: Chứa nút chuyển lớp nền và nút đo khoảng cách -->
+    <!-- Cụm công cụ đặt ở góc dưới bên trái bản đồ: Nút chuyển lớp nền và nút đo khoảng cách -->
     <div class="map-layer-control" style="display: flex; gap: 8px; align-items: center;">
         
         <!-- Nút bấm chuyển đổi qua lại giữa lớp bản đồ vệ tinh và bản đồ đường nét OSM -->
         <button id="toggleLayerBtn" style="
-            padding: 6px 8px;                      /* Khoảng cách đệm bên trong nút */
-            height: 30px;                          /* Cố định chiều cao đồng bộ chuẩn tuyệt đối */
-            background-color: #ffffff;             /* Màu nền trắng */
-            color: #333;                           /* Màu chữ xám đậm */
-            border: 1px solid #ccc;                /* Viền xám nhạt */
-            border-radius: 4px;                    /* Bo tròn góc 4px */
-            cursor: pointer;                       /* Hiển thị con trỏ dạng bàn tay khi di chuột vào */
-            font-weight: bold;                     /* Chữ in đậm */
-            font-size: 13px;                       /* Cỡ chữ 13px */
-            box-shadow: 0 1px 4px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng nhẹ nổi lên trên bản đồ */
-            box-sizing: border-box;                /* Tính kích thước bao gồm cả viền và padding */
-            white-space: nowrap;                   /* Không cho phép chữ tự động xuống dòng */
+            padding: 6px 8px;
+            height: 30px;
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            white-space: nowrap;
         ">
             Chuyển sang Bản đồ OSM
         </button>
         
-        <!-- 📏 Nút bấm kích hoạt tính năng đo khoảng cách và diện tích vùng khép kín -->
+        <!-- Nút bấm kích hoạt tính năng đo khoảng cách và diện tích vùng khép kín -->
         <button id="measureDistBtn" style="
-            padding: 6px 8px;                      /* Khoảng cách đệm bên trong nút */
-            height: 30px;                          /* Cố định chiều cao đồng bộ chuẩn tuyệt đối bằng nút bên cạnh */
-            background-color: #ffffff;             /* Màu nền trắng */
-            color: #333;                           /* Màu chữ xám đậm */
-            border: 1px solid #ccc;                /* Viền xám nhạt */
-            border-radius: 4px;                    /* Bo tròn góc 4px */
-            cursor: pointer;                       /* Hiển thị con trỏ dạng bàn tay khi di chuột vào */
-            font-weight: bold;                     /* Chữ in đậm */
-            font-size: 13px;                       /* Cỡ chữ 13px */
-            box-shadow: 0 1px 4px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng nhẹ */
-            box-sizing: border-box;                /* Tính kích thước bao gồm cả viền và padding */
-            white-space: nowrap;                   /* Không cho phép chữ tự động xuống dòng */
-            display: flex;                         /* Sử dụng Flexbox để căn chỉnh biểu tượng và chữ thẳng hàng */
-            align-items: center;                   /* Căn giữa theo chiều dọc */
-            gap: 4px;                              /* Khoảng cách giữa icon cây thước và chữ là 4px */
+            padding: 6px 8px;
+            height: 30px;
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         ">
             📏 Đo khoảng cách
         </button>
     </div>
 
-    <!-- 🎚️ KHUNG THANH TRƯỢT ĐIỀU CHỈNH ĐỘ MỜ (OPACITY) DẠNG DỌC ĐẶT Ở GÓC PHẢI BẢN ĐỒ -->
+    <!-- Khung thanh trượt điều chỉnh độ mờ (Opacity) dạng dọc đặt ở góc phải bản đồ -->
     <div id="opacity-control-panel">
-        <!-- Nhãn hiển thị giá trị độ mờ hiện tại theo thời gian thực -->
         <label for="opacitySlider">Mờ: <span id="opacityValue">0.6</span></label>
-        
-        <!-- Thanh trượt range: Giá trị từ 0 đến 1, bước nhảy mỗi lần kéo là 0.05, mặc định ban đầu là 0.6 -->
         <input type="range" id="opacitySlider" min="0" max="1" step="0.05" value="0.6">
     </div>
 
-    <!-- Các tệp mã nguồn JavaScript mô-đun chức năng được liên kết theo đúng thứ tự logic thực thi của ứng dụng -->
-    
-    <!-- 1. Tệp cấu hình chứa API keys, tọa độ trung tâm mặc định và kiểu dáng bản đồ -->
+    <!-- Các tệp mã nguồn JavaScript mô-đun được liên kết theo đúng thứ tự logic thực thi -->
     <script src="js/config.js"></script>
-    
-    <!-- 2. Tệp xử lý các yêu cầu giao tiếp mạng API / dữ liệu nguồn -->
     <script src="js/api.js"></script>
-    
-    <!-- 3. Tệp quản lý logic hiển thị các lớp bản đồ thửa đất, bảng tính và phân tách dữ liệu -->
     <script src="js/sheet.js"></script>
-    
-    <!-- 4. Tệp xử lý bộ lọc ranh giới hành chính Tỉnh / Phường / Xã -->
     <script src="js/province.js"></script>
-    
-    <!-- 4.1. Tệp mô-đun đọc dữ liệu từ sheet "Giá đất" và điều khiển chọn Phường -> Chọn Tuyến đường -->
     <script src="js/giaDatFilter.js"></script>
-    
-    <!-- 5. Tệp xử lý tính năng tìm kiếm thửa đất theo từ khóa -->
     <script src="js/searchThuaDat.js"></script>
-    
-    <!-- 6. Tệp chính khởi tạo bản đồ MapLibre và toàn bộ sự kiện tương tác không gian (Đo đạc, click thửa, vẽ nhãn) -->
     <script src="js/map.js"></script>
 </body>
 </html>
