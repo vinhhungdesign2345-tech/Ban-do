@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và tự động quét tìm cột giá đất bằng từ khóa (Không sợ lệch tiêu đề hay khoảng trắng)
+    // Tải dữ liệu và map chính xác tuyệt đối các cột từ Sheet theo đúng cấu trúc hình ảnh thực tế
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -47,33 +47,32 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
                     
                     if (Array.isArray(item)) {
-                        // Trường hợp dữ liệu trả về dạng mảng thuần túy từ cột A đến E
+                        // Trường hợp API trả về mảng thuần túy [A, B, C, D, E]
                         phuong = (item[0] || "").toString().trim();
                         duong = (item[1] || "").toString().trim();
                         tu = (item[2] || "").toString().trim();
                         den = (item[3] || "").toString().trim();
                         gia = (item[4] || "").toString().trim();
                     } else if (typeof item === "object" && item !== null) {
-                        // Trường hợp dữ liệu trả về dạng Object: Duyệt qua tất cả các cột để quét từ khóa động
+                        // Trường hợp API trả về dạng Object, duyệt tìm đúng các tiêu đề: PHƯỜNG, Đường, Từ, Đến, Giá đất 2026
                         for (let key in item) {
                             let cleanKey = removeDiacritics(key);
                             let val = (item[key] || "").toString().trim();
 
-                            if (cleanKey.includes("phuong") || cleanKey.includes("khu vuc")) {
+                            if (cleanKey.includes("phuong")) {
                                 if (!phuong) phuong = val;
-                            } else if (cleanKey.includes("duong") || cleanKey.includes("tuyen lo")) {
+                            } else if (cleanKey.includes("duong")) {
                                 if (!duong) duong = val;
-                            } else if (cleanKey === "tu" || cleanKey.includes("tu doan")) {
+                            } else if (cleanKey === "tu" || cleanKey.includes("tu")) {
                                 if (!tu) tu = val;
-                            } else if (cleanKey === "den" || cleanKey.includes("den doan")) {
+                            } else if (cleanKey === "den" || cleanKey.includes("den")) {
                                 if (!den) den = val;
-                            } else if (cleanKey.includes("gia") || cleanKey.includes("2026")) {
-                                // Tự động nhận diện cột có chứa từ khóa "gia" hoặc "2026" làm giá đất
+                            } else if (cleanKey.includes("gia dat") || cleanKey.includes("2026") || cleanKey.includes("gia")) {
                                 if (!gia) gia = val;
                             }
                         }
 
-                        // Fallback dự phòng cuối cùng theo thứ tự cột nếu quét từ khóa không thành công
+                        // Fallback dự phòng theo đúng thứ tự mảng giá trị Object nếu quét key không bắt được
                         if (!phuong) phuong = (Object.values(item)[0] || "").toString().trim();
                         if (!duong) duong = (Object.values(item)[1] || "").toString().trim();
                         if (!tu) tu = (Object.values(item)[2] || "").toString().trim();
@@ -89,9 +88,8 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (err) {
             console.warn("Dùng dữ liệu mẫu dự phòng do lỗi API:", err);
             giaDatRecords = [
-                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Huỳnh Thúc Kháng", den: "Kênh Cổng Đôi", gia: "12.600" },
-                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Kênh Cổng Đôi", den: "Cổng Cầu Nhum", gia: "9.600" },
-                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Đường Cà Mau - Đầm Dơi", tu: "Đường Hải Thượng Lãn Ông", den: "hết đoạn 2 chiều", gia: "9.600" }
+                { phuong: "PHƯỜNG AN XUYÊN", duong: "Ngô Quyền", tu: "Công trường Bạch Đằng", den: "Nguyễn Trãi", gia: "32.710" },
+                { phuong: "PHƯỜNG AN XUYÊN", duong: "Ngô Quyền", tu: "Nguyễn Trãi", den: "Cổng công viên Văn Hoá", gia: "28.210" }
             ];
         }
         updateInputState();
