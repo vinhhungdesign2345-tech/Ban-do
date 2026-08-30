@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và map chính xác tuyệt đối các cột từ Sheet theo thứ tự A, B, C, D, E
+    // Tải dữ liệu và map chính xác tuyệt đối từng cột từ Sheet
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -47,19 +47,27 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
                     
                     if (Array.isArray(item)) {
+                        // Trường hợp dữ liệu dạng mảng [A, B, C, D, E]
                         phuong = (item[0] || "").toString().trim();
                         duong = (item[1] || "").toString().trim();
                         tu = (item[2] || "").toString().trim();
                         den = (item[3] || "").toString().trim();
                         gia = (item[4] || "").toString().trim();
                     } else if (typeof item === "object" && item !== null) {
-                        // Lấy chuẩn theo thứ tự các cột A, B, C, D, E từ Sheet
-                        const vals = Object.values(item);
-                        phuong = (vals[0] || item.phuong || item.Phuong || "").toString().trim();
-                        duong = (vals[1] || item.duong || item.Duong || "").toString().trim();
-                        tu = (vals[2] || item.tu || item.Tu || "").toString().trim();
-                        den = (vals[3] || item.den || item.Den || "").toString().trim();
-                        gia = (vals[4] || item.gia || item.Gia || "").toString().trim();
+                        // Trường hợp dữ liệu dạng Object từ Google Apps Script trả về
+                        // Lấy danh sách các key hoặc dùng thứ tự keys chuẩn trong Object JSON của bạn
+                        const keys = Object.keys(item);
+                        
+                        // Lấy Phường (Cột A - index 0)
+                        phuong = (item[keys[0]] || item.phuong || item.Phuong || "").toString().trim();
+                        // Lấy Đường (Cột B - index 1)
+                        duong = (item[keys[1]] || item.duong || item.Duong || item.duongtuyenlohk || "").toString().trim();
+                        // Lấy Từ (Cột C - index 2)
+                        tu = (item[keys[2]] || item.tu || item.Tu || item.doan || item.Doan || "").toString().trim();
+                        // Lấy Đến (Cột D - index 3)
+                        den = (item[keys[3]] || item.den || item.Den || "").toString().trim();
+                        // Lấy Giá đất (Cột E - index 4) -> Đảm bảo lấy đúng cột E, tránh bị trùng với cột Đến
+                        gia = (item[keys[4]] || item.gia || item.Gia || item.giadatnam2026 || "").toString().trim();
                     }
 
                     return { phuong, duong, tu, den, gia };
