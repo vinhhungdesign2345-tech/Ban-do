@@ -1,5 +1,5 @@
 /**
- * Mô-đun: Tra cứu giá đất theo tên đường (Liệt kê đủ 4 cột: Đường, Từ, Đến, Giá đất)
+ * Mô-đun: Tra cứu giá đất theo tên đường (Đọc chuẩn xác theo vị trí cột A, B, C, D, E)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và map chính xác tuyệt đối các cột từ Sheet theo đúng cấu trúc hình ảnh thực tế
+    // Tải dữ liệu từ Google Sheet API và map theo đúng thứ tự các cột A, B, C, D, E
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -44,60 +44,36 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (Array.isArray(data)) {
                 giaDatRecords = data.map(item => {
-                    let phuong = "", duong = "", tu = "", den = "", gia = "";
+                    let values = [];
                     
                     if (Array.isArray(item)) {
-                        // Trường hợp API trả về mảng thuần túy [A, B, C, D, E]
-                        phuong = (item[0] || "").toString().trim();
-                        duong = (item[1] || "").toString().trim();
-                        tu = (item[2] || "").toString().trim();
-                        den = (item[3] || "").toString().trim();
-                        gia = (item[4] || "").toString().trim();
+                        values = item;
                     } else if (typeof item === "object" && item !== null) {
-                        // Trường hợp API trả về dạng Object, duyệt tìm đúng các tiêu đề: PHƯỜNG, Đường, Từ, Đến, Giá đất 2026
-                        for (let key in item) {
-                            let cleanKey = removeDiacritics(key);
-                            let val = (item[key] || "").toString().trim();
-
-                            if (cleanKey.includes("phuong")) {
-                                if (!phuong) phuong = val;
-                            } else if (cleanKey.includes("duong")) {
-                                if (!duong) duong = val;
-                            } else if (cleanKey === "tu" || cleanKey.includes("tu")) {
-                                if (!tu) tu = val;
-                            } else if (cleanKey === "den" || cleanKey.includes("den")) {
-                                if (!den) den = val;
-                            } else if (cleanKey.includes("gia dat") || cleanKey.includes("2026") || cleanKey.includes("gia")) {
-                                if (!gia) gia = val;
-                            }
-                        }
-
-                        // Fallback dự phòng theo đúng thứ tự mảng giá trị Object nếu quét key không bắt được
-                        if (!phuong) phuong = (Object.values(item)[0] || "").toString().trim();
-                        if (!duong) duong = (Object.values(item)[1] || "").toString().trim();
-                        if (!tu) tu = (Object.values(item)[2] || "").toString().trim();
-                        if (!den) den = (Object.values(item)[3] || "").toString().trim();
-                        if (!gia) gia = (Object.values(item)[4] || "").toString().trim();
+                        // Lấy toàn bộ giá trị theo đúng thứ tự các cột từ trái sang phải trên Google Sheet
+                        values = Object.values(item);
                     }
 
-                    return { phuong, duong, tu, den, gia };
+                    return {
+                        phuong: (values[0] || "").toString().trim(), // Cột A: Phường
+                        duong:  (values[1] || "").toString().trim(), // Cột B: Đường
+                        tu:     (values[2] || "").toString().trim(), // Cột C: Từ
+                        den:    (values[3] || "").toString().trim(), // Cột D: Đến
+                        gia:    (values[4] || "").toString().trim()  // Cột E: Giá đất 2026
+                    };
                 });
             } else {
                 throw new Error("Dữ liệu không phải mảng JSON hợp lệ");
             }
         } catch (err) {
-            console.warn("Dùng dữ liệu mẫu dự phòng do lỗi API:", err);
-            giaDatRecords = [
-                { phuong: "PHƯỜNG AN XUYÊN", duong: "Ngô Quyền", tu: "Công trường Bạch Đằng", den: "Nguyễn Trãi", gia: "32.710" },
-                { phuong: "PHƯỜNG AN XUYÊN", duong: "Ngô Quyền", tu: "Nguyễn Trãi", den: "Cổng công viên Văn Hoá", gia: "28.210" }
-            ];
+            console.warn("Lỗi tải API giá đất:", err);
+            giaDatRecords = [];
         }
         updateInputState();
     }
 
     loadGiaDatFromSheet();
 
-    // Thực hiện tìm kiếm và hiển thị dạng 4 cột chi tiết
+    // Thực hiện tìm kiếm và hiển thị kết quả chi tiết
     function thucHienTimKiemDuong() {
         const keywordClean = removeDiacritics(duongInput.value);
         const selectedPhuongClean = removeDiacritics(phuongSelect.value);
@@ -115,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Lọc thông minh: Phường khớp VÀ từ khóa xuất hiện ở BẤT KỲ cột nào (Tên đường, Từ, hoặc Đến)
+        // Lọc thông minh: Phường khớp VÀ từ khóa xuất hiện ở Tên đường, Từ, hoặc Đến
         const matchedRows = giaDatRecords.filter(item => {
             const itemPhuongClean = removeDiacritics(item.phuong);
             const itemDuongClean = removeDiacritics(item.duong);
