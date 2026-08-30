@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và map chính xác tuyệt đối từng cột từ Sheet
+    // Tải dữ liệu và map chính xác tuyệt đối từng cột dựa trên giá trị thực tế
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -47,27 +47,38 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
                     
                     if (Array.isArray(item)) {
-                        // Trường hợp dữ liệu dạng mảng [A, B, C, D, E]
                         phuong = (item[0] || "").toString().trim();
                         duong = (item[1] || "").toString().trim();
                         tu = (item[2] || "").toString().trim();
                         den = (item[3] || "").toString().trim();
                         gia = (item[4] || "").toString().trim();
                     } else if (typeof item === "object" && item !== null) {
-                        // Trường hợp dữ liệu dạng Object từ Google Apps Script trả về
-                        // Lấy danh sách các key hoặc dùng thứ tự keys chuẩn trong Object JSON của bạn
-                        const keys = Object.keys(item);
+                        // Lấy tất cả các giá trị từ object API trả về theo đúng thứ tự các cột
+                        const vals = Object.values(item).map(v => (v || "").toString().trim());
                         
-                        // Lấy Phường (Cột A - index 0)
-                        phuong = (item[keys[0]] || item.phuong || item.Phuong || "").toString().trim();
-                        // Lấy Đường (Cột B - index 1)
-                        duong = (item[keys[1]] || item.duong || item.Duong || item.duongtuyenlohk || "").toString().trim();
-                        // Lấy Từ (Cột C - index 2)
-                        tu = (item[keys[2]] || item.tu || item.Tu || item.doan || item.Doan || "").toString().trim();
-                        // Lấy Đến (Cột D - index 3)
-                        den = (item[keys[3]] || item.den || item.Den || "").toString().trim();
-                        // Lấy Giá đất (Cột E - index 4) -> Đảm bảo lấy đúng cột E, tránh bị trùng với cột Đến
-                        gia = (item[keys[4]] || item.gia || item.Gia || item.giadatnam2026 || "").toString().trim();
+                        // Lọc bỏ phần tử đầu tiên nếu là tiêu đề cột (nếu có)
+                        phuong = vals[0] || "";
+                        duong = vals[1] || "";
+                        tu = vals[2] || "";
+                        
+                        // Xử lý thông minh cho cột Đến (D) và Giá đất (E):
+                        // Giá đất thường là dạng số có dấu chấm/phẩy (ví dụ: 12.600, 3.400) hoặc nằm ở vị trí thứ 4/5
+                        let val3 = vals[3] || "";
+                        let val4 = vals[4] || "";
+
+                        // Nếu val4 có dạng số giá tiền (chứa số và dấu chấm, hoặc độ dài ngắn, không phải chuỗi mô tả dài)
+                        if (val4 && (/^\d+([.,]\d+)*$/.test(val4) || val4.length <= 8)) {
+                            den = val3;
+                            gia = val4;
+                        } else if (val3 && (/^\d+([.,]\d+)*$/.test(val3) || val3.length <= 8) && !val4) {
+                            // Trường hợp giá đất nằm ở vị trí 3
+                            den = vals.length > 5 ? vals[3] : "";
+                            gia = val3;
+                        } else {
+                            // Mặc định chuẩn cột D là Đến, cột E là Giá
+                            den = val3;
+                            gia = val4;
+                        }
                     }
 
                     return { phuong, duong, tu, den, gia };
