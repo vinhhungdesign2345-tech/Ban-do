@@ -1,5 +1,5 @@
 /**
- * Mô-đun: Tra cứu giá đất theo tên đường (Đã khớp chuẩn xác index các cột C, D, E, F từ Sheet)
+ * Mô-đun: Tra cứu giá đất theo tên đường (Đã khóa chặt chuẩn xác 4 cột C, D, E, F từ Sheet)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và bóc tách chuẩn xác vị trí các cột từ Google Sheet
+    // Tải dữ liệu và map chuẩn xác tuyệt đối các cột từ Google Sheet
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -47,18 +47,23 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
 
                     if (Array.isArray(item)) {
-                        // Khớp đúng cấu trúc mảng thực tế từ Sheet (có cột Phường, STT, rồi mới đến C, D, E, F)
-                        phuong = item[0] || ""; 
-                        duong = item[3] || item[2] || ""; // Cột C (Đường)
-                        tu = item[4] || item[3] || "";    // Cột D (Từ)
-                        den = item[5] || item[4] || "";   // Cột E (Đến)
-                        gia = item[6] || item[5] || "";   // Cột F (Giá)
+                        // Ánh xạ chuẩn theo cấu trúc thực tế của Sheet:
+                        // item[0]: Phường, item[1]: ..., item[2]: STT
+                        // item[3]: Cột C (Đường)
+                        // item[4]: Cột D (Từ)
+                        // item[5]: Cột E (Đến)
+                        // item[6]: Cột F (Giá)
+                        phuong = item[0] || "";
+                        duong = item[3] || item[2] || ""; 
+                        tu = item[4] || item[3] || "";    
+                        den = item[5] || item[4] || "";   
+                        gia = item[6] || item[5] || "";   
                     } else if (typeof item === "object" && item !== null) {
                         phuong = item.phuong || item.Phuong || item[0] || "";
-                        duong = item.duong || item.Duong || item.duongtuyenlohk || item["Đường, tuyến lộ, khu vực"] || "";
-                        tu = item.tu || item.Tu || item.doan || item.Doan || item["Từ"] || "";
-                        den = item.den || item.Den || item["Đến"] || "";
-                        gia = item.gia || item.Gia || item["Giá đất năm 2026"] || "";
+                        duong = item.duong || item.Duong || item[3] || "";
+                        tu = item.tu || item.Tu || item[4] || "";
+                        den = item.den || item.Den || item[5] || "";
+                        gia = item.gia || item.Gia || item[6] || "";
                     }
 
                     return {
@@ -66,7 +71,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         duong: duong.toString().trim(),
                         tu: tu.toString().trim(),
                         den: den.toString().trim(),
-                        gia: gia.toString().trim()
+                        gia: gia.toString().trim(),
+                        // Lưu toàn bộ dữ liệu thô của hàng để phục vụ việc kiểm tra nếu cần
+                        raw: item
                     };
                 });
             } else {
@@ -75,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (err) {
             console.warn("Dùng dữ liệu mẫu dự phòng do lỗi API:", err);
             giaDatRecords = [
-                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Huỳnh Thúc Kháng", den: "Kênh Cống Đôi (tên cũ: Hết ranh Bệnh viện đa khoa Cà Mau)", gia: "12.600" }
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Huỳnh Thúc Kháng", den: "Kênh Cống Đôi", gia: "12.600" }
             ];
         }
         updateInputState();
@@ -83,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loadGiaDatFromSheet();
 
-    // Thực hiện tìm kiếm và hiển thị đầy đủ thông tin của dòng đó
+    // Thực hiện tìm kiếm: Tìm từ khóa xuất hiện ở bất kỳ đâu trong hàng, nhưng kết quả trả về BẮT BUỘC hiển thị đúng C, D, E, F
     function thucHienTimKiemDuong() {
         const keywordClean = removeDiacritics(duongInput.value);
         const selectedPhuongClean = removeDiacritics(phuongSelect.value);
@@ -101,15 +108,21 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Lọc: Phường khớp VÀ từ khóa xuất hiện ở bất kỳ cột nào trong hàng đó
+        // Lọc các dòng khớp Phường VÀ từ khóa xuất hiện ở bất kỳ cột nào trong hàng
         const matchedRows = giaDatRecords.filter(item => {
             const itemPhuongClean = removeDiacritics(item.phuong);
-            const itemDuongClean = removeDiacritics(item.duong);
-            const itemTuClean = removeDiacritics(item.tu);
-            const itemDenClean = removeDiacritics(item.den);
-
             const matchPhuong = itemPhuongClean.includes(selectedPhuongClean) || selectedPhuongClean.includes(itemPhuongClean);
-            const matchKeyword = itemDuongClean.includes(keywordClean) || itemTuClean.includes(keywordClean) || itemDenClean.includes(keywordClean);
+
+            // Kiểm tra xem từ khóa có xuất hiện ở bất kỳ trường nào (hoặc trong mảng thô của dòng đó) không
+            let matchKeyword = false;
+            if (Array.isArray(item.raw)) {
+                matchKeyword = item.raw.some(cell => removeDiacritics(cell).includes(keywordClean));
+            } else {
+                matchKeyword = removeDiacritics(item.duong).includes(keywordClean) ||
+                               removeDiacritics(item.tu).includes(keywordClean) ||
+                               removeDiacritics(item.den).includes(keywordClean) ||
+                               removeDiacritics(item.gia).includes(keywordClean);
+            }
 
             return matchPhuong && matchKeyword;
         });
@@ -120,6 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let htmlContent = `<div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px; font-size: 13px;">📍 Kết quả tại: ${phuongSelect.value} (${matchedRows.length} dòng)</div>`;
             
             matchedRows.forEach(row => {
+                // Luôn hiển thị chính xác Cột C (Đường), Cột D (Từ), Cột E (Đến), Cột F (Giá) của dòng đó
                 htmlContent += `
                     <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 8px; margin-bottom: 8px; font-size: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); line-height: 1.5;">
                         <div style="color: #000; margin-bottom: 2px;"><b>Đường:</b> ${row.duong || '---'}</div>
@@ -155,11 +169,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const matchedRows = giaDatRecords.filter(item => {
                 const itemPhuongClean = removeDiacritics(item.phuong);
-                const itemDuongClean = removeDiacritics(item.duong);
-                const itemTuClean = removeDiacritics(item.tu);
-                const itemDenClean = removeDiacritics(item.den);
                 const matchPhuong = itemPhuongClean.includes(selectedPhuongClean) || selectedPhuongClean.includes(itemPhuongClean);
-                return matchPhuong && (itemDuongClean.includes(keywordClean) || itemTuClean.includes(keywordClean) || itemDenClean.includes(keywordClean));
+                let matchKeyword = false;
+                if (Array.isArray(item.raw)) {
+                    matchKeyword = item.raw.some(cell => removeDiacritics(cell).includes(keywordClean));
+                } else {
+                    matchKeyword = removeDiacritics(item.duong).includes(keywordClean) ||
+                                   removeDiacritics(item.tu).includes(keywordClean) ||
+                                   removeDiacritics(item.den).includes(keywordClean);
+                }
+                return matchPhuong && matchKeyword;
             });
 
             if (matchedRows.length > 0) {
