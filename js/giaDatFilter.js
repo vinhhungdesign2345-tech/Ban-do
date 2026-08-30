@@ -1,5 +1,5 @@
 /**
- * Mô-đun: Tra cứu giá đất theo tên đường (Liệt kê đủ 4 cột: Đường, Từ, Đến, Giá đất)
+ * Mô-đun: Tra cứu giá đất theo tên đường (Ánh xạ chuẩn 4 cột: Đường, Từ, Đến, Giá)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let giaDatRecords = [];
 
-    // Hàm loại bỏ dấu tiếng Việt để so khớp chính xác tuyệt đối
+    // Hàm loại bỏ dấu tiếng Việt để so khớp không lỗi
     function removeDiacritics(str) {
         return (str || "")
             .toString()
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và map chính xác các cột từ Sheet
+    // Tải dữ liệu và ánh xạ chính xác tuyệt đối các cột từ Google Sheet
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -43,23 +43,47 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
 
             if (Array.isArray(data)) {
-                giaDatRecords = data.map(item => ({
-                    phuong: (item.phuong || item.Phuong || "").toString().trim(),
-                    // Ánh xạ chuẩn 4 cột theo thứ tự trong Sheet: Đường (C), Từ (D), Đến (E), Giá (F)
-                    duong: (item.duong || item.Duong || item.duongtuyenlohk || "").toString().trim(),
-                    tu: (item.tu || item.Tu || item.doan || item.Doan || "").toString().trim(),
-                    den: (item.den || item.Den || "").toString().trim(),
-                    gia: (item.gia || item.Gia || "").toString().trim()
-                }));
+                giaDatRecords = data.map(item => {
+                    let phuong = '', stt = '', duong = '', tu = '', den = '', gia = '';
+
+                    // Hỗ trợ cả định dạng mảng (array) lẫn đối tượng (object) từ Apps Script
+                    if (Array.isArray(item)) {
+                        phuong = item[0] || '';
+                        stt = item[1] || '';
+                        duong = item[2] || ''; // Cột C: Đường
+                        tu = item[3] || '';    // Cột D: Từ
+                        den = item[4] || '';   // Cột E: Đến
+                        gia = item[5] || '';   // Cột F: Giá
+                    } else if (typeof item === 'object' && item !== null) {
+                        phuong = item.phuong || item.Phuong || item[0] || '';
+                        stt = item.stt || item.STT || item[1] || '';
+                        // Cột C: Tên đường (hỗ trợ nhiều tên biến khóa khác nhau)
+                        duong = item.duong || item.Duong || item.duongtuyenlohk || item['Đường, tuyến lộ, khu vực'] || item[2] || '';
+                        // Cột D: Từ
+                        tu = item.tu || item.Tu || item['Từ'] || item[3] || '';
+                        // Cột E: Đến
+                        den = item.den || item.Den || item['Đến'] || item[4] || '';
+                        // Cột F: Giá
+                        gia = item.gia || item.Gia || item['Giá đất năm 2026'] || item[5] || '';
+                    }
+
+                    return {
+                        phuong: phuong.toString().trim(),
+                        stt: stt.toString().trim(),
+                        duong: duong.toString().trim(),
+                        tu: tu.toString().trim(),
+                        den: den.toString().trim(),
+                        gia: gia.toString().trim()
+                    };
+                });
             } else {
                 throw new Error("Dữ liệu không phải mảng JSON hợp lệ");
             }
         } catch (err) {
             console.warn("Dùng dữ liệu mẫu dự phòng do lỗi API:", err);
             giaDatRecords = [
-                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Huỳnh Thúc Kháng", den: "Kênh Cổng Đôi", gia: "12.600" },
-                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Kênh Cổng Đôi", den: "Cổng Cầu Nhum", gia: "9.600" },
-                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Đường Cà Mau - Đầm Dơi", tu: "Đường Hải Thượng Lãn Ông", den: "hết đoạn 2 chiều", gia: "9.600" }
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Huỳnh Thúc Kháng", den: "Kênh Cống Đôi (tên cũ: Hết ranh Bệnh viện đa khoa Cà Mau)", gia: "12.600.000" },
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Đường vào trường Mầm non Nắng Hồng", tu: "Hải Thượng Lãn Ông", den: "Hết ranh trường mẫu giáo Nắng Hồng", gia: "9.500" }
             ];
         }
         updateInputState();
@@ -67,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loadGiaDatFromSheet();
 
-    // Thực hiện tìm kiếm và hiển thị dạng 4 cột chi tiết
+    // Thực hiện tìm kiếm và hiển thị kết quả đúng chuẩn 4 cột
     function thucHienTimKiemDuong() {
         const keywordClean = removeDiacritics(duongInput.value);
         const selectedPhuongClean = removeDiacritics(phuongSelect.value);
@@ -85,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Lọc thông minh: Phường khớp VÀ từ khóa xuất hiện ở BẤT KỲ cột nào (Tên đường, Từ, hoặc Đến)
+        // Lọc thông minh: Khớp Phường VÀ từ khóa xuất hiện ở bất kỳ cột nào (Đường, Từ, Đến)
         const matchedRows = giaDatRecords.filter(item => {
             const itemPhuongClean = removeDiacritics(item.phuong);
             const itemDuongClean = removeDiacritics(item.duong);
@@ -101,15 +125,15 @@ document.addEventListener("DOMContentLoaded", function () {
         if (popupList) popupList.style.display = "none";
 
         if (matchedRows.length > 0) {
-            let htmlContent = `<div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px; font-size: 13px;">📍 Kết quả tại: ${phuongSelect.value} (${matchedRows.length} dòng)</div>`;
+            let htmlContent = `<div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px; font-size: 13px;">📍 Kết quả tại: ${phuongSelect.value} (${matchedRows.length} kết quả)</div>`;
             
             matchedRows.forEach(row => {
                 htmlContent += `
-                    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 8px; margin-bottom: 6px; font-size: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                        <div style="color: #000; font-weight: bold; margin-bottom: 3px;">🛣️ Đường: ${row.duong || '(Trống)'}</div>
-                        <div style="color: #444; margin-bottom: 2px;"><b>Từ:</b> ${row.tu || '---'}</div>
-                        <div style="color: #444; margin-bottom: 4px;"><b>Đến:</b> ${row.den || '---'}</div>
-                        <div style="color: #d9534f; font-weight: bold; border-top: 1px dashed #eee; padding-top: 4px;">💰 Giá đất: ${row.gia ? row.gia + ' đ/m²' : 'Chưa cập nhật'}</div>
+                    <div style="background: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 8px; margin-bottom: 8px; font-size: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); line-height: 1.4;">
+                        <div style="color: #222; margin-bottom: 2px;"><b>Đường (cột C):</b> ${row.duong || '---'}</div>
+                        <div style="color: #444; margin-bottom: 2px;"><b>Từ (cột D):</b> ${row.tu || '---'}</div>
+                        <div style="color: #444; margin-bottom: 4px;"><b>Đến (cột E):</b> ${row.den || '---'}</div>
+                        <div style="color: #d9534f; font-weight: bold; border-top: 1px dashed #eee; padding-top: 4px;"><b>Giá (cột F):</b> ${row.gia || '---'}</div>
                     </div>
                 `;
             });
@@ -155,7 +179,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     divItem.style.padding = "8px 10px";
                     divItem.style.cursor = "pointer";
                     divItem.style.borderBottom = "1px solid #eee";
-                    divItem.innerHTML = `<b>${row.duong}</b> <span style="font-size: 11px; color: #666;">(Từ: ${row.tu} - Đến: ${row.den})</span>`;
+                    divItem.innerHTML = `<b>${row.duong}</b> <span style="font-size: 11px; color: #666;">(Từ: ${row.tu})</span>`;
 
                     divItem.addEventListener("mouseenter", () => divItem.style.backgroundColor = "#f1f3f4");
                     divItem.addEventListener("mouseleave", () => divItem.style.backgroundColor = "#fff");
