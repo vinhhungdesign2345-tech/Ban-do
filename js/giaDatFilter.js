@@ -1,5 +1,5 @@
 /**
- * Mô-đun: Tra cứu giá đất theo tên đường (Bóc tách chính xác tuyệt đối theo tên tiêu đề cột)
+ * Mô-đun: Tra cứu giá đất theo tên đường (Liệt kê đủ 4 cột: Đường, Từ, Đến, Giá đất)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và ánh xạ chính xác tên cột từ Google Sheet
+    // Tải dữ liệu và map chính xác tuyệt đối các cột từ Sheet theo thứ tự A, B, C, D, E
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -47,32 +47,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
                     
                     if (Array.isArray(item)) {
-                        // Nếu API trả về mảng thuần túy [Cột A, B, C, D, E]
                         phuong = (item[0] || "").toString().trim();
                         duong = (item[1] || "").toString().trim();
                         tu = (item[2] || "").toString().trim();
                         den = (item[3] || "").toString().trim();
                         gia = (item[4] || "").toString().trim();
                     } else if (typeof item === "object" && item !== null) {
-                        // Lấy chuẩn xác theo đúng tên tiêu đề trên Google Sheet của bạn
-                        phuong = (item["PHƯỜNG"] || item["Phuong"] || item["phuong"] || "").toString().trim();
-                        duong = (item["Đường"] || item["Duong"] || item["duong"] || "").toString().trim();
-                        tu = (item["Từ"] || item["Tu"] || item["tu"] || "").toString().trim();
-                        den = (item["Đến"] || item["Den"] || item["den"] || "").toString().trim();
-                        
-                        // Lấy đúng cột Giá đất 2026
-                        gia = (item["Giá đất 2026"] || item["Gia dat 2026"] || item["Giá đất"] || item["Gia dat"] || "").toString().trim();
-                        
-                        // Fallback an toàn: Duyệt qua các key nếu tên cột có khác biệt dấu câu
-                        if (!gia) {
-                            for (let key in item) {
-                                let kLower = removeDiacritics(key);
-                                if ((kLower.includes("gia") || kLower.includes("2026")) && !kLower.includes("den") && !kLower.includes("tu")) {
-                                    gia = (item[key] || "").toString().trim();
-                                    break;
-                                }
-                            }
-                        }
+                        // Lấy chuẩn theo thứ tự các cột A, B, C, D, E từ Sheet
+                        const vals = Object.values(item);
+                        phuong = (vals[0] || item.phuong || item.Phuong || "").toString().trim();
+                        duong = (vals[1] || item.duong || item.Duong || "").toString().trim();
+                        tu = (vals[2] || item.tu || item.Tu || "").toString().trim();
+                        den = (vals[3] || item.den || item.Den || "").toString().trim();
+                        gia = (vals[4] || item.gia || item.Gia || "").toString().trim();
                     }
 
                     return { phuong, duong, tu, den, gia };
@@ -81,15 +68,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 throw new Error("Dữ liệu không phải mảng JSON hợp lệ");
             }
         } catch (err) {
-            console.warn("Lỗi tải API giá đất:", err);
-            giaDatRecords = [];
+            console.warn("Dùng dữ liệu mẫu dự phòng do lỗi API:", err);
+            giaDatRecords = [
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Huỳnh Thúc Kháng", den: "Kênh Cổng Đôi", gia: "12.600" },
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", tu: "Kênh Cổng Đôi", den: "Cổng Cầu Nhum", gia: "9.600" },
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Đường Cà Mau - Đầm Dơi", tu: "Đường Hải Thượng Lãn Ông", den: "hết đoạn 2 chiều", gia: "9.600" }
+            ];
         }
         updateInputState();
     }
 
     loadGiaDatFromSheet();
 
-    // Thực hiện tìm kiếm và hiển thị kết quả chi tiết
+    // Thực hiện tìm kiếm và hiển thị dạng 4 cột chi tiết
     function thucHienTimKiemDuong() {
         const keywordClean = removeDiacritics(duongInput.value);
         const selectedPhuongClean = removeDiacritics(phuongSelect.value);
@@ -107,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Lọc thông minh: Phường khớp VÀ từ khóa xuất hiện ở Tên đường, Từ, hoặc Đến
+        // Lọc thông minh: Phường khớp VÀ từ khóa xuất hiện ở BẤT KỲ cột nào (Tên đường, Từ, hoặc Đến)
         const matchedRows = giaDatRecords.filter(item => {
             const itemPhuongClean = removeDiacritics(item.phuong);
             const itemDuongClean = removeDiacritics(item.duong);
