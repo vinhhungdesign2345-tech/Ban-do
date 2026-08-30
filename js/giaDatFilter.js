@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và map chính xác tuyệt đối từng cột dựa trên tiêu đề cột và giá trị thực tế
+    // Tải dữ liệu và tự động quét tìm cột giá đất bằng từ khóa (Không sợ lệch tiêu đề hay khoảng trắng)
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -47,39 +47,38 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
                     
                     if (Array.isArray(item)) {
-                        // Trường hợp API trả về dạng mảng thuần túy từ cột A đến E
+                        // Trường hợp dữ liệu trả về dạng mảng thuần túy từ cột A đến E
                         phuong = (item[0] || "").toString().trim();
                         duong = (item[1] || "").toString().trim();
                         tu = (item[2] || "").toString().trim();
                         den = (item[3] || "").toString().trim();
                         gia = (item[4] || "").toString().trim();
                     } else if (typeof item === "object" && item !== null) {
-                        // Trường hợp API trả về dạng Object theo tên tiêu đề cột trong Sheet
-                        phuong = (item["Phường"] || item["Phuong"] || Object.values(item)[0] || "").toString().trim();
-                        duong = (item["Đường"] || item["Duong"] || item["Tên đường"] || Object.values(item)[1] || "").toString().trim();
-                        tu = (item["Từ"] || item["Tu"] || Object.values(item)[2] || "").toString().trim();
-                        den = (item["Đến"] || item["Den"] || Object.values(item)[3] || "").toString().trim();
-                        
-                        // Lấy chuẩn xác cột có tiêu đề là "Giá đất năm 2026" từ Google Sheet
-                        gia = (item["Giá đất năm 2026"] || item["Giá đất"] || item["Gia dat nam 2026"] || item["Gia dat"] || "").toString().trim();
-                        
-                        // Fallback dự phòng thông minh nếu Object không map sẵn tên khóa
-                        if (!gia) {
-                            const vals = Object.values(item).map(v => (v || "").toString().trim());
-                            let val3 = vals[3] || "";
-                            let val4 = vals[4] || "";
+                        // Trường hợp dữ liệu trả về dạng Object: Duyệt qua tất cả các cột để quét từ khóa động
+                        for (let key in item) {
+                            let cleanKey = removeDiacritics(key);
+                            let val = (item[key] || "").toString().trim();
 
-                            if (val4 && (/^\d+([.,]\d+)*$/.test(val4) || val4.length <= 8)) {
-                                den = val3;
-                                gia = val4;
-                            } else if (val3 && (/^\d+([.,]\d+)*$/.test(val3) || val3.length <= 8) && !val4) {
-                                den = vals.length > 5 ? vals[3] : "";
-                                gia = val3;
-                            } else {
-                                den = val3;
-                                gia = val4;
+                            if (cleanKey.includes("phuong") || cleanKey.includes("khu vuc")) {
+                                if (!phuong) phuong = val;
+                            } else if (cleanKey.includes("duong") || cleanKey.includes("tuyen lo")) {
+                                if (!duong) duong = val;
+                            } else if (cleanKey === "tu" || cleanKey.includes("tu doan")) {
+                                if (!tu) tu = val;
+                            } else if (cleanKey === "den" || cleanKey.includes("den doan")) {
+                                if (!den) den = val;
+                            } else if (cleanKey.includes("gia") || cleanKey.includes("2026")) {
+                                // Tự động nhận diện cột có chứa từ khóa "gia" hoặc "2026" làm giá đất
+                                if (!gia) gia = val;
                             }
                         }
+
+                        // Fallback dự phòng cuối cùng theo thứ tự cột nếu quét từ khóa không thành công
+                        if (!phuong) phuong = (Object.values(item)[0] || "").toString().trim();
+                        if (!duong) duong = (Object.values(item)[1] || "").toString().trim();
+                        if (!tu) tu = (Object.values(item)[2] || "").toString().trim();
+                        if (!den) den = (Object.values(item)[3] || "").toString().trim();
+                        if (!gia) gia = (Object.values(item)[4] || "").toString().trim();
                     }
 
                     return { phuong, duong, tu, den, gia };
