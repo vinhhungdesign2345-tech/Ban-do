@@ -1,5 +1,5 @@
 /**
- * Mô-đun: Tra cứu giá đất theo tên đường (Đã cập nhật chuẩn logic lọc theo Phường/Xã và tìm kiếm toàn bộ nội dung liên quan)
+ * Mô-đun: Tra cứu giá đất theo tên đường (Đã tối ưu quét toàn bộ cột dữ liệu và chuẩn hóa bộ lọc hành chính)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
@@ -9,6 +9,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const resultPanel = document.getElementById("giaDatResultPanel");
 
     let giaDatRecords = [];
+
+    // Hàm chuẩn hóa chuỗi để so sánh không bị lỗi khoảng trắng hoặc hoa thường
+    function normalizeStr(str) {
+        return (str || "").toString().toLowerCase().trim().replace(/\s+/g, ' ');
+    }
 
     // Tải dữ liệu từ Google Apps Script
     async function loadGiaDatFromSheet() {
@@ -31,24 +36,21 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (err) {
             console.warn("Dùng dữ liệu mẫu dự phòng do lỗi API:", err);
             giaDatRecords = [
-                { phuong: "Phường 7", duong: "Hải Thượng Lãn Ông", doan: "Đoạn từ QL1 đến hết tuyến", gia: "3.500.000 đ/m²" },
-                { phuong: "Phường 7", duong: "Hùng Vương", doan: "Toàn tuyến", gia: "5.000.000 đ/m²" },
-                { phuong: "Phường 5", duong: "Phan Ngọc Hiển", doan: "Đoạn từ cầu Phụng Hiệp", gia: "12.000.000 đ/m²" },
-                { phuong: "Xã Hòa Thành", duong: "Tuyến lộ Xà No", doan: "Toàn tuyến", gia: "1.200.000 đ/m²" }
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", doan: "Huỳnh Thúc Kháng", gia: "12.600" },
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Đường Cà Mau - Đầm Dơi", doan: "Đường Hải Thượng Lãn Ông", gia: "9.600" }
             ];
         }
     }
 
     loadGiaDatFromSheet();
 
-    // Hàm thực hiện tìm kiếm tuyến đường theo đúng Phường/Xã đã chọn
+    // Hàm thực hiện tìm kiếm tuyến đường
     function thucHienTimKiemDuong() {
-        const keyword = duongInput.value.toLowerCase().trim();
-        const selectedPhuong = phuongSelect.value ? phuongSelect.value.trim() : "";
+        const keyword = normalizeStr(duongInput.value);
+        const selectedPhuong = normalizeStr(phuongSelect.value);
 
         resultPanel.style.display = "block";
 
-        // Kiểm tra nếu chưa chọn Phường/Xã
         if (!selectedPhuong) {
             resultPanel.innerHTML = `<div style="color: #d9534f;">Vui lòng chọn Phường/Xã trước khi tra cứu giá đất!</div>`;
             return;
@@ -59,24 +61,29 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // BẮT BUỘC: Lọc tất cả các dòng trong Sheet có cột Phường trùng khớp với Phường đang chọn (không phân biệt hoa thường)
-        // và tên đường chứa từ khóa người dùng nhập vào
-        const matchedRows = giaDatRecords.filter(item => 
-            item.phuong.toLowerCase() === selectedPhuong.toLowerCase() && 
-            item.duong.toLowerCase().includes(keyword)
-        );
+        // Lọc dữ liệu: Khớp phường/xã (không phân biệt hoa thường/khoảng trắng) 
+        // VÀ từ khóa xuất hiện ở bất kỳ thông tin nào (tên đường hoặc đoạn đường)
+        const matchedRows = giaDatRecords.filter(item => {
+            const itemPhuongNorm = normalizeStr(item.phuong);
+            const itemDuongNorm = normalizeStr(item.duong);
+            const itemDoanNorm = normalizeStr(item.doan);
+
+            const matchPhuong = itemPhuongNorm === selectedPhuong || itemPhuongNorm.includes(selectedPhuong) || selectedPhuong.includes(itemPhuongNorm);
+            const matchKeyword = itemDuongNorm.includes(keyword) || itemDoanNorm.includes(keyword);
+
+            return matchPhuong && matchKeyword;
+        });
 
         popupList.style.display = "none";
 
         if (matchedRows.length > 0) {
-            // Hiển thị tất cả các đoạn/kết quả liên quan tìm được
-            let htmlContent = `<div style="font-weight: bold; color: #1a73e8; margin-bottom: 4px;">📍 Kết quả tại: ${selectedPhuong}</div>`;
+            let htmlContent = `<div style="font-weight: bold; color: #1a73e8; margin-bottom: 6px;">📍 Kết quả tìm kiếm tại: ${phuongSelect.value}</div>`;
             
             matchedRows.forEach(row => {
                 htmlContent += `
-                    <div style="border-top: 1px solid #eee; padding-top: 4px; margin-top: 4px;">
-                        <div style="color: #333;"><b>Đường:</b> ${row.duong}</div>
-                        <div style="color: #555;"><b>Đoạn:</b> ${row.doan || 'Toàn tuyến'}</div>
+                    <div style="border-top: 1px solid #eee; padding-top: 6px; margin-top: 6px;">
+                        <div style="color: #333;"><b>Đường:</b> ${row.duong || '(Trống)'}</div>
+                        <div style="color: #555;"><b>Đoạn/Mô tả:</b> ${row.doan || 'Toàn tuyến'}</div>
                         <div style="color: #d9534f; font-weight: bold;"><b>Giá đất:</b> ${row.gia}</div>
                     </div>
                 `;
@@ -84,11 +91,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             resultPanel.innerHTML = htmlContent;
         } else {
-            resultPanel.innerHTML = `<div style="color: #d9534f;">Không tìm thấy tuyến đường "${keyword}" thuộc khu vực "${selectedPhuong}" trong cơ sở dữ liệu giá đất.</div>`;
+            resultPanel.innerHTML = `<div style="color: #d9534f;">Không tìm thấy nội dung liên quan đến "${duongInput.value}" trong khu vực này.</div>`;
         }
     }
 
-    // Sự kiện chọn Phường -> Mở khóa ô nhập đường
+    // Sự kiện giao diện
     if (phuongSelect && duongInput && searchDuongBtn) {
         phuongSelect.addEventListener("change", function () {
             const selectedPhuong = this.value;
@@ -101,21 +108,25 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Gõ phím hiển thị Popup gợi ý (chỉ gợi ý các đường thuộc đúng Phường đang chọn)
         duongInput.addEventListener("input", function () {
-            const keyword = this.value.toLowerCase().trim();
-            const selectedPhuong = phuongSelect.value ? phuongSelect.value.trim() : "";
+            const keyword = normalizeStr(this.value);
+            const selectedPhuong = normalizeStr(phuongSelect.value);
 
             if (!keyword || !selectedPhuong) {
                 popupList.style.display = "none";
                 return;
             }
 
-            // Lọc danh sách gợi ý theo đúng Phường và chứa từ khóa tên đường
-            const matchedRows = giaDatRecords.filter(item => 
-                item.phuong.toLowerCase() === selectedPhuong.toLowerCase() && 
-                item.duong.toLowerCase().includes(keyword)
-            );
+            const matchedRows = giaDatRecords.filter(item => {
+                const itemPhuongNorm = normalizeStr(item.phuong);
+                const itemDuongNorm = normalizeStr(item.duong);
+                const itemDoanNorm = normalizeStr(item.doan);
+
+                const matchPhuong = itemPhuongNorm === selectedPhuong || itemPhuongNorm.includes(selectedPhuong) || selectedPhuong.includes(itemPhuongNorm);
+                const matchKeyword = itemDuongNorm.includes(keyword) || itemDoanNorm.includes(keyword);
+
+                return matchPhuong && matchKeyword;
+            });
 
             if (matchedRows.length > 0) {
                 popupList.innerHTML = "";
@@ -144,13 +155,11 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Bấm nút tìm kiếm 🔍
         searchDuongBtn.addEventListener("click", function (e) {
             e.preventDefault();
             thucHienTimKiemDuong();
         });
 
-        // Nhấn phím Enter
         duongInput.addEventListener("keydown", function (e) {
             if (e.key === "Enter") {
                 e.preventDefault();
@@ -158,7 +167,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Click ra ngoài thì ẩn popup
         document.addEventListener("click", function (e) {
             if (!duongInput.contains(e.target) && !popupList.contains(e.target) && !searchDuongBtn.contains(e.target)) {
                 popupList.style.display = "none";
