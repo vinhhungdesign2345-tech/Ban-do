@@ -1,5 +1,5 @@
 /**
- * Mô-đun: Tra cứu giá đất theo tên đường (Đọc chuẩn xác theo vị trí cột A, B, C, D, E)
+ * Mô-đun: Tra cứu giá đất theo tên đường (Bóc tách chính xác tuyệt đối theo tên tiêu đề cột)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu từ Google Sheet API và map theo đúng thứ tự các cột A, B, C, D, E
+    // Tải dữ liệu và ánh xạ chính xác tên cột từ Google Sheet
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -44,22 +44,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (Array.isArray(data)) {
                 giaDatRecords = data.map(item => {
-                    let values = [];
+                    let phuong = "", duong = "", tu = "", den = "", gia = "";
                     
                     if (Array.isArray(item)) {
-                        values = item;
+                        // Nếu API trả về mảng thuần túy [Cột A, B, C, D, E]
+                        phuong = (item[0] || "").toString().trim();
+                        duong = (item[1] || "").toString().trim();
+                        tu = (item[2] || "").toString().trim();
+                        den = (item[3] || "").toString().trim();
+                        gia = (item[4] || "").toString().trim();
                     } else if (typeof item === "object" && item !== null) {
-                        // Lấy toàn bộ giá trị theo đúng thứ tự các cột từ trái sang phải trên Google Sheet
-                        values = Object.values(item);
+                        // Lấy chuẩn xác theo đúng tên tiêu đề trên Google Sheet của bạn
+                        phuong = (item["PHƯỜNG"] || item["Phuong"] || item["phuong"] || "").toString().trim();
+                        duong = (item["Đường"] || item["Duong"] || item["duong"] || "").toString().trim();
+                        tu = (item["Từ"] || item["Tu"] || item["tu"] || "").toString().trim();
+                        den = (item["Đến"] || item["Den"] || item["den"] || "").toString().trim();
+                        
+                        // Lấy đúng cột Giá đất 2026
+                        gia = (item["Giá đất 2026"] || item["Gia dat 2026"] || item["Giá đất"] || item["Gia dat"] || "").toString().trim();
+                        
+                        // Fallback an toàn: Duyệt qua các key nếu tên cột có khác biệt dấu câu
+                        if (!gia) {
+                            for (let key in item) {
+                                let kLower = removeDiacritics(key);
+                                if ((kLower.includes("gia") || kLower.includes("2026")) && !kLower.includes("den") && !kLower.includes("tu")) {
+                                    gia = (item[key] || "").toString().trim();
+                                    break;
+                                }
+                            }
+                        }
                     }
 
-                    return {
-                        phuong: (values[0] || "").toString().trim(), // Cột A: Phường
-                        duong:  (values[1] || "").toString().trim(), // Cột B: Đường
-                        tu:     (values[2] || "").toString().trim(), // Cột C: Từ
-                        den:    (values[3] || "").toString().trim(), // Cột D: Đến
-                        gia:    (values[4] || "").toString().trim()  // Cột E: Giá đất 2026
-                    };
+                    return { phuong, duong, tu, den, gia };
                 });
             } else {
                 throw new Error("Dữ liệu không phải mảng JSON hợp lệ");
