@@ -47,27 +47,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
                     
                     if (Array.isArray(item)) {
-                        phuong = (item[1] || item[0] || "").toString().trim();
-                        duong = (item[2] || item[3] || "").toString().trim();
-                        tu = (item[3] || item[4] || "").toString().trim();
-                        den = (item[4] || item[5] || "").toString().trim();
-                        gia = (item[5] || item[6] || "").toString().trim();
+                        // Ánh xạ chuẩn xác index từ mảng Google Sheet:
+                        // item[0]: Phường, item[1]: Đường, item[2]: Từ, item[3]: Đến, item[4]: Giá
+                        phuong = (item[0] || "").toString().trim();
+                        duong = (item[1] || "").toString().trim();
+                        tu = (item[2] || "").toString().trim();
+                        den = (item[3] || "").toString().trim();
+                        gia = (item[4] || "").toString().trim();
                     } else if (typeof item === "object" && item !== null) {
                         phuong = (item.phuong || item.Phuong || "").toString().trim();
                         duong = (item.duong || item.Duong || item.duongtuyenlohk || "").toString().trim();
                         tu = (item.tu || item.Tu || item.doan || item.Doan || "").toString().trim();
-                        
-                        let rawDen = (item.den || item.Den || "").toString().trim();
-                        let rawGia = (item.gia || item.Gia || "").toString().trim();
-
-                        // Đưa nội dung mô tả vị trí từ cột E (nếu đang nằm nhầm ở trường gia) về đúng hàng Đến
-                        if (!rawDen && rawGia && (rawGia.includes("Kênh") || rawGia.includes("Hết") || rawGia.includes("Cầu") || rawGia.includes("ranh") || rawGia.length > 8)) {
-                            den = rawGia;
-                            gia = "";
-                        } else {
-                            den = rawDen;
-                            gia = rawGia;
-                        }
+                        den = (item.den || item.Den || "").toString().trim();
+                        gia = (item.gia || item.Gia || "").toString().trim();
                     }
 
                     return { phuong, duong, tu, den, gia };
