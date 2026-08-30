@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và map chính xác các cột từ Sheet
+    // Tải dữ liệu và map chính xác tuyệt đối các cột từ Sheet theo thứ tự A, B, C, D, E
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -47,19 +47,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
                     
                     if (Array.isArray(item)) {
-                        // Ánh xạ chuẩn xác index từ mảng Google Sheet:
-                        // item[0]: Phường, item[1]: Đường, item[2]: Từ, item[3]: Đến, item[4]: Giá
                         phuong = (item[0] || "").toString().trim();
                         duong = (item[1] || "").toString().trim();
                         tu = (item[2] || "").toString().trim();
                         den = (item[3] || "").toString().trim();
                         gia = (item[4] || "").toString().trim();
                     } else if (typeof item === "object" && item !== null) {
-                        phuong = (item.phuong || item.Phuong || "").toString().trim();
-                        duong = (item.duong || item.Duong || item.duongtuyenlohk || "").toString().trim();
-                        tu = (item.tu || item.Tu || item.doan || item.Doan || "").toString().trim();
-                        den = (item.den || item.Den || "").toString().trim();
-                        gia = (item.gia || item.Gia || "").toString().trim();
+                        // Lấy chuẩn theo thứ tự các cột A, B, C, D, E từ Sheet
+                        const vals = Object.values(item);
+                        phuong = (vals[0] || item.phuong || item.Phuong || "").toString().trim();
+                        duong = (vals[1] || item.duong || item.Duong || "").toString().trim();
+                        tu = (vals[2] || item.tu || item.Tu || "").toString().trim();
+                        den = (vals[3] || item.den || item.Den || "").toString().trim();
+                        gia = (vals[4] || item.gia || item.Gia || "").toString().trim();
                     }
 
                     return { phuong, duong, tu, den, gia };
