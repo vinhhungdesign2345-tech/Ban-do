@@ -1,5 +1,5 @@
 /**
- * Mô-đun: Tra cứu giá đất theo tên đường (Cho phép nhập tự do, không bắt buộc chọn popup, hỗ trợ nhận dữ liệu từ map)
+ * Mô-đun: Tra cứu giá đất theo tên đường (Tích hợp chuẩn hóa, tự động loại bỏ dấu & khoảng trắng để khớp tuyệt đối)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
@@ -10,12 +10,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let giaDatRecords = [];
 
-    // Hàm chuẩn hóa chuỗi để so khớp không lỗi khoảng trắng, hoa thường
-    function normalizeStr(str) {
-        return (str || "").toString().toLowerCase().trim().replace(/\s+/g, ' ');
+    // Hàm loại bỏ dấu tiếng Việt, đưa về chữ thường để so khớp chính xác tuyệt đối
+    function removeDiacritics(str) {
+        return (str || "")
+            .toString()
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "") // Xóa các dấu huyền, sắc, hỏi, ngã, nặng...
+            .replace(/đ/g, "d")
+            .replace(/Đ/g, "D")
+            .replace(/\s+/g, " ")
+            .trim();
     }
 
-    // Kiểm tra và cập nhật trạng thái mở khóa ô nhập đường dựa trên dropdown Phường/Xã
+    // Kiểm tra và mở khóa ô nhập đường khi đã có Phường/Xã từ bản đồ hoặc chọn thủ công
     function updateInputState() {
         const hasPhuong = phuongSelect && phuongSelect.value && phuongSelect.value.trim() !== "";
         if (duongInput) duongInput.disabled = !hasPhuong;
@@ -48,8 +56,8 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (err) {
             console.warn("Dùng dữ liệu mẫu dự phòng do lỗi API:", err);
             giaDatRecords = [
-                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", doan: "Huỳnh Thúc Kháng", gia: "12.600" },
-                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Đường Cà Mau - Đầm Dơi", doan: "Đường Hải Thượng Lãn Ông", gia: "9.600" }
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Hải Thượng Lãn Ông", doan: "Huỳnh Thúc Kháng", gia: "12.600 đ/m²" },
+                { phuong: "PHƯỜNG HOÀ THÀNH", duong: "Đường Cà Mau - Đầm Dơi", doan: "Đường Hải Thượng Lãn Ông", gia: "9.600 đ/m²" }
             ];
         }
         updateInputState();
@@ -57,32 +65,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loadGiaDatFromSheet();
 
-    // Hàm thực hiện tìm kiếm tuyến đường (Gõ tự do và bấm tìm kiếm)
+    // Hàm thực hiện tìm kiếm tuyến đường
     function thucHienTimKiemDuong() {
-        const keyword = normalizeStr(duongInput.value);
-        const selectedPhuong = normalizeStr(phuongSelect.value);
+        const keywordClean = removeDiacritics(duongInput.value);
+        const selectedPhuongClean = removeDiacritics(phuongSelect.value);
 
         if (!resultPanel) return;
         resultPanel.style.display = "block";
 
-        if (!selectedPhuong) {
+        if (!selectedPhuongClean) {
             resultPanel.innerHTML = `<div style="color: #d9534f;">Vui lòng chọn Phường/Xã trước khi tra cứu giá đất!</div>`;
             return;
         }
 
-        if (!keyword) {
+        if (!keywordClean) {
             resultPanel.innerHTML = `<div style="color: #d9534f;">Vui lòng nhập tên đường cần tra cứu.</div>`;
             return;
         }
 
-        // Lọc linh hoạt: Khớp Phường/Xã VÀ từ khóa xuất hiện ở tên đường hoặc đoạn đường
+        // Lọc dữ liệu dựa trên chuỗi đã được loại bỏ dấu (khớp hoàn toàn không sợ lỗi font/kiểu gõ dấu)
         const matchedRows = giaDatRecords.filter(item => {
-            const itemPhuongNorm = normalizeStr(item.phuong);
-            const itemDuongNorm = normalizeStr(item.duong);
-            const itemDoanNorm = normalizeStr(item.doan);
+            const itemPhuongClean = removeDiacritics(item.phuong);
+            const itemDuongClean = removeDiacritics(item.duong);
+            const itemDoanClean = removeDiacritics(item.doan);
 
-            const matchPhuong = itemPhuongNorm === selectedPhuong || itemPhuongNorm.includes(selectedPhuong) || selectedPhuong.includes(itemPhuongNorm);
-            const matchKeyword = itemDuongNorm.includes(keyword) || itemDoanNorm.includes(keyword);
+            const matchPhuong = itemPhuongClean.includes(selectedPhuongClean) || selectedPhuongClean.includes(itemPhuongClean);
+            const matchKeyword = itemDuongClean.includes(keywordClean) || itemDoanClean.includes(keywordClean);
 
             return matchPhuong && matchKeyword;
         });
@@ -109,31 +117,30 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (phuongSelect && duongInput && searchDuongBtn) {
-        // Lắng nghe sự kiện thay đổi thủ công trên dropdown
         phuongSelect.addEventListener("change", updateInputState);
 
-        // Theo dõi liên tục trường hợp bản đồ tự động gán giá trị cho dropdown (dùng MutationObserver)
+        // Theo dõi liên tục trạng thái thay đổi từ bản đồ click
         const observer = new MutationObserver(updateInputState);
         observer.observe(phuongSelect, { attributes: true, childList: true, subtree: true });
-        setInterval(updateInputState, 500); // Quét định kỳ nhẹ để đồng bộ tức thì với map click
+        setInterval(updateInputState, 500);
 
-        // Gõ phím hiển thị Popup gợi ý (Chỉ mang tính chất gợi ý nhanh, không bắt buộc phải bấm vào)
+        // Gõ phím hiển thị Popup gợi ý
         duongInput.addEventListener("input", function () {
             updateInputState();
-            const keyword = normalizeStr(this.value);
-            const selectedPhuong = normalizeStr(phuongSelect.value);
+            const keywordClean = removeDiacritics(this.value);
+            const selectedPhuongClean = removeDiacritics(phuongSelect.value);
 
-            if (!keyword || !selectedPhuong || !popupList) {
+            if (!keywordClean || !selectedPhuongClean || !popupList) {
                 if (popupList) popupList.style.display = "none";
                 return;
             }
 
             const matchedRows = giaDatRecords.filter(item => {
-                const itemPhuongNorm = normalizeStr(item.phuong);
-                const itemDuongNorm = normalizeStr(item.duong);
-                const itemDoanNorm = normalizeStr(item.doan);
-                const matchPhuong = itemPhuongNorm === selectedPhuong || itemPhuongNorm.includes(selectedPhuong) || selectedPhuong.includes(itemPhuongNorm);
-                return matchPhuong && (itemDuongNorm.includes(keyword) || itemDoanNorm.includes(keyword));
+                const itemPhuongClean = removeDiacritics(item.phuong);
+                const itemDuongClean = removeDiacritics(item.duong);
+                const itemDoanClean = removeDiacritics(item.doan);
+                const matchPhuong = itemPhuongClean.includes(selectedPhuongClean) || selectedPhuongClean.includes(itemPhuongClean);
+                return matchPhuong && (itemDuongClean.includes(keywordClean) || itemDoanClean.includes(keywordClean));
             });
 
             if (matchedRows.length > 0) {
@@ -150,7 +157,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     divItem.addEventListener("mouseenter", () => divItem.style.backgroundColor = "#f1f3f4");
                     divItem.addEventListener("mouseleave", () => divItem.style.backgroundColor = "#fff");
 
-                    // Người dùng có thể click gợi ý HOẶC cứ gõ tự do rồi bấm nút Tìm kiếm / Enter đều được
                     divItem.addEventListener("click", function () {
                         duongInput.value = row.duong;
                         popupList.style.display = "none";
@@ -164,13 +170,11 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Bấm nút tìm kiếm 🔍 (Xử lý trực tiếp từ khóa đang gõ)
         searchDuongBtn.addEventListener("click", function (e) {
             e.preventDefault();
             thucHienTimKiemDuong();
         });
 
-        // Nhấn phím Enter (Xử lý trực tiếp từ khóa đang gõ)
         duongInput.addEventListener("keydown", function (e) {
             if (e.key === "Enter") {
                 e.preventDefault();
@@ -178,7 +182,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Click ra ngoài thì ẩn popup gợi ý nhưng không ảnh hưởng kết quả tìm kiếm
         document.addEventListener("click", function (e) {
             if (popupList && !duongInput.contains(e.target) && !popupList.contains(e.target) && !searchDuongBtn.contains(e.target)) {
                 popupList.style.display = "none";
