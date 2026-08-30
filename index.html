@@ -51,13 +51,14 @@
                 </select>
             </div>
 
-            <!-- Dropdown 3: Danh sách lựa chọn Tuyến đường lấy dữ liệu trực tiếp từ sheet Giá đất (Mặc định bị khóa cho tới khi chọn Phường/Xã) -->
-            <div class="filter-item">
-                <select id="duongFilter" disabled>
-                    <option value="">-- Tuyến đường --</option>
-                </select>
+            <!-- Ô nhập tên đường tra cứu giá đất (Hoạt động như Ctrl+F) -->
+            <div class="filter-item" style="position: relative;">
+            <input type="text" id="duongFilter" placeholder="Nhập tên đường tra cứu giá đất..." disabled style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+    
+             <!-- Popup nổi liệt kê kết quả tìm kiếm tuyến đường -->
+             <div id="duongPopupList" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 2px;">
             </div>
-        </div>
+            </div>
 
         <!-- Khung panel nhỏ hiển thị kết quả giá đất khi người dùng chọn Phường và Tuyến đường -->
         <div id="giaDatResultPanel" style="display: none; margin-top: 8px; padding: 8px 10px; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
