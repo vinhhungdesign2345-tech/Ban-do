@@ -24,58 +24,44 @@
 </head>
 <body>
 
-    <!-- ================================================================= -->
-    <!-- KHUNG CHỨA CÁC ĐIỀU KHIỂN BỘ LỌC VÀ TÌM KIẾM (ĐẶT GÓC TRÁI TRÊN BẢN ĐỒ) -->
-    <!-- ================================================================= -->
+    <!-- Khung chứa các điều khiển bộ lọc không gian và tìm kiếm -->
     <div class="map-control">
-        <div class="filter-row">
+        <div class="filter-row" style="display: flex; flex-direction: column; gap: 6px;">
             
-            <!-- 1. Ô TÌM KIẾM THỬA ĐẤT TOÀN CỤC VÀ NÚT BẤM -->
-            <div class="filter-item" style="width: 100%; display: flex; gap: 6px;">
-                <!-- Trường nhập từ khóa: Hỗ trợ tìm theo tên chủ, mã định danh, số tờ/số thửa (VD: 7/29) -->
+            <!-- DÒNG 1: Ô tìm kiếm thửa đất toàn cục và nút bấm Tìm -->
+            <div style="display: flex; gap: 6px; width: 100%;">
                 <input type="text" id="searchThuaDatInput" placeholder="Tìm theo tên, mã ĐD, tờ/thửa (VD: 7/29)..." style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
-                
-                <!-- Nút bấm kích hoạt tiến trình tìm kiếm thửa đất trên bản đồ -->
                 <button id="searchThuaDatBtn" style="padding: 8px 16px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">Tìm</button>
             </div>
 
-            <!-- 2. DROPDOWN LỰA CHỌN CẤP HÀNH CHÍNH TỈNH / THÀNH PHỐ -->
-            <div class="filter-item">
-                <select id="tinhFilter">
+            <!-- DÒNG 2: Dropdown Tỉnh/TP và Phường/Xã chia đều không gian -->
+            <div style="display: flex; gap: 6px; width: 100%;">
+                <select id="tinhFilter" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                     <option value="">-- Tỉnh / TP --</option>
                 </select>
-            </div>
-
-            <!-- 3. DROPDOWN LỰA CHỌN CẤP HÀNH CHÍNH PHƯỜNG / XÃ (BỊ KHÓA MẶC ĐỊNH BAN ĐẦU) -->
-            <div class="filter-item">
-                <select id="phuongFilter" disabled>
+                <select id="phuongFilter" disabled style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
                     <option value="">-- Phường / Xã --</option>
                 </select>
             </div>
 
-            <!-- 4. Ô NHẬP TÊN ĐƯỜNG TRA CỨU GIÁ ĐẤT KẾT HỢP NÚT BẤM TÌM KIẾM VÀ POPUP GỢI Ý -->
-            <div class="filter-item" style="position: relative;">
-                
-                <!-- Khung chứa bố cục nằm ngang (Flexbox) chứa Ô input tên đường và Nút tìm kiếm 🔍 -->
+            <!-- DÒNG 3: Ô nhập tên đường tra cứu giá đất chiếm trọn một hàng riêng biệt -->
+            <div style="position: relative; width: 100%;">
                 <div style="display: flex; gap: 4px; width: 100%;">
-                    <!-- Ô nhập tên đường: Bị khóa mặc định, chỉ mở khi người dùng đã chọn Phường/Xã -->
                     <input type="text" id="duongFilter" placeholder="Nhập tên đường tra cứu giá đất..." disabled style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
-                    
-                    <!-- Nút bấm tìm kiếm tuyến đường kèm biểu tượng kính lúp -->
                     <button id="searchDuongBtn" disabled style="padding: 8px 12px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">🔍</button>
                 </div>
     
-                <!-- Khung Popup nổi hiển thị danh sách các tuyến đường gợi ý khi người dùng gõ từ khóa -->
+                <!-- Popup nổi liệt kê kết quả tìm kiếm tuyến đường -->
                 <div id="duongPopupList" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 2px;">
                 </div>
             </div>
 
         </div> <!-- Kết thúc thẻ .filter-row -->
 
-        <!-- Khung Panel nhỏ hiển thị kết quả chi tiết giá đất sau khi chọn hoặc tìm kiếm tuyến đường -->
+        <!-- Khung panel nhỏ hiển thị kết quả giá đất -->
         <div id="giaDatResultPanel" style="display: none; margin-top: 8px; padding: 8px 10px; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
         </div>
-    </div> <!-- Kết thúc thẻ .map-control -->
+    </div>
 
     <!-- ================================================================= -->
     <!-- KHUNG HIỂN THỊ CHÍNH BẢN ĐỒ ĐỊA LÝ TƯƠNG TÁC                        -->
