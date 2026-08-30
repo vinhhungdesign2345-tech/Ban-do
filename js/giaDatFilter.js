@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và map chính xác tuyệt đối từng cột dựa trên giá trị thực tế
+    // Tải dữ liệu và map chính xác tuyệt đối từng cột dựa trên tiêu đề cột và giá trị thực tế
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -47,37 +47,38 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
                     
                     if (Array.isArray(item)) {
+                        // Trường hợp API trả về dạng mảng thuần túy từ cột A đến E
                         phuong = (item[0] || "").toString().trim();
                         duong = (item[1] || "").toString().trim();
                         tu = (item[2] || "").toString().trim();
                         den = (item[3] || "").toString().trim();
                         gia = (item[4] || "").toString().trim();
                     } else if (typeof item === "object" && item !== null) {
-                        // Lấy tất cả các giá trị từ object API trả về theo đúng thứ tự các cột
-                        const vals = Object.values(item).map(v => (v || "").toString().trim());
+                        // Trường hợp API trả về dạng Object theo tên tiêu đề cột trong Sheet
+                        phuong = (item["Phường"] || item["Phuong"] || Object.values(item)[0] || "").toString().trim();
+                        duong = (item["Đường"] || item["Duong"] || item["Tên đường"] || Object.values(item)[1] || "").toString().trim();
+                        tu = (item["Từ"] || item["Tu"] || Object.values(item)[2] || "").toString().trim();
+                        den = (item["Đến"] || item["Den"] || Object.values(item)[3] || "").toString().trim();
                         
-                        // Lọc bỏ phần tử đầu tiên nếu là tiêu đề cột (nếu có)
-                        phuong = vals[0] || "";
-                        duong = vals[1] || "";
-                        tu = vals[2] || "";
+                        // Lấy chuẩn xác cột có tiêu đề là "Giá đất năm 2026" từ Google Sheet
+                        gia = (item["Giá đất năm 2026"] || item["Giá đất"] || item["Gia dat nam 2026"] || item["Gia dat"] || "").toString().trim();
                         
-                        // Xử lý thông minh cho cột Đến (D) và Giá đất (E):
-                        // Giá đất thường là dạng số có dấu chấm/phẩy (ví dụ: 12.600, 3.400) hoặc nằm ở vị trí thứ 4/5
-                        let val3 = vals[3] || "";
-                        let val4 = vals[4] || "";
+                        // Fallback dự phòng thông minh nếu Object không map sẵn tên khóa
+                        if (!gia) {
+                            const vals = Object.values(item).map(v => (v || "").toString().trim());
+                            let val3 = vals[3] || "";
+                            let val4 = vals[4] || "";
 
-                        // Nếu val4 có dạng số giá tiền (chứa số và dấu chấm, hoặc độ dài ngắn, không phải chuỗi mô tả dài)
-                        if (val4 && (/^\d+([.,]\d+)*$/.test(val4) || val4.length <= 8)) {
-                            den = val3;
-                            gia = val4;
-                        } else if (val3 && (/^\d+([.,]\d+)*$/.test(val3) || val3.length <= 8) && !val4) {
-                            // Trường hợp giá đất nằm ở vị trí 3
-                            den = vals.length > 5 ? vals[3] : "";
-                            gia = val3;
-                        } else {
-                            // Mặc định chuẩn cột D là Đến, cột E là Giá
-                            den = val3;
-                            gia = val4;
+                            if (val4 && (/^\d+([.,]\d+)*$/.test(val4) || val4.length <= 8)) {
+                                den = val3;
+                                gia = val4;
+                            } else if (val3 && (/^\d+([.,]\d+)*$/.test(val3) || val3.length <= 8) && !val4) {
+                                den = vals.length > 5 ? vals[3] : "";
+                                gia = val3;
+                            } else {
+                                den = val3;
+                                gia = val4;
+                            }
                         }
                     }
 
