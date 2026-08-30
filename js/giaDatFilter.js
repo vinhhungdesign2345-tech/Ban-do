@@ -1,105 +1,116 @@
 /**
- * Mô-đun: Trích xuất dữ liệu từ sheet "Giá đất", liên kết theo Phường/Xã và Tuyến đường
- * Trả kết quả trực tiếp lên khung panel trên màn hình bản đồ.
+ * Mô-đun: Tra cứu giá đất theo tên đường (Dạng nhập liệu Ctrl+F kết hợp Popup kết quả)
+ * Sử dụng chung URL Google Apps Script: AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
-    const duongSelect = document.getElementById("duongFilter");
+    const duongInput = document.getElementById("duongFilter");
+    const popupList = document.getElementById("duongPopupList");
     const resultPanel = document.getElementById("giaDatResultPanel");
 
     let giaDatRecords = [];
 
-    // Tải và phân tích dữ liệu từ Google Sheet (Hỗ trợ cấu trúc phân tách bằng dấu chấm phẩy ';' như bạn yêu cầu)
+    // Tải dữ liệu từ URL Google Apps Script chung
     async function loadGiaDatFromSheet() {
         try {
-            // Thay đường dẫn CSV của sheet "Giá đất" công khai của bạn vào đây
-            const csvUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec"; 
-            const response = await fetch(csvUrl);
-            const dataText = await response.text();
+            // Sử dụng chung URL Apps Script của bạn (có thể thêm tham số ?sheet=giadat nếu backend phân chia tab)
+            const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
             
-            const lines = dataText.split("\n");
-            giaDatRecords = [];
+            const response = await fetch(apiUrl);
+            const data = await response.json(); // Hoặc .text() tùy thuộc vào định dạng trả về của API (JSON hay Text/CSV)
 
-            // Duyệt qua từng dòng dữ liệu (Bỏ qua dòng tiêu đề đầu tiên)
-            for (let i = 1; i < lines.length; i++) {
-                const cols = lines[i].split(";"); // Phân tách cột chuẩn dấu chấm phẩy ';'
-                if (cols.length >= 4) {
-                    giaDatRecords.push({
-                        phuong: cols[0].trim(), // Cột Phường / Xã
-                        duong: cols[1].trim(),  // Cột Tuyến đường
-                        doan: cols[2].trim(),   // Cột Đoạn đường / Chi tiết
-                        gia: cols[3].trim()     // Cột Mức giá đất
-                    });
-                }
+            // Kiểm tra nếu dữ liệu trả về là mảng JSON chuẩn từ Apps Script
+            if (Array.isArray(data)) {
+                giaDatRecords = data.map(item => ({
+                    phuong: (item.phuong || item.Phuong || "").toString().trim(),
+                    duong: (item.duong || item.Duong || "").toString().trim(),
+                    doan: (item.doan || item.Doan || "").toString().trim(),
+                    gia: (item.gia || item.Gia || "").toString().trim()
+                }));
+            } else {
+                throw new Error("Dữ liệu không phải là mảng JSON hợp lệ");
             }
         } catch (err) {
-            console.warn("Chưa kết nối được sheet trực tiếp, đang sử dụng dữ liệu mẫu dự phòng:", err);
+            console.warn("Không tải được dữ liệu trực tiếp từ API chung, đang sử dụng dữ liệu mẫu dự phòng:", err);
             // Dữ liệu mẫu dự phòng kiểm tra giao diện
             giaDatRecords = [
                 { phuong: "Phường 7", duong: "Hải Thượng Lãn Ông", doan: "Đoạn từ QL1 đến hết tuyến", gia: "3.500.000 đ/m²" },
+                { phuong: "Phường 7", duong: "Hùng Vương", doan: "Toàn tuyến", gia: "5.000.000 đ/m²" },
                 { phuong: "Phường 5", duong: "Phan Ngọc Hiển", doan: "Đoạn từ cầu Phụng Hiệp", gia: "12.000.000 đ/m²" },
                 { phuong: "Xã Hòa Thành", duong: "Tuyến lộ Xà No", doan: "Toàn tuyến", gia: "1.200.000 đ/m²" }
             ];
         }
     }
 
-    // Khởi chạy nạp dữ liệu
     loadGiaDatFromSheet();
 
-    // Sự kiện 1: Khi chọn Phường/Xã -> Mở khóa và lọc danh sách Tuyến đường tương ứng
-    if (phuongSelect && duongSelect) {
+    // 1. Khi chọn Phường/Xã -> Mở khóa ô nhập tên đường
+    if (phuongSelect && duongInput) {
         phuongSelect.addEventListener("change", function () {
             const selectedPhuong = this.value;
-
-            duongSelect.innerHTML = '<option value="">-- Tuyến đường --</option>';
-            duongSelect.disabled = true;
+            duongInput.value = "";
+            duongInput.disabled = !selectedPhuong; // Mở khóa khi đã chọn Phường
+            if (popupList) popupList.style.display = "none";
             if (resultPanel) resultPanel.style.display = "none";
-
-            if (!selectedPhuong) return;
-
-            // Lọc các tuyến đường thuộc đúng Phường/Xã đã chọn từ sheet
-            const matchedRows = giaDatRecords.filter(item => 
-                item.phuong.toLowerCase() === selectedPhuong.toLowerCase()
-            );
-
-            if (matchedRows.length > 0) {
-                duongSelect.disabled = false;
-                // Lọc bỏ các tên đường bị trùng lặp
-                const uniqueRoads = [...new Set(matchedRows.map(item => item.duong))];
-                uniqueRoads.forEach(roadName => {
-                    const opt = document.createElement("option");
-                    opt.value = roadName;
-                    opt.textContent = roadName;
-                    duongSelect.appendChild(opt);
-                });
-            }
         });
 
-        // Sự kiện 2: Khi chọn Tuyến đường -> Hiển thị kết quả giá đất trực tiếp lên bản đồ
-        duongSelect.addEventListener("change", function () {
+        // 2. Khi người dùng gõ vào ô tên đường (Hoạt động như Ctrl + F)
+        duongInput.addEventListener("input", function () {
+            const keyword = this.value.toLowerCase().trim();
             const selectedPhuong = phuongSelect.value;
-            const selectedDuong = this.value;
 
-            if (!selectedDuong || !resultPanel) {
-                resultPanel.style.display = "none";
+            if (!keyword || !selectedPhuong) {
+                popupList.style.display = "none";
                 return;
             }
 
-            // Tìm chính xác dòng bản ghi trong sheet Giá đất
-            const itemFound = giaDatRecords.find(item => 
-                item.phuong.toLowerCase() === selectedPhuong.toLowerCase() && 
-                item.duong.toLowerCase() === selectedDuong.toLowerCase()
+            // Lọc các tuyến đường thuộc đúng Phường đã chọn và khớp từ khóa gõ vào
+            const matchedRows = giaDatRecords.filter(item => 
+                item.phuong.toLowerCase() === selectedPhuong.toLowerCase() &&
+                item.duong.toLowerCase().includes(keyword)
             );
 
-            if (itemFound) {
-                resultPanel.style.display = "block";
-                resultPanel.innerHTML = `
-                    <div style="font-weight: bold; color: #1a73e8; margin-bottom: 2px;">📍 ${itemFound.duong} (${itemFound.phuong})</div>
-                    <div style="color: #555; margin-bottom: 2px;"><b>Đoạn:</b> ${itemFound.doan}</div>
-                    <div style="color: #d9534f; font-weight: bold;"><b>Giá đất:</b> ${itemFound.gia}</div>
-                `;
+            // Hiển thị popup kết quả
+            if (matchedRows.length > 0) {
+                popupList.innerHTML = "";
+                popupList.style.display = "block";
+
+                matchedRows.forEach(row => {
+                    const divItem = document.createElement("div");
+                    divItem.style.padding = "8px 10px";
+                    divItem.style.cursor = "pointer";
+                    divItem.style.borderBottom = "1px solid #eee";
+                    divItem.innerHTML = `<b>${row.duong}</b> <span style="font-size: 11px; color: #666;">(${row.doan})</span>`;
+
+                    // Hiệu ứng hover chuột
+                    divItem.addEventListener("mouseenter", () => divItem.style.backgroundColor = "#f1f3f4");
+                    divItem.addEventListener("mouseleave", () => divItem.style.backgroundColor = "#fff");
+
+                    // Khi người dùng bấm chọn một đường từ popup danh sách
+                    divItem.addEventListener("click", function () {
+                        duongInput.value = row.duong; // Điền tên đường vào ô input
+                        popupList.style.display = "none"; // Ẩn popup đi
+
+                        // Hiển thị kết quả giá đất chi tiết vào panel
+                        resultPanel.style.display = "block";
+                        resultPanel.innerHTML = `
+                            <div style="font-weight: bold; color: #1a73e8; margin-bottom: 2px;">📍 ${row.duong} (${row.phuong})</div>
+                            <div style="color: #555; margin-bottom: 2px;"><b>Đoạn:</b> ${row.doan}</div>
+                            <div style="color: #d9534f; font-weight: bold;"><b>Giá đất:</b> ${row.gia}</div>
+                        `;
+                    });
+
+                    popupList.appendChild(divItem);
+                });
             } else {
-                resultPanel.style.display = "none";
+                popupList.style.display = "none";
+            }
+        });
+
+        // Ẩn popup khi click ra vùng ngoài màn hình
+        document.addEventListener("click", function (e) {
+            if (!duongInput.contains(e.target) && !popupList.contains(e.target)) {
+                popupList.style.display = "none";
             }
         });
     }
