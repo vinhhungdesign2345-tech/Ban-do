@@ -51,17 +51,62 @@
                 </select>
             </div>
 
-            <!-- Ô nhập tên đường tra cứu giá đất kết hợp nút bấm tìm kiếm -->
+            <!-- ================================================================= -->
+            <!-- KHUNG CHỨA TÌM KIẾM TÊN ĐƯỜNG VÀ NÚT BẤM (CẤP ĐỘ KHỐI FILTER-ITEM)     -->
+            <!-- ================================================================= -->
             <div class="filter-item" style="position: relative;">
-                <div style="display: flex; gap: 4px; width: 100%;">
-                    <input type="text" id="duongFilter" placeholder="Nhập tên đường tra cứu giá đất..." disabled style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
-                    <button id="searchDuongBtn" disabled style="padding: 8px 12px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">🔍</button>
-                </div>
     
-                <!-- Popup nổi liệt kê kết quả tìm kiếm tuyến đường -->
-                <div id="duongPopupList" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 2px;">
-                </div>
-            </div>
+            <!-- Khung chứa bên trong thiết lập bố cục dạng Flexbox (Nằm ngang cạnh nhau) -->
+            <div style="display: flex; gap: 4px; width: 100%;">
+        
+                <!-- Ô NHẬP TÊN ĐƯỜNG (INPUT) -->
+                <input type="text" 
+               id="duongFilter"                          <!-- ID dùng để định danh trong JavaScript để bắt sự kiện gõ phím và nhập liệu -->
+               placeholder="Nhập tên đường tra cứu giá đất..." <!-- Văn bản gợi ý mờ hiển thị bên trong ô khi chưa nhập -->
+               disabled                                  <!-- Trạng thái ban đầu: Bị khóa (màu xám), chỉ mở khóa khi người dùng đã chọn Phường/Xã -->
+               style="flex: 1;                           <!-- Tự động co giãn chiếm toàn bộ khoảng trống còn lại của hàng ngang -->
+                      padding: 8px;                      <!-- Khoảng đệm bên trong ô nhập liệu giúp chữ không bị sát mép -->
+                      border: 1px solid #ccc;            <!-- Viền khung màu xám nhạt -->
+                      border-radius: 4px;                <!-- Bo tròn 4 góc khung nhập -->
+                      box-sizing: border-box;"           <!-- Đảm bảo kích thước tính gồm cả padding và border để không bị tràn khung -->
+                    />
+
+            <!-- NÚT BẤM KÍCH HOẠT TÌM KIẾM (BUTTON) -->
+            <button id="searchDuongBtn"                     <!-- ID dùng để JavaScript bắt sự kiện click thực hiện tìm kiếm tuyến đường -->
+                disabled                                <!-- Trạng thái ban đầu: Bị khóa đồng bộ theo ô nhập tên đường -->
+                style="padding: 8px 12px;               <!-- Khoảng đệm bên trong nút (trên dưới 8px, trái phải 12px) -->
+                       background-color: #1a73e8;        <!-- Màu nền chủ đạo của nút (Xanh dương tiêu chuẩn) -->
+                       color: white;                     <!-- Màu của biểu tượng kính lúp bên trong là màu trắng -->
+                       border: none;                     <!-- Không hiển thị đường viền mặc định của trình duyệt -->
+                       border-radius: 4px;               <!-- Bo tròn 4 góc nút bấm -->
+                       cursor: pointer;                  <!-- Đổi con trỏ chuột thành hình bàn tay khi rê vào -->
+                       font-weight: bold;                <!-- Định dạng chữ đậm -->
+                       white-space: nowrap;"             <!-- Ngăn không cho biểu tượng xuống hàng ngang -->
+        >
+            🔍 <!-- Biểu tượng kính lúp hiển thị trên nút bấm tìm kiếm -->
+        </button>
+    </div>
+
+            <!-- ================================================================= -->
+            <!-- KHUNG POPUP NỔI HIỂN THỊ DANH SÁCH GỢI Ý KHI GÕ TỪ KHÓA TRONG Ô     -->
+            <!-- ================================================================= -->
+            <div id="duongPopupList"                             <!-- ID dùng để JavaScript nạp danh sách gợi ý tuyến đường khi người dùng gõ chữ -->
+         style="display: none;                           <!-- Trạng thái ban đầu ẩn đi, chỉ hiện khi có từ khóa khớp dữ liệu -->
+                position: absolute;                      <!-- Định vị tuyệt đối nằm chồng lên các thành phần khác phía dưới -->
+                top: 100%;                               <!-- Đặt ngay phía dưới đáy của khung cha chứa ô input -->
+                left: 0;                                 <!-- Canh lề trái bằng đúng mép khung nhập -->
+                right: 0;                                <!-- Canh lề phải bằng đúng mép khung nhập -->
+                background: #ffffff;                     <!-- Màu nền popup là màu trắng -->
+                border: 1px solid #ccc;                  <!-- Đường viền khung bao quanh màu xám nhạt -->
+                border-radius: 4px;                      <!-- Bo tròn góc khung popup -->
+                max-height: 200px;                       <!-- Chiều cao tối đa của popup, nếu danh sách dài sẽ tự sinh thanh cuộn -->
+                overflow-y: auto;                        <!-- Tự động bật thanh cuộn dọc (scroll) khi vượt quá chiều cao tối đa -->
+                z-index: 1000;                           <!-- Đảm bảo khung popup nổi lên lớp trên cùng, không bị bản đồ đè khuất -->
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);   <!-- Hiệu ứng đổ bóng mờ giúp popup nổi bật có chiều sâu -->
+                margin-top: 2px;"                        <!-- Khoảng cách hở nhẹ phía dưới ô nhập liệu -->
+    >
+    </div>
+</div>
 
         </div> <!-- Kết thúc thẻ .filter-row -->
 
