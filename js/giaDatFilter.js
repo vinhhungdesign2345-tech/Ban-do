@@ -1,5 +1,5 @@
 /**
- * Mô-đun: Tra cứu giá đất theo tên đường (Liệt kê đủ 4 cột: Đường, Từ, Đến, Giá đất)
+ * Mô-đun: Tra cứu giá đất theo tên đường (Liệt kê chuẩn xác 5 cột từ Google Apps Script)
  */
 document.addEventListener("DOMContentLoaded", function () {
     const phuongSelect = document.getElementById("phuongFilter");
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Tải dữ liệu và map chính xác tuyệt đối các cột từ Sheet theo thứ tự A, B, C, D, E
+    // Tải dữ liệu và ánh xạ mảng trả về từ Google Apps Script (Index 0 đến 4)
     async function loadGiaDatFromSheet() {
         try {
             const apiUrl = "https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec?sheet=giadat";
@@ -47,19 +47,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     let phuong = "", duong = "", tu = "", den = "", gia = "";
                     
                     if (Array.isArray(item)) {
+                        // Ánh xạ trực tiếp từ mảng 5 cột do GAS trả về: [Phường, Đường, Từ, Đến, Giá đất 2026]
                         phuong = (item[0] || "").toString().trim();
-                        duong = (item[1] || "").toString().trim();
-                        tu = (item[2] || "").toString().trim();
-                        den = (item[3] || "").toString().trim();
-                        gia = (item[4] || "").toString().trim();
+                        duong =  (item[1] || "").toString().trim();
+                        tu =     (item[2] || "").toString().trim();
+                        den =    (item[3] || "").toString().trim();
+                        gia =    (item[4] || "").toString().trim();
                     } else if (typeof item === "object" && item !== null) {
-                        // Lấy chuẩn theo thứ tự các cột A, B, C, D, E từ Sheet
+                        // Fallback an toàn nếu dữ liệu trả về dạng object
                         const vals = Object.values(item);
                         phuong = (vals[0] || item.phuong || item.Phuong || "").toString().trim();
-                        duong = (vals[1] || item.duong || item.Duong || "").toString().trim();
-                        tu = (vals[2] || item.tu || item.Tu || "").toString().trim();
-                        den = (vals[3] || item.den || item.Den || "").toString().trim();
-                        gia = (vals[4] || item.gia || item.Gia || "").toString().trim();
+                        duong =  (vals[1] || item.duong || item.Duong || "").toString().trim();
+                        tu =     (vals[2] || item.tu || item.Tu || "").toString().trim();
+                        den =    (vals[3] || item.den || item.Den || "").toString().trim();
+                        gia =    (vals[4] || item.gia || item.Gia || "").toString().trim();
                     }
 
                     return { phuong, duong, tu, den, gia };
@@ -80,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loadGiaDatFromSheet();
 
-    // Thực hiện tìm kiếm và hiển thị dạng 4 cột chi tiết
+    // Thực hiện tìm kiếm và hiển thị chi tiết
     function thucHienTimKiemDuong() {
         const keywordClean = removeDiacritics(duongInput.value);
         const selectedPhuongClean = removeDiacritics(phuongSelect.value);
@@ -98,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Lọc thông minh: Phường khớp VÀ từ khóa xuất hiện ở BẤT KỲ cột nào (Tên đường, Từ, hoặc Đến)
+        // Lọc thông minh: Phường khớp VÀ từ khóa xuất hiện ở Tên đường, Từ, hoặc Đến
         const matchedRows = giaDatRecords.filter(item => {
             const itemPhuongClean = removeDiacritics(item.phuong);
             const itemDuongClean = removeDiacritics(item.duong);
