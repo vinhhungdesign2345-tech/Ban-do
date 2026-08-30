@@ -51,7 +51,7 @@
                 </select>
             </div>
 
-            <!-- Dropdown 3: Danh sách lựa chọn Tuyến đường (Mặc định bị khóa 'disabled' cho tới khi chọn Phường/Xã) -->
+            <!-- Dropdown 3: Danh sách lựa chọn Tuyến đường lấy dữ liệu trực tiếp từ sheet Giá đất (Mặc định bị khóa cho tới khi chọn Phường/Xã) -->
             <div class="filter-item">
                 <select id="duongFilter" disabled>
                     <option value="">-- Tuyến đường --</option>
@@ -87,39 +87,39 @@
         
         <!-- Nút bấm chuyển đổi qua lại giữa lớp bản đồ vệ tinh và bản đồ đường nét OSM -->
         <button id="toggleLayerBtn" style="
-            padding: 6px 8px;                     /* Khoảng cách đệm bên trong nút */
-            height: 30px;                         /* Cố định chiều cao đồng bộ chuẩn tuyệt đối */
-            background-color: #ffffff;            /* Màu nền trắng */
-            color: #333;                          /* Màu chữ xám đậm */
-            border: 1px solid #ccc;               /* Viền xám nhạt */
-            border-radius: 4px;                   /* Bo tròn góc 4px */
-            cursor: pointer;                      /* Hiển thị con trỏ dạng bàn tay khi di chuột vào */
-            font-weight: bold;                    /* Chữ in đậm */
-            font-size: 13px;                      /* Cỡ chữ 13px */
+            padding: 6px 8px;                      /* Khoảng cách đệm bên trong nút */
+            height: 30px;                          /* Cố định chiều cao đồng bộ chuẩn tuyệt đối */
+            background-color: #ffffff;             /* Màu nền trắng */
+            color: #333;                           /* Màu chữ xám đậm */
+            border: 1px solid #ccc;                /* Viền xám nhạt */
+            border-radius: 4px;                    /* Bo tròn góc 4px */
+            cursor: pointer;                       /* Hiển thị con trỏ dạng bàn tay khi di chuột vào */
+            font-weight: bold;                     /* Chữ in đậm */
+            font-size: 13px;                       /* Cỡ chữ 13px */
             box-shadow: 0 1px 4px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng nhẹ nổi lên trên bản đồ */
-            box-sizing: border-box;               /* Tính kích thước bao gồm cả viền và padding */
-            white-space: nowrap;                  /* Không cho phép chữ tự động xuống dòng */
+            box-sizing: border-box;                /* Tính kích thước bao gồm cả viền và padding */
+            white-space: nowrap;                   /* Không cho phép chữ tự động xuống dòng */
         ">
             Chuyển sang Bản đồ OSM
         </button>
         
         <!-- 📏 Nút bấm kích hoạt tính năng đo khoảng cách và diện tích vùng khép kín -->
         <button id="measureDistBtn" style="
-            padding: 6px 8px;                     /* Khoảng cách đệm bên trong nút */
-            height: 30px;                         /* Cố định chiều cao đồng bộ chuẩn tuyệt đối bằng nút bên cạnh */
-            background-color: #ffffff;            /* Màu nền trắng */
-            color: #333;                          /* Màu chữ xám đậm */
-            border: 1px solid #ccc;               /* Viền xám nhạt */
-            border-radius: 4px;                   /* Bo tròn góc 4px */
-            cursor: pointer;                      /* Hiển thị con trỏ dạng bàn tay khi di chuột vào */
-            font-weight: bold;                    /* Chữ in đậm */
-            font-size: 13px;                      /* Cỡ chữ 13px */
+            padding: 6px 8px;                      /* Khoảng cách đệm bên trong nút */
+            height: 30px;                          /* Cố định chiều cao đồng bộ chuẩn tuyệt đối bằng nút bên cạnh */
+            background-color: #ffffff;             /* Màu nền trắng */
+            color: #333;                           /* Màu chữ xám đậm */
+            border: 1px solid #ccc;                /* Viền xám nhạt */
+            border-radius: 4px;                    /* Bo tròn góc 4px */
+            cursor: pointer;                       /* Hiển thị con trỏ dạng bàn tay khi di chuột vào */
+            font-weight: bold;                     /* Chữ in đậm */
+            font-size: 13px;                       /* Cỡ chữ 13px */
             box-shadow: 0 1px 4px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng nhẹ */
-            box-sizing: border-box;               /* Tính kích thước bao gồm cả viền và padding */
-            white-space: nowrap;                  /* Không cho phép chữ tự động xuống dòng */
-            display: flex;                        /* Sử dụng Flexbox để căn chỉnh biểu tượng và chữ thẳng hàng */
-            align-items: center;                  /* Căn giữa theo chiều dọc */
-            gap: 4px;                             /* Khoảng cách giữa icon cây thước và chữ là 4px */
+            box-sizing: border-box;                /* Tính kích thước bao gồm cả viền và padding */
+            white-space: nowrap;                   /* Không cho phép chữ tự động xuống dòng */
+            display: flex;                         /* Sử dụng Flexbox để căn chỉnh biểu tượng và chữ thẳng hàng */
+            align-items: center;                   /* Căn giữa theo chiều dọc */
+            gap: 4px;                              /* Khoảng cách giữa icon cây thước và chữ là 4px */
         ">
             📏 Đo khoảng cách
         </button>
@@ -148,7 +148,7 @@
     <!-- 4. Tệp xử lý bộ lọc ranh giới hành chính Tỉnh / Phường / Xã -->
     <script src="js/province.js"></script>
     
-    <!-- 4.1. Tệp mô-đun mới xử lý logic chọn Phường -> Chọn Đường tra cứu giá đất -->
+    <!-- 4.1. Tệp mô-đun đọc dữ liệu từ sheet "Giá đất" và điều khiển chọn Phường -> Chọn Tuyến đường -->
     <script src="js/giaDatFilter.js"></script>
     
     <!-- 5. Tệp xử lý tính năng tìm kiếm thửa đất theo từ khóa -->
