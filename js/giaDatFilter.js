@@ -43,14 +43,35 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
 
             if (Array.isArray(data)) {
-                giaDatRecords = data.map(item => ({
-                    phuong: (item.phuong || item.Phuong || "").toString().trim(),
-                    // Ánh xạ chuẩn 4 cột theo thứ tự trong Sheet: Đường (C), Từ (D), Đến (E), Giá (F)
-                    duong: (item.duong || item.Duong || item.duongtuyenlohk || "").toString().trim(),
-                    tu: (item.tu || item.Tu || item.doan || item.Doan || "").toString().trim(),
-                    den: (item.den || item.Den || "").toString().trim(),
-                    gia: (item.gia || item.Gia || "").toString().trim()
-                }));
+                giaDatRecords = data.map(item => {
+                    let phuong = "", duong = "", tu = "", den = "", gia = "";
+                    
+                    if (Array.isArray(item)) {
+                        phuong = (item[1] || item[0] || "").toString().trim();
+                        duong = (item[2] || item[3] || "").toString().trim();
+                        tu = (item[3] || item[4] || "").toString().trim();
+                        den = (item[4] || item[5] || "").toString().trim();
+                        gia = (item[5] || item[6] || "").toString().trim();
+                    } else if (typeof item === "object" && item !== null) {
+                        phuong = (item.phuong || item.Phuong || "").toString().trim();
+                        duong = (item.duong || item.Duong || item.duongtuyenlohk || "").toString().trim();
+                        tu = (item.tu || item.Tu || item.doan || item.Doan || "").toString().trim();
+                        
+                        let rawDen = (item.den || item.Den || "").toString().trim();
+                        let rawGia = (item.gia || item.Gia || "").toString().trim();
+
+                        // Đưa nội dung mô tả vị trí từ cột E (nếu đang nằm nhầm ở trường gia) về đúng hàng Đến
+                        if (!rawDen && rawGia && (rawGia.includes("Kênh") || rawGia.includes("Hết") || rawGia.includes("Cầu") || rawGia.includes("ranh") || rawGia.length > 8)) {
+                            den = rawGia;
+                            gia = "";
+                        } else {
+                            den = rawDen;
+                            gia = rawGia;
+                        }
+                    }
+
+                    return { phuong, duong, tu, den, gia };
+                });
             } else {
                 throw new Error("Dữ liệu không phải mảng JSON hợp lệ");
             }
