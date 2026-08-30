@@ -51,9 +51,12 @@
                 </select>
             </div>
 
-            <!-- Ô nhập tên đường tra cứu giá đất (Hoạt động như Ctrl+F) -->
+            <!-- Ô nhập tên đường tra cứu giá đất kết hợp nút bấm tìm kiếm -->
             <div class="filter-item" style="position: relative;">
-                <input type="text" id="duongFilter" placeholder="Nhập tên đường tra cứu giá đất..." disabled style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="duongFilter" placeholder="Nhập tên đường tra cứu giá đất..." disabled style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;" />
+                    <button id="searchDuongBtn" disabled style="padding: 8px 14px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">🔍</button>
+                </div>
     
                 <!-- Popup nổi liệt kê kết quả tìm kiếm tuyến đường -->
                 <div id="duongPopupList" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #ffffff; border: 1px solid #ccc; border-radius: 4px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 2px;">
