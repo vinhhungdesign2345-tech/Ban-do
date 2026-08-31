@@ -193,14 +193,14 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
                 <div><b>Loại đất:</b> ${loaiDat}</div>
                 <div style="grid-column: span 2;"><b>Tên chủ:</b> ${tenChu}</div>
                 <div><b>Số định danh:</b> ${soDinhDanh}</div>
-                <div><b>Cột N:</b> ${columnNLinkHTML}</div>
+                <div><b>Ghi chú:</b> ${columnNLinkHTML}</div>
             `;
             
             const panelContentEl = document.getElementById('panel-content');
             if (panelContentEl) panelContentEl.innerHTML = panelContent;
         }
 
-        alert('Đã cập nhật dữ liệu cột N thành công vào Google Sheet!');
+        alert('Đã cập nhật Ghi chú thành công vào GG Sheet!');
     };
 }
 
@@ -763,7 +763,7 @@ function initMap() {
                 <div><b>Loại đất:</b> ${loaiDat}</div>
                 <div style="grid-column: span 2;"><b>Tên chủ:</b> ${tenChu}</div>
                 <div><b>Số định danh:</b> ${soDinhDanh}</div>
-                <div><b>Cột N:</b> ${columnNLinkHTML}</div>
+                <div><b>Ghi chú:</b> ${columnNLinkHTML}</div>
             `;
 
             const panelContentEl = document.getElementById('panel-content');
