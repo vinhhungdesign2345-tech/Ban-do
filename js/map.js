@@ -115,7 +115,7 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
         document.body.appendChild(popupContainer);
     }
 
-    // Ở chế độ 'view' bây giờ chúng ta cho phép chỉnh sửa nội dung cũ luôn
+    // Ở chế độ 'view' có thể chỉnh sửa nội dung
     const isViewMode = mode === 'view';
     
     popupContainer.innerHTML = `
