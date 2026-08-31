@@ -83,9 +83,16 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
         popupContainer = document.createElement('div');
         popupContainer.id = 'column-n-popup-modal';
         popupContainer.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5); display: flex; align-items: center;
-            justify-content: center; z-index: 9999;
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); 
+            display: flex; 
+            align-items: center;
+            justify-content: center; 
+            z-index: 9999;
         `;
         document.body.appendChild(popupContainer);
     }
@@ -116,14 +123,49 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
         popupContainer.style.display = 'none';
     };
 
-    // Xử lý sự kiện lưu (nếu ở chế độ nhập)
+    // Xử lý sự kiện lưu (ở chế độ nhập) kết hợp gọi API Google Apps Script
     if (!isViewMode) {
         document.getElementById('popup-save-btn').onclick = () => {
             const val = document.getElementById('popup-n-content').value;
-            // Thực hiện lưu dữ liệu tại đây (gửi API hoặc cập nhật state)
-            console.log(`Đã lưu dữ liệu cho thửa ${parcelId}:`, val);
-            alert('Đã cập nhật dữ liệu cột N thành công!');
-            popupContainer.style.display = 'none';
+            
+            // 1. Cập nhật ngay vào bộ nhớ tạm để UI phản hồi
+            if (window._currentParcelRawProps) {
+                window._currentParcelRawProps['Cột N'] = val;
+            }
+
+            const saveBtn = document.getElementById('popup-save-btn');
+            saveBtn.innerText = 'Đang lưu...';
+            saveBtn.disabled = true;
+
+            // 2. Gửi request POST đến Web App URL của Google Apps Script
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec'; // Thay link Web App của bạn vào đây
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Sử dụng no-cors để tương thích với Google Apps Script Web App
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update_column_n',
+                    id_thua_dat: parcelId,
+                    ghi_chu: val
+                })
+            })
+            .then(() => {
+                // Do chế độ no-cors, tiến hành ẩn popup và cập nhật lại giao diện
+                popupContainer.style.display = 'none';
+
+                if (window.selectedThuaDatId === parcelId && window._currentParcelRawProps) {
+                    renderParcelPanel(window._currentParcelRawProps, parcelId);
+                }
+
+                alert('Đã cập nhật dữ liệu cột N thành công vào Google Sheet!');
+            })
+            .catch((error) => {
+                console.error("Lỗi khi lưu:", error);
+                alert('Có lỗi xảy ra khi lưu vào sheet!');
+                saveBtn.innerText = 'Lưu lại';
+                saveBtn.disabled = false;
+            });
         };
     }
 }
@@ -376,10 +418,10 @@ function resetMeasure(map) {
 // --- HÀM KHỞI TẠO VÀ CẤU HÌNH TOÀN BỘ BẢN ĐỒ ---
 function initMap() {
     const map = new maplibregl.Map({
-        container: 'map',                    
-        style: CONFIG.MAP_STYLE,             
-        center: CONFIG.MAP_CENTER,           
-        zoom: CONFIG.MAP_ZOOM                
+        container: 'map',                        
+        style: CONFIG.MAP_STYLE,                 
+        center: CONFIG.MAP_CENTER,               
+        zoom: CONFIG.MAP_ZOOM                    
     });
 
     window.currentMapInstance = map;
@@ -390,8 +432,8 @@ function initMap() {
             maximumAge: 0,                     
             timeout: 20000                     
         },
-        trackUserLocation: true,             
-        showUserHeading: true                
+        trackUserLocation: true,               
+        showUserHeading: true                  
     });
     
     map.addControl(geolocate, 'top-right');
@@ -552,8 +594,11 @@ function initMap() {
             if (!e.features || !e.features.length) return;
             isFeatureClicked = true; 
 
-            const selectedFeature = e.features[0];       
+            const selectedFeature = e.features[0];        
             const rawProps = selectedFeature.properties || {}; 
+
+            // Lưu trực tiếp vào biến toàn cục để phục vụ cập nhật UI
+            window._currentParcelRawProps = rawProps;
 
             const parcelId = rawProps['ID Thửa Đất'] || rawProps['id'] || '';
             window.selectedThuaDatId = parcelId;
@@ -565,6 +610,7 @@ function initMap() {
                     const lineSegments = turf.lineSegment(selectedFeature);
                     const dimensionFeatures = [];
 
+                    // Đã sửa lỗi: lineSegments.features thay vì lineSegments.features.features
                     lineSegments.features.forEach(segment => {
                         const lengthMeters = turf.length(segment, { units: 'meters' });
                         
@@ -590,7 +636,7 @@ function initMap() {
                             element: el,
                             anchor: 'center'
                         })
-                        .setLngLat(midCoord)            
+                        .setLngLat(midCoord)          
                         .addTo(map);                    
 
                         activeMarkers.push(marker); 
@@ -629,11 +675,9 @@ function initMap() {
             let columnNLinkHTML = '';
 
             if (columnNValue && columnNValue.trim() !== '' && columnNValue !== 'Không có') {
-                // Trường hợp có nội dung -> Hiển thị link "xem"
                 window[`_viewColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'view', columnNValue);
                 columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._viewColN_${parcelId}();" style="color: #007bff; text-decoration: underline; font-weight: bold;">xem</a>`;
             } else {
-                // Trường hợp không có nội dung -> Hiển thị link "nhập"
                 window[`_inputColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'input', '');
                 columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._inputColN_${parcelId}();" style="color: #d93025; text-decoration: underline; font-weight: bold;">nhập</a>`;
             }
