@@ -24,7 +24,7 @@ body {
 /* Đảm bảo khung chứa các lớp Symbol (chữ nhãn kích thước) luôn hiển thị ưu tiên không bị che lấp */
 .maplibregl-marker, 
 .maplibregl-popup {
-    z-index: 50;                   /* Đặt mức ưu tiên hiển thị cao hơn các lớp mảng nền */
+    z-index: 50;                   /* Đặt mức ưu tiên hiển thị cao hơn các lớp nền */
 }
 
 /* --- NÚT CHUYỂN ĐỔI LỚP BẢN ĐỒ --- */
@@ -32,7 +32,7 @@ body {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
     bottom: 20px;                  /* Cách mép dưới khung bản đồ một khoảng 20 pixel */
     left: 10px;                    /* Cách mép trái khung bản đồ một khoảng 10 pixel */
-    z-index: 10000;                  /* Mức độ ưu tiên hiển thị lớp, nằm trên bản đồ */
+    z-index: 1000;                  /* Mức độ ưu tiên hiển thị lớp, nằm trên bản đồ */
 }
 
 #toggleLayerBtn {
@@ -212,7 +212,7 @@ input {
     bottom: 20px;                  /* Cách mép dưới màn hình 20 pixel */
     left: 50%;                     /* Đặt điểm căn lề trái ở chính giữa màn hình (50%) */
     transform: translateX(-50%);   /* Dịch chuyển ngược lại 50% bề ngang để khung được căn giữa tuyệt đối */
-    z-index: 1000;                 /* Độ ưu tiên hiển thị rất cao, nổi lên trên mọi thành phần giao diện khác */
+    z-index: 10000;                 /* Độ ưu tiên hiển thị rất cao, nổi lên trên mọi thành phần giao diện khác */
     background: rgba(255, 255, 255, 0.95); /* Màu nền trắng trong suốt 95% */
     backdrop-filter: blur(10px);   /* Làm mờ các chi tiết hiển thị phía sau khung thông tin */
     -webkit-backdrop-filter: blur(10px); /* Hỗ trợ hiệu ứng làm mờ cho trình duyệt Safari */
