@@ -24,24 +24,23 @@ body {
 /* Đảm bảo khung chứa các lớp Symbol (chữ nhãn kích thước) luôn hiển thị ưu tiên không bị che lấp */
 .maplibregl-marker, 
 .maplibregl-popup {
-    z-index: 50;                   /* Đặt mức ưu tiên hiển thị cao hơn các lớp nền */
+    z-index: 50;                   /* Đặt mức hiển thị cao hơn các lớp nền */
 }
 
 /* --- NÚT CHUYỂN ĐỔI LỚP BẢN ĐỒ --- */
 .map-layer-control {
-    position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
-    bottom: 20px;                  /* Cách mép dưới khung bản đồ một khoảng 20 pixel */
-    left: 10px;                    /* Cách mép trái khung bản đồ một khoảng 10 pixel */
-    z-index: 1000;                  /* Mức độ ưu tiên hiển thị lớp, nằm trên bản đồ */
+    position: absolute;            /* Đặt vị trí nổi lên trên bản đồ */
+    bottom: 20px;                  /* Cách mép dưới khung bản đồ 20 pixel */
+    left: 10px;                    /* Cách mép trái khung bản đồ 10 pixel */
+    z-index: 1000;                 /* Mức độ ưu tiên hiển thị lớp, nằm trên bản đồ */
 }
-
-#toggleLayerBtn {
+    #toggleLayerBtn {
     padding: 7px 7px;              /* Khoảng đệm bên trong: trên dưới 7px, trái phải 7px */
-    background: white;             /* Màu nền mặc định của nút là màu trắng */
+    background: white;             /* Màu nền của nút là màu trắng */
     border: 1px solid #ccc;        /* Viền bo xung quanh nút màu xám nhạt */
     cursor: pointer;               /* Hiển thị con trỏ chuột khi rê vào nút */
     border-radius: 6px;            /* Bo tròn 4 góc của nút với bán kính 6 pixel */
-    font-size: 11px;               /* Kích thước chữ hiển thị trong nút là 11px */
+    font-size: 11px;               /* Cỡ chữ hiển thị trong nút là 11px */
     font-weight: bold;             /* Định dạng chữ in đậm */
     color: #333;                   /* Màu chữ bên trong nút là màu xám đậm (#333) */
     transition: background-color 0.2s ease, border-color 0.2s ease; /* Hiệu ứng chuyển màu mượt mà trong 0.2 giây */
@@ -89,7 +88,7 @@ body {
     box-sizing: border-box;        /* Bao gồm padding vào tổng kích thước width */
 }
 
-/* Ẩn hoàn toàn thẻ nhãn chứa chữ và con số độ mờ nếu có */
+/* Ẩn hoàn toàn nhãn chứa chữ và con số độ mờ nếu có */
 #opacity-control-panel label {
     display: none !important;      
 }
@@ -97,22 +96,22 @@ body {
 #opacity-control-panel input[type="range"] {
     writing-mode: vertical-lr;     /* Biến thanh trượt range thành dạng dọc */
     direction: rtl;                /* Đảo chiều: kéo lên trên là tăng giá trị, kéo xuống là giảm */
-    width: 16px;                   /* Bề ngang thanh trượt nhỏ gọn */
-    height: 70px;                  /* Chiều dài thanh trượt vừa vặn */
+    width: 16px;                   /* Chiều ngang thanh trượt */
+    height: 70px;                  /* Chiều dài thanh trượt */
     cursor: default !important;    /* Giữ nguyên con trỏ chuột mặc định */
     margin: 0;                     /* Loại bỏ khoảng cách thừa */
 }
 
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 .maplibregl-ctrl-top-right {
-    top: 85px !important;          /* Đặt vị trí nằm ngay phía dưới thanh trượt độ mờ ở góc trên phải */
-    right: 10px !important;        /* Căn lề phải bằng với thanh trượt độ mờ ở trên */
+    top: 85px !important;          /* Vị trí cách cạnh trên 85px */
+    right: 10px !important;        /* Vị trí cách cạnh phải 10px */
 }
 
 /* Đồng bộ kích thước khung chứa nút điều khiển của MapLibre để thẳng hàng và cùng chiều rộng chuẩn 34px */
 .maplibregl-ctrl-top-right .maplibregl-ctrl {
     margin-right: 0 !important;
-    width: 34px !important;        /* Ép chiều rộng bằng với khối thanh trượt độ mờ */
+    width: 34px !important;        /* Chiều rộng bằng với khối thanh trượt độ mờ 34px */
     box-sizing: border-box !important;
     border-radius: 8px !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18) !important;
@@ -143,8 +142,8 @@ body {
     padding: 6px 8px;              /* Khoảng đệm bên trong: trên dưới 6px, trái phải 8px */
     border: 1px solid #d0d0d0;     /* Viền khung nhập liệu màu xám nhạt */
     border-radius: 6px;            /* Bo tròn 4 góc ô nhập liệu với bán kính 6px */
-    font-size: 12px;               /* Cỡ chữ bên trong ô nhập là 12px */
-    height: 34px;                  /* Cố định chiều cao của ô nhập liệu là 34 pixel */
+    font-size: 12px;               /* Cỡ chữ ô nhập liệu là 12px */
+    height: 34px;                  /* Chiều cao ô nhập liệu là 34 pixel */
     box-sizing: border-box;        /* Bao gồm padding và border vào tổng kích thước chiều cao/rộng */
     outline: none;                 /* Loại bỏ viền sáng mặc định của trình duyệt khi focus vào ô */
     background-color: #fff;        /* Màu nền bên trong ô nhập là màu trắng */
@@ -209,8 +208,8 @@ input {
 /* --- KHUNG THÔNG TIN THỬA ĐẤT DƯỚI MÀN HÌNH (PC) --- */
 .parcel-panel {
     position: fixed;               /* Đặt vị trí cố định trên màn hình, không bị trôi theo trang */
-    bottom: 20px;                  /* Cách mép dưới màn hình 20 pixel */
-    left: 50%;                     /* Đặt điểm căn lề trái ở chính giữa màn hình (50%) */
+    bottom: 20px;                  /* Cách cạnh dưới 20 pixel */
+    left: 50%;                     /* Điểm căn lề trái ở chính giữa màn hình */
     transform: translateX(-50%);   /* Dịch chuyển ngược lại 50% bề ngang để khung được căn giữa tuyệt đối */
     z-index: 20000;                 /* Độ ưu tiên hiển thị rất cao, nổi lên trên mọi thành phần giao diện khác */
     background: rgba(255, 255, 255, 0.95); /* Màu nền trắng trong suốt 95% */
