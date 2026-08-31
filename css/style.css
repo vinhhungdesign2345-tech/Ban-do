@@ -32,7 +32,7 @@ body {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
     bottom: 20px;                  /* Cách mép dưới khung bản đồ một khoảng 20 pixel */
     left: 10px;                    /* Cách mép trái khung bản đồ một khoảng 10 pixel */
-    z-index: 100;                  /* Mức độ ưu tiên hiển thị lớp, nằm trên bản đồ */
+    z-index: 10000;                  /* Mức độ ưu tiên hiển thị lớp, nằm trên bản đồ */
 }
 
 #toggleLayerBtn {
@@ -75,7 +75,7 @@ body {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
     top: 10px;                     /* Căn chỉnh nằm sát mép trên cùng (cách 10px ngang với cụm tìm kiếm) */
     right: 10px;                   /* Cố định khoảng cách lề phải khớp hoàn hảo với nút định vị */
-    z-index: 1000;                 /* Độ ưu tiên hiển thị cao */
+    z-index: 10000;                 /* Độ ưu tiên hiển thị cao */
     background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt đồng bộ */
     backdrop-filter: blur(10px);   /* Hiệu ứng làm mờ nền */
     -webkit-backdrop-filter: blur(10px);
