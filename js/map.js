@@ -227,7 +227,7 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
                 measureMarkers.push(marker);
             });
 
-            // Ghi diện tích trực tiếp lên vùng đang chọn (Đã bỏ hẳn chữ S, chỉ còn số và m²)
+            // Ghi diện tích trực tiếp lên vùng đang chọn
             if (measureCoordinates.length >= 3) {
                 try {
                     const closedCoords = [...measureCoordinates];
@@ -261,7 +261,7 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
 
                     measureMarkers.push(areaMarker);
 
-                    // Hiển thị thêm độ dài tổng (chu vi) ngay bên cạnh ĐIỂM CUỐI CÙNG
+                    // Hiển thị thêm độ dài tổng (chu vi) ngay bên cạnh điểm cuối cùng
                     const lastPointCoord = measureCoordinates[measureCoordinates.length - 1];
                     const perimeterText = totalPerimeter >= 1000 ? `Chu vi: ${(totalPerimeter / 1000).toFixed(2)} km` : `Chu vi: ${totalPerimeter.toFixed(1)} m`;
 
@@ -280,7 +280,7 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
                     const perimMarker = new maplibregl.Marker({ 
                         element: perimEl, 
                         anchor: 'bottom-left', 
-                        offset: [15, -15] // Đặt lệch sang bên cạnh điểm cuối cùng
+                        offset: [15, -15] 
                     })
                     .setLngLat(lastPointCoord)
                     .addTo(map);
@@ -325,13 +325,24 @@ function resetMeasure(map) {
     }
 }
 
+// --- HÀM XỬ LÝ SỰ KIỆN KHI BẤM NÚT XEM HOẶC NHẬP CỘT N ---
+window.handleActionN = function(type, parcelId) {
+    if (type === 'xem') {
+        console.log('Xem dữ liệu cột N của thửa:', parcelId);
+        // Thêm logic mở modal / hiển thị nội dung cột N tại đây
+    } else {
+        console.log('Nhập dữ liệu cột N cho thửa:', parcelId);
+        // Thêm logic mở form nhập liệu / Google Sheet tại đây
+    }
+};
+
 // --- HÀM KHỞI TẠO VÀ CẤU HÌNH TOÀN BỘ BẢN ĐỒ ---
 function initMap() {
     const map = new maplibregl.Map({
         container: 'map',                        
-        style: CONFIG.MAP_STYLE,               
+        style: CONFIG.MAP_STYLE,             
         center: CONFIG.MAP_CENTER,             
-        zoom: CONFIG.MAP_ZOOM                  
+        zoom: CONFIG.MAP_ZOOM                     
     });
 
     window.currentMapInstance = map;
@@ -343,7 +354,7 @@ function initMap() {
             maximumAge: 0,                     
             timeout: 20000                     
         },
-        trackUserLocation: true,               
+        trackUserLocation: true,             
         showUserHeading: true                  
     });
     
@@ -524,7 +535,7 @@ function initMap() {
                     const lineSegments = turf.lineSegment(selectedFeature);
                     const dimensionFeatures = [];
 
-                    lineSegments.features.forEach(segment => {
+                    lineSegments.features.features.forEach(segment => {
                         const lengthMeters = turf.length(segment, { units: 'meters' });
                         
                         const formattedLength = lengthMeters >= 10 
@@ -549,8 +560,8 @@ function initMap() {
                             element: el,
                             anchor: 'center'
                         })
-                        .setLngLat(midCoord)           
-                        .addTo(map);                   
+                        .setLngLat(midCoord)            
+                        .addTo(map);                    
 
                         activeMarkers.push(marker); 
                     });
@@ -584,19 +595,29 @@ function initMap() {
             const soDinhDanh = rawProps['Số định danh chủ đất'] || rawProps['Số định danh'] || 'Không có';
             const ghiChu = rawProps['Ghi Chú'] || rawProps['Ghi chú'] || 'Không có';
 
+            // 👉 KIỂM TRA DỮ LIỆU CỘT N (HỖ TRỢ NHIỀU CÁCH ĐẶT TÊN CỘT KHÁC NHAU)
+            const rawColN = rawProps['Cột N'] || rawProps['cot_n'] || rawProps['N'] || '';
+            const hasDataN = rawColN !== null && rawColN !== undefined && String(rawColN).trim() !== '' && String(rawColN).trim() !== '-';
+
+            // 👉 SINH THẺ BẤM "XEM" (NẾU CÓ DỮ LIỆU) HOẶC "NHẬP" (NẾU TRỐNG)
+            const actionButtonHtml = hasDataN 
+                ? `<button onclick="handleActionN('xem', '${parcelId}')" style="background-color: #4CAF50; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Xem</button>`
+                : `<button onclick="handleActionN('nhap', '${parcelId}')" style="background-color: #2196F3; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Nhập</button>`;
+
             let selectFilter = parcelId ? ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId] : ['==', ['get', 'Tên Chủ'], tenChu];
 
             if (map.getLayer('sheet-thua-dat-highlight-fill')) map.setFilter('sheet-thua-dat-highlight-fill', selectFilter);
             if (map.getLayer('sheet-thua-dat-highlight-line')) map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
 
-            const panelContent = `
+            // Gộp trạng thái Xem / Nhập vào ngay dòng Ghi chú
+                const panelContent = `
                 <div><b>Số tờ:</b> ${soTo}</div>
                 <div><b>Số thửa:</b> ${soThua}</div>
                 <div><b>Diện tích:</b> ${dienTich} m²</div>
                 <div><b>Loại đất:</b> ${loaiDat}</div>
                 <div style="grid-column: span 2;"><b>Tên chủ:</b> ${tenChu}</div>
                 <div><b>Số định danh:</b> ${soDinhDanh}</div>
-                <div><b>Ghi chú:</b> ${ghiChu}</div>
+                <div style="grid-column: span 2;"><b>Ghi chú:</b> ${ghiChu} &nbsp;|&nbsp; <b>Cột N:</b> ${actionButtonHtml}</div>
             `;
 
             const panelContentEl = document.getElementById('panel-content');
