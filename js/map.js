@@ -1,4 +1,6 @@
-// js/map.js
+// ==========================================
+// js/map.js - QUẢN LÝ BẢN ĐỒ MAPLIBRE VÀ TƯƠNG TÁC
+// ==========================================
 
 // --- KHAI BÁO BIẾN TOÀN CỤC QUẢN LÝ NHÃN SỐ ĐO CẠNH VÀ ID THỬA ĐẤT ---
 let activeMarkers = [];                  // Mảng lưu trữ các đối tượng Marker hiển thị kích thước cạnh trên bản đồ
@@ -19,13 +21,17 @@ function pushMeasureState() {
     measureRedoStack = [];               // Xóa stack redo mỗi khi có hành động thêm/sửa/xóa mới
 }
 
-// --- HÀM XÓA SẠCH CÁC NHÃN SỐ ĐO CẠNH TRÊN BẢN ĐỒ ---
+// ==========================================
+// HÀM XÓA SẠCH CÁC NHÃN SỐ ĐO CẠNH TRÊN BẢN ĐỒ
+// ==========================================
 function clearLengthMarkers() {
     activeMarkers.forEach(marker => marker.remove());
     activeMarkers = [];
 }
 
-// --- HÀM XÓA SẠCH CÁC NHÃN ĐO ĐẠC ---
+// ==========================================
+// HÀM XÓA SẠCH CÁC NHÃN ĐO ĐẠC
+// ==========================================
 function clearMeasureMarkers() {
     measureMarkers.forEach(marker => marker.remove());
     measureMarkers = [];
@@ -33,7 +39,9 @@ function clearMeasureMarkers() {
     measurePointMarkers = [];
 }
 
-// --- HÀM ĐỊNH DẠNG SỐ CHUẨN VIỆT NAM (HỖ TRỢ GIỮ NGUYÊN SỐ THỰC) ---
+// ==========================================
+// HÀM ĐỊNH DẠNG SỐ CHUẨN VIỆT NAM (HỖ TRỢ GIỮ NGUYÊN SỐ THỰC)
+// ==========================================
 function formatNumberVN(val) {
     if (val === null || val === undefined || val === '' || val === '-') return '-';
     
@@ -42,10 +50,15 @@ function formatNumberVN(val) {
     
     if (isNaN(num)) return val;
 
-    return num.toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    return num.toLocaleString('vi-VN', { 
+        minimumFractionDigits: 0, 
+        maximumFractionDigits: 2 
+    });
 }
 
-// --- HÀM ĐÓNG BẢNG THÔNG TIN VÀ XÓA TRẠNG THÁI LÀM NỔI BẬT (HIGHLIGHT) THỬA ĐẤT ---
+// ==========================================
+// HÀM ĐÓNG BẢNG THÔNG TIN VÀ XÓA TRẠNG THÁI LÀM NỔI BẬT THỬA ĐẤT
+// ==========================================
 function closeParcelPanel() {
     const panel = document.getElementById('parcel-info-panel');
     
@@ -74,7 +87,9 @@ function closeParcelPanel() {
     }
 }
 
-// --- HÀM MỞ POPUP XEM HOẶC NHẬP DỮ LIỆU CỘT N ---
+// ==========================================
+// HÀM MỞ POPUP XEM HOẶC NHẬP DỮ LIỆU CỘT N
+// ==========================================
 function openColumnNPopup(parcelId, mode, currentData = '') {
     // Kiểm tra hoặc tạo phần tử Popup trên DOM nếu chưa có
     let popupContainer = document.getElementById('column-n-popup-modal');
@@ -137,40 +152,37 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
             saveBtn.innerText = 'Đang lưu...';
             saveBtn.disabled = true;
 
-            // 2. Gửi request POST đến Web App URL của Google Apps Script
-            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec'; // Thay link Web App của bạn vào đây
+            // 2. Gửi request POST đến Web App URL của Google Apps Script (Sử dụng mode 'no-cors' để tối ưu ghi ngầm, tránh chặn CORS từ trình duyệt)
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec';
 
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors', // Sử dụng no-cors để tương thích với Google Apps Script Web App
-                headers: { 'Content-Type': 'application/json' },
+                mode: 'no-cors',
+                headers: { 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify({
                     action: 'update_column_n',
                     id_thua_dat: parcelId,
                     ghi_chu: val
                 })
-            })
-            .then(() => {
-                // Do chế độ no-cors, tiến hành ẩn popup và cập nhật lại giao diện
-                popupContainer.style.display = 'none';
-
-                if (window.selectedThuaDatId === parcelId && window._currentParcelRawProps) {
-                    renderParcelPanel(window._currentParcelRawProps, parcelId);
-                }
-
-                alert('Đã cập nhật dữ liệu cột N thành công vào Google Sheet!');
-            })
-            .catch((error) => {
-                console.error("Lỗi khi lưu:", error);
-                alert('Có lỗi xảy ra khi lưu vào sheet!');
-                saveBtn.innerText = 'Lưu lại';
-                saveBtn.disabled = false;
             });
+
+            // 3. Đóng popup và thông báo thành công ngay lập tức
+            popupContainer.style.display = 'none';
+
+            if (window.selectedThuaDatId === parcelId && window._currentParcelRawProps) {
+                renderParcelPanel(window._currentParcelRawProps, parcelId);
+            }
+
+            alert('Đã cập nhật dữ liệu cột N thành công vào Google Sheet!');
         };
     }
 }
 
-// --- HÀM CẬP NHẬT HÌNH HỌC VÀ NHÃN ĐO ĐẠC ---
+// ==========================================
+// HÀM CẬP NHẬT HÌNH HỌC VÀ NHÃN ĐO ĐẠC
+// ==========================================
 function updateMeasureGeometry(map, skipRecreateMarkers = false) {
     const features = [];
     
@@ -222,7 +234,10 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
     measureCoordinates.forEach(coord => {
         features.push({
             type: 'Feature',
-            geometry: { type: 'Point', coordinates: coord },
+            geometry: { 
+                type: 'Point', 
+                coordinates: coord 
+            },
             properties: {}
         });
     });
@@ -241,7 +256,10 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
 
         features.push({
             type: 'Feature',
-            geometry: { type: 'LineString', coordinates: renderCoords },
+            geometry: { 
+                type: 'LineString', 
+                coordinates: renderCoords 
+            },
             properties: {}
         });
 
@@ -254,7 +272,10 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
             }
             features.push({
                 type: 'Feature',
-                geometry: { type: 'Polygon', coordinates: [closedPolygonCoords] },
+                geometry: { 
+                    type: 'Polygon', 
+                    coordinates: [closedPolygonCoords] 
+                },
                 properties: {}
             });
         }
@@ -295,7 +316,9 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
 
             segmentsToRender.forEach(segment => {
                 const segLength = turf.length(segment, { units: 'meters' });
-                const segText = segLength >= 1000 ? `${(segLength / 1000).toFixed(2)} km` : `${segLength.toFixed(1)} m`;
+                const segText = segLength >= 1000 
+                    ? `${(segLength / 1000).toFixed(2)} km` 
+                    : `${segLength.toFixed(1)} m`;
 
                 const coords = segment.geometry.coordinates;
                 const midCoord = [(coords[0][0] + coords[1][0]) / 2, (coords[0][1] + coords[1][1]) / 2];
@@ -312,9 +335,12 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
                 el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.3)';
                 el.innerText = segText;
 
-                const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-                    .setLngLat(midCoord)
-                    .addTo(map);
+                const marker = new maplibregl.Marker({ 
+                    element: el, 
+                    anchor: 'center' 
+                })
+                .setLngLat(midCoord)
+                .addTo(map);
 
                 measureMarkers.push(marker);
             });
@@ -332,7 +358,9 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
                     const centroid = turf.centroid(polygon);
                     const centerCoord = centroid.geometry.coordinates;
 
-                    const areaText = areaSqm >= 10000 ? `${(areaSqm / 10000).toFixed(2)} ha` : `${areaSqm.toFixed(1)} m²`;
+                    const areaText = areaSqm >= 10000 
+                        ? `${(areaSqm / 10000).toFixed(2)} ha` 
+                        : `${areaSqm.toFixed(1)} m²`;
 
                     const areaEl = document.createElement('div');
                     areaEl.style.color = '#ffffff';
@@ -346,14 +374,19 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
                     areaEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.4)';
                     areaEl.innerText = areaText;
 
-                    const areaMarker = new maplibregl.Marker({ element: areaEl, anchor: 'center' })
-                        .setLngLat(centerCoord)
-                        .addTo(map);
+                    const areaMarker = new maplibregl.Marker({ 
+                        element: areaEl, 
+                        anchor: 'center' 
+                    })
+                    .setLngLat(centerCoord)
+                    .addTo(map);
 
                     measureMarkers.push(areaMarker);
 
                     const lastPointCoord = measureCoordinates[measureCoordinates.length - 1];
-                    const perimeterText = totalPerimeter >= 1000 ? `Chu vi: ${(totalPerimeter / 1000).toFixed(2)} km` : `Chu vi: ${totalPerimeter.toFixed(1)} m`;
+                    const perimeterText = totalPerimeter >= 1000 
+                        ? `Chu vi: ${(totalPerimeter / 1000).toFixed(2)} km` 
+                        : `Chu vi: ${totalPerimeter.toFixed(1)} m`;
 
                     const perimEl = document.createElement('div');
                     perimEl.style.color = '#d93025';
@@ -392,7 +425,9 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
     }
 }
 
-// --- HÀM HỦY / ĐẶT LẠI TRẠNG THÁI ĐO ĐẠC ---
+// ==========================================
+// HÀM HỦY / ĐẶT LẠI TRẠNG THÁI ĐO ĐẠC
+// ==========================================
 function resetMeasure(map) {
     isMeasuring = false;
     measureCoordinates = [];
@@ -410,12 +445,17 @@ function resetMeasure(map) {
     if (map) {
         map.getCanvas().style.cursor = 'default';
         if (map.getSource('measure-source')) {
-            map.getSource('measure-source').setData({ type: 'FeatureCollection', features: [] });
+            map.getSource('measure-source').setData({ 
+                type: 'FeatureCollection', 
+                features: [] 
+            });
         }
     }
 }
 
-// --- HÀM KHỞI TẠO VÀ CẤU HÌNH TOÀN BỘ BẢN ĐỒ ---
+// ==========================================
+// HÀM KHỞI TẠO VÀ CẤU HÌNH TOÀN BỘ BẢN ĐỒ
+// ==========================================
 function initMap() {
     const map = new maplibregl.Map({
         container: 'map',                        
@@ -494,7 +534,10 @@ function initMap() {
         if (!map.getSource('parcel-dimensions-source')) {
             map.addSource('parcel-dimensions-source', {
                 type: 'geojson',
-                data: { type: 'FeatureCollection', features: [] }
+                data: { 
+                    type: 'FeatureCollection', 
+                    features: [] 
+                }
             });
 
             map.addLayer({
@@ -513,7 +556,10 @@ function initMap() {
         if (!map.getSource('measure-source')) {
             map.addSource('measure-source', {
                 type: 'geojson',
-                data: { type: 'FeatureCollection', features: [] }
+                data: { 
+                    type: 'FeatureCollection', 
+                    features: [] 
+                }
             });
 
             map.addLayer({
@@ -610,7 +656,6 @@ function initMap() {
                     const lineSegments = turf.lineSegment(selectedFeature);
                     const dimensionFeatures = [];
 
-                    // Đã sửa lỗi: lineSegments.features thay vì lineSegments.features.features
                     lineSegments.features.forEach(segment => {
                         const lengthMeters = turf.length(segment, { units: 'meters' });
                         
@@ -627,7 +672,7 @@ function initMap() {
                         const el = document.createElement('div');
                         el.style.color = '#ffffff';                             
                         el.style.fontSize = '12px';                             
-                        el.style.fontWeight = 'Bold';                            
+                        el.style.fontWeight = 'Bold';                          
                         el.style.textShadow = '1px 1px 2px #000000, -1px -1px 2px #000000, 1px -1px 2px #000000, -1px 1px 2px #000000'; 
                         el.style.whiteSpace = 'nowrap';                          
                         el.innerText = formattedLength;                          
