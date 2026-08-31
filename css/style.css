@@ -339,10 +339,22 @@ input {
     .maplibregl-ctrl-top-right {
         top: 83px !important;              /* Nằm ngay phía dưới thanh trượt độ mờ */
         right: 8px !important;             /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
-        z-index: 10000 !important;         /* Ép toàn bộ khung chứa nút định vị lên trên cùng */
     }
 
     .maplibregl-ctrl-top-right .maplibregl-ctrl {
         width: 34px !important;            /* Đảm bảo nút định vị có cùng độ rộng trên mobile */
     }
-}
+    }
+    /* --- ÉP TOÀN BỘ NÚT ĐỊNH VỊ VÀ THÀNH PHẦN CON LÊN LỚP CAO NHẤT --- */
+        .maplibregl-ctrl-top-right,
+        .maplibregl-ctrl-top-right .maplibregl-ctrl,
+        .maplibregl-ctrl-top-right .maplibregl-ctrl-group,
+        .maplibregl-ctrl-top-right .maplibregl-ctrl-geolocate {
+            z-index: 10000 !important;
+            position: relative !important;
+        }
+
+        .maplibregl-ctrl-top-right .maplibregl-ctrl-group button {
+            z-index: 10000 !important;
+            cursor: default !important;
+    }
