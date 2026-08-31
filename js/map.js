@@ -121,7 +121,7 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
     popupContainer.innerHTML = `
         <div style="background: #fff; padding: 20px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
             <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a73e8; display: flex; align-items: center; gap: 8px;">
-                ${isViewMode ? '📖 Chỉnh sửa Ghi chú' : '✍️ Nhập Ghi chú'}
+                ${isViewMode ? '✍️ Chỉnh sửa Ghi chú' : '✍️ Nhập Ghi chú'}
             </h3>
             <p style="font-size: 13px; color: #5f6368; margin: 0 0 16px 0;">ID Thửa đất: <b>${parcelId}</b></p>
             
@@ -452,7 +452,7 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
 }
 
 // ==========================================
-// HÀM HỦY / ĐẶT LẠI TRẠNG THÁI ĐO ĐẠC
+// HÀM HỦY ĐO ĐẠC
 // ==========================================
 function resetMeasure(map) {
     isMeasuring = false;
