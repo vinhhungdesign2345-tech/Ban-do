@@ -88,7 +88,7 @@ function closeParcelPanel() {
 }
 
 // ==========================================
-// HÀM MỞ POPUP XEM HOẶC NHẬP DỮ LIỆU CỘT N
+// HÀM MỞ POPUP XEM HOẶC NHẬP GHI CHÚ
 // ==========================================
 function openColumnNPopup(parcelId, mode, currentData = '') {
     // Kiểm tra hoặc tạo phần tử Popup trên DOM nếu chưa có
@@ -117,7 +117,7 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
     
     popupContainer.innerHTML = `
         <div style="background: #fff; padding: 20px; border-radius: 8px; width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-            <h3 style="margin-top: 0; color: #333;">${isViewMode ? '📖 Chỉnh sửa dữ liệu cột N' : '✍️ Nhập dữ liệu cột N'}</h3>
+            <h3 style="margin-top: 0; color: #333;">${isViewMode ? '📖 Chỉnh sửa Ghi chú' : '✍️ Nhập Ghi chú'}</h3>
             <p style="font-size: 13px; color: #666;">ID Thửa đất: <b>${parcelId}</b></p>
             
             <div style="margin-bottom: 15px;">
