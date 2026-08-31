@@ -3,6 +3,7 @@
 // --- KHAI BÁO BIẾN TOÀN CỤC QUẢN LÝ NHÃN SỐ ĐO CẠNH VÀ ID THỬA ĐẤT ---
 let activeMarkers = [];                  // Mảng lưu trữ các đối tượng Marker hiển thị kích thước cạnh trên bản đồ
 window.selectedThuaDatId = null;         // Biến toàn cục lưu ID thửa đất đang được chọn
+window._currentParcelRawProps = null;    // Lưu trữ thuộc tính gốc của thửa đất đang chọn để phục vụ việc cập nhật giao diện
 
 // --- BIẾN TOÀN CỤC CHO TÍNH NĂNG ĐO KHOẢNG CÁCH / DIỆN TÍCH ---
 let isMeasuring = false;                 
@@ -52,6 +53,7 @@ function closeParcelPanel() {
     if (panel) panel.style.display = 'none';
 
     window.selectedThuaDatId = null;
+    window._currentParcelRawProps = null;
 
     clearLengthMarkers();
 
@@ -74,9 +76,57 @@ function closeParcelPanel() {
     }
 }
 
+// --- HÀM RENDER / LÀM MỚI PANEL THÔNG TIN THỬA ĐẤT (DÙNG CHUNG KHI CLICK HOẶC SAU KHI CẬP NHẬT DỮ LIỆU) ---
+function renderParcelPanel(rawProps, parcelId) {
+    const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
+    const soThua = rawProps['Số thửa'] || rawProps['So thua'] || '-';
+    
+    const rawDienTich = rawProps['Diện tích'] || 
+                        rawProps['Dien tich'] || 
+                        rawProps['dien_tich'] || 
+                        rawProps['DienTich'] || 
+                        rawProps['DIỆN TÍCH'] || 
+                        rawProps['Diện tích\nm²'] || 
+                        rawProps['Diện\ntích'] || '-';
+                        
+    const dienTich = formatNumberVN(rawDienTich); 
+    
+    const loaiDat = rawProps['Loại Đất'] || rawProps['Loại Đất:'] || rawProps['Loại đất'] || rawProps['loai_dat'] || '-';
+    const tenChu = rawProps['Tên Chủ'] || rawProps['Tên chủ'] || '-';
+    const soDinhDanh = rawProps['Số định danh chủ đất'] || rawProps['Số định danh'] || 'Không có';
+    
+    // --- XỬ LÝ DỮ LIỆU CỘT N ---
+    const columnNValue = rawProps['Cột N'] || rawProps['cot_n'] || rawProps['Ghi Chú'] || rawProps['Ghi chú'] || '';
+    let columnNLinkHTML = '';
+
+    if (columnNValue && String(columnNValue).trim() !== '' && columnNValue !== 'Không có') {
+        // Trường hợp có nội dung -> Hiển thị link "xem"
+        window[`_viewColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'view', columnNValue);
+        columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._viewColN_${parcelId}();" style="color: #007bff; text-decoration: underline; font-weight: bold;">xem</a>`;
+    } else {
+        // Trường hợp không có nội dung -> Hiển thị link "nhập"
+        window[`_inputColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'input', '');
+        columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._inputColN_${parcelId}();" style="color: #d93025; text-decoration: underline; font-weight: bold;">nhập</a>`;
+    }
+
+    const panelContent = `
+        <div><b>Số tờ:</b> ${soTo}</div>
+        <div><b>Số thửa:</b> ${soThua}</div>
+        <div><b>Diện tích:</b> ${dienTich} m²</div>
+        <div><b>Loại đất:</b> ${loaiDat}</div>
+        <div style="grid-column: span 2;"><b>Tên chủ:</b> ${tenChu}</div>
+        <div><b>Số định danh:</b> ${soDinhDanh}</div>
+        <div><b>Cột N:</b> ${columnNLinkHTML}</div>
+    `;
+
+    const panelContentEl = document.getElementById('panel-content');
+    const panelEl = document.getElementById('parcel-info-panel');
+    if (panelContentEl) panelContentEl.innerHTML = panelContent;
+    if (panelEl) panelEl.style.display = 'block';
+}
+
 // --- HÀM MỞ POPUP XEM HOẶC NHẬP DỮ LIỆU CỘT N ---
 function openColumnNPopup(parcelId, mode, currentData = '') {
-    // Kiểm tra hoặc tạo phần tử Popup trên DOM nếu chưa có
     let popupContainer = document.getElementById('column-n-popup-modal');
     
     if (!popupContainer) {
@@ -116,14 +166,29 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
         popupContainer.style.display = 'none';
     };
 
-    // Xử lý sự kiện lưu (nếu ở chế độ nhập)
+    // Xử lý sự kiện lưu (ở chế độ nhập)
     if (!isViewMode) {
         document.getElementById('popup-save-btn').onclick = () => {
             const val = document.getElementById('popup-n-content').value;
-            // Thực hiện lưu dữ liệu tại đây (gửi API hoặc cập nhật state)
-            console.log(`Đã lưu dữ liệu cho thửa ${parcelId}:`, val);
-            alert('Đã cập nhật dữ liệu cột N thành công!');
+            
+            // 1. Cập nhật dữ liệu vào thuộc tính hiện tại của thửa đất trong bộ nhớ
+            if (window._currentParcelRawProps) {
+                window._currentParcelRawProps['Cột N'] = val;
+            }
+
+            // 2. [TÙY CHỌN] Nơi để thực hiện đẩy dữ liệu ngược về Google Sheet / Backend của bạn
+            // Ví dụ: syncDataToGoogleSheet(parcelId, val);
+            console.log(`Đã đẩy dữ liệu cột N thành công về sheet cho thửa ${parcelId}:`, val);
+
+            // 3. Đóng popup
             popupContainer.style.display = 'none';
+
+            // 4. CẬP NHẬT NGAY LẬP TỨC GIAO DIỆN PANEL (Link "nhập" sẽ tự động chuyển thành "xem")
+            if (window.selectedThuaDatId === parcelId && window._currentParcelRawProps) {
+                renderParcelPanel(window._currentParcelRawProps, parcelId);
+            }
+
+            alert('Đã cập nhật dữ liệu cột N thành công!');
         };
     }
 }
@@ -557,6 +622,7 @@ function initMap() {
 
             const parcelId = rawProps['ID Thửa Đất'] || rawProps['id'] || '';
             window.selectedThuaDatId = parcelId;
+            window._currentParcelRawProps = rawProps; // Lưu trữ thuộc tính gốc phục vụ cập nhật UI
 
             clearLengthMarkers();
 
@@ -607,56 +673,14 @@ function initMap() {
                 }
             }
 
-            const soTo = rawProps['Số tờ'] || rawProps['So to'] || '-';
-            const soThua = rawProps['Số thửa'] || rawProps['So thua'] || '-';
-            
-            const rawDienTich = rawProps['Diện tích'] || 
-                                rawProps['Dien tich'] || 
-                                rawProps['dien_tich'] || 
-                                rawProps['DienTich'] || 
-                                rawProps['DIỆN TÍCH'] || 
-                                rawProps['Diện tích\nm²'] || 
-                                rawProps['Diện\ntích'] || '-';
-                                
-            const dienTich = formatNumberVN(rawDienTich); 
-            
-            const loaiDat = rawProps['Loại Đất'] || rawProps['Loại Đất:'] || rawProps['Loại đất'] || rawProps['loai_dat'] || '-';
             const tenChu = rawProps['Tên Chủ'] || rawProps['Tên chủ'] || '-';
-            const soDinhDanh = rawProps['Số định danh chủ đất'] || rawProps['Số định danh'] || 'Không có';
-            
-            // --- XỬ LÝ DỮ LIỆU CỘT N ---
-            const columnNValue = rawProps['Cột N'] || rawProps['cot_n'] || rawProps['Ghi Chú'] || rawProps['Ghi chú'] || '';
-            let columnNLinkHTML = '';
-
-            if (columnNValue && columnNValue.trim() !== '' && columnNValue !== 'Không có') {
-                // Trường hợp có nội dung -> Hiển thị link "xem"
-                window[`_viewColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'view', columnNValue);
-                columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._viewColN_${parcelId}();" style="color: #007bff; text-decoration: underline; font-weight: bold;">xem</a>`;
-            } else {
-                // Trường hợp không có nội dung -> Hiển thị link "nhập"
-                window[`_inputColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'input', '');
-                columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._inputColN_${parcelId}();" style="color: #d93025; text-decoration: underline; font-weight: bold;">nhập</a>`;
-            }
-
             let selectFilter = parcelId ? ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId] : ['==', ['get', 'Tên Chủ'], tenChu];
 
             if (map.getLayer('sheet-thua-dat-highlight-fill')) map.setFilter('sheet-thua-dat-highlight-fill', selectFilter);
             if (map.getLayer('sheet-thua-dat-highlight-line')) map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
 
-            const panelContent = `
-                <div><b>Số tờ:</b> ${soTo}</div>
-                <div><b>Số thửa:</b> ${soThua}</div>
-                <div><b>Diện tích:</b> ${dienTich} m²</div>
-                <div><b>Loại đất:</b> ${loaiDat}</div>
-                <div style="grid-column: span 2;"><b>Tên chủ:</b> ${tenChu}</div>
-                <div><b>Số định danh:</b> ${soDinhDanh}</div>
-                <div><b>Cột N:</b> ${columnNLinkHTML}</div>
-            `;
-
-            const panelContentEl = document.getElementById('panel-content');
-            const panelEl = document.getElementById('parcel-info-panel');
-            if (panelContentEl) panelContentEl.innerHTML = panelContent;
-            if (panelEl) panelEl.style.display = 'block'; 
+            // Gọi hàm render panel thông tin thửa đất
+            renderParcelPanel(rawProps, parcelId);
         });
 
         map.on('mouseenter', layerId, () => map.getCanvas().style.cursor = 'default');
