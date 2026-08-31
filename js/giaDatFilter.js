@@ -1,8 +1,6 @@
 /**
  * ====================================================================================
  * MÔ-ĐUN: TRA CỨU GIÁ ĐẤT THEO TÊN ĐƯỜNG VÀ PHƯỜNG/XÃ
- * Tính năng: Lọc, gợi ý tự động (autocomplete), hiển thị chi tiết 5 cột 
- * (Phường, Đường, Từ, Đến, Giá đất) từ Google Apps Script và hỗ trợ ẩn bảng kết quả khi click ra ngoài.
  * ====================================================================================
  */
 document.addEventListener("DOMContentLoaded", function () {
