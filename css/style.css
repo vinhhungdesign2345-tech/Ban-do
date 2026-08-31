@@ -105,7 +105,7 @@ body {
 
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 .maplibregl-ctrl-top-right {
-    top: 90px !important;          /* Đặt vị trí nằm ngay phía dưới thanh trượt độ mờ ở góc trên phải */
+    top: 85px !important;          /* Đặt vị trí nằm ngay phía dưới thanh trượt độ mờ ở góc trên phải */
     right: 10px !important;        /* Căn lề phải bằng với thanh trượt độ mờ ở trên */
 }
 
