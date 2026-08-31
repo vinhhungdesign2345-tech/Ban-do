@@ -117,7 +117,6 @@ body {
     border-radius: 8px !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18) !important;
     overflow: hidden;
-    z-index: 10000 !important;      /* ÉP NÚT ĐỊNH VỊ LÊN TRÊN CÙNG */
 }
 
 /* --- CÁC THÀNH PHẦN BỘ LỌC VÀ TÌM KIẾM --- */
@@ -340,6 +339,7 @@ input {
     .maplibregl-ctrl-top-right {
         top: 83px !important;              /* Nằm ngay phía dưới thanh trượt độ mờ */
         right: 8px !important;             /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
+        z-index: 10000 !important;         /* Ép toàn bộ khung chứa nút định vị lên trên cùng */
     }
 
     .maplibregl-ctrl-top-right .maplibregl-ctrl {
