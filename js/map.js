@@ -112,21 +112,22 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
         document.body.appendChild(popupContainer);
     }
 
+    // Ở chế độ 'view' bây giờ chúng ta cho phép chỉnh sửa nội dung cũ luôn
     const isViewMode = mode === 'view';
     
     popupContainer.innerHTML = `
         <div style="background: #fff; padding: 20px; border-radius: 8px; width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-            <h3 style="margin-top: 0; color: #333;">${isViewMode ? '📖 Xem dữ liệu cột N' : '✍️ Nhập dữ liệu cột N'}</h3>
+            <h3 style="margin-top: 0; color: #333;">${isViewMode ? '📖 Chỉnh sửa dữ liệu cột N' : '✍️ Nhập dữ liệu cột N'}</h3>
             <p style="font-size: 13px; color: #666;">ID Thửa đất: <b>${parcelId}</b></p>
             
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">Nội dung:</label>
-                <textarea id="popup-n-content" ${isViewMode ? 'readonly' : ''} style="width: 100%; height: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; resize: vertical;">${currentData}</textarea>
+                <textarea id="popup-n-content" style="width: 100%; height: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; resize: vertical;">${currentData}</textarea>
             </div>
             
             <div style="text-align: right;">
                 <button id="popup-close-btn" style="padding: 6px 12px; margin-right: 5px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Đóng</button>
-                ${!isViewMode ? `<button id="popup-save-btn" style="padding: 6px 12px; background: #28a745; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Lưu lại</button>` : ''}
+                <button id="popup-save-btn" style="padding: 6px 12px; background: #28a745; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Lưu lại</button>
             </div>
         </div>
     `;
@@ -138,46 +139,69 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
         popupContainer.style.display = 'none';
     };
 
-    // Xử lý sự kiện lưu (ở chế độ nhập) kết hợp gọi API Google Apps Script
-    if (!isViewMode) {
-        document.getElementById('popup-save-btn').onclick = () => {
-            const val = document.getElementById('popup-n-content').value;
+    // Xử lý sự kiện lưu lại dữ liệu (cho cả 2 trường hợp thêm mới hoặc cập nhật)
+    document.getElementById('popup-save-btn').onclick = () => {
+        const val = document.getElementById('popup-n-content').value;
+        
+        // 1. Cập nhật ngay vào bộ nhớ tạm để UI phản hồi
+        if (window._currentParcelRawProps) {
+            window._currentParcelRawProps['Cột N'] = val;
+        }
+
+        const saveBtn = document.getElementById('popup-save-btn');
+        saveBtn.innerText = 'Đang lưu...';
+        saveBtn.disabled = true;
+
+        // 2. Gửi request POST đến Web App URL của Google Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec';
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({
+                action: 'update_column_n',
+                id_thua_dat: parcelId,
+                ghi_chu: val
+            })
+        });
+
+        // 3. Đóng popup và cập nhật lại giao diện bảng thông tin (chuyển đổi link thành "xem" với dữ liệu mới)
+        popupContainer.style.display = 'none';
+
+        if (window.selectedThuaDatId === parcelId && window._currentParcelRawProps) {
+            // Tái tạo lại HTML liên kết Cột N thành "xem" với dữ liệu mới cập nhật
+            window[`_viewColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'view', val);
             
-            // 1. Cập nhật ngay vào bộ nhớ tạm để UI phản hồi
-            if (window._currentParcelRawProps) {
-                window._currentParcelRawProps['Cột N'] = val;
-            }
+            const columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._viewColN_${parcelId}();" style="color: #007bff; text-decoration: underline; font-weight: bold;">xem</a>`;
+            
+            // Cập nhật lại nội dung hiển thị trong panel thông tin thửa đất
+            const soTo = window._currentParcelRawProps['Số tờ'] || window._currentParcelRawProps['So to'] || '-';
+            const soThua = window._currentParcelRawProps['Số thửa'] || window._currentParcelRawProps['So thua'] || '-';
+            const rawDienTich = window._currentParcelRawProps['Diện tích'] || window._currentParcelRawProps['Dien tich'] || window._currentParcelRawProps['dien_tich'] || window._currentParcelRawProps['DienTich'] || window._currentParcelRawProps['DIỆN TÍCH'] || '-';
+            const dienTich = formatNumberVN(rawDienTich);
+            const loaiDat = window._currentParcelRawProps['Loại Đất'] || window._currentParcelRawProps['Loại đất'] || '-';
+            const tenChu = window._currentParcelRawProps['Tên Chủ'] || window._currentParcelRawProps['Tên chủ'] || '-';
+            const soDinhDanh = window._currentParcelRawProps['Số định danh chủ đất'] || window._currentParcelRawProps['Số định danh'] || 'Không có';
 
-            const saveBtn = document.getElementById('popup-save-btn');
-            saveBtn.innerText = 'Đang lưu...';
-            saveBtn.disabled = true;
+            const panelContent = `
+                <div><b>Số tờ:</b> ${soTo}</div>
+                <div><b>Số thửa:</b> ${soThua}</div>
+                <div><b>Diện tích:</b> ${dienTich} m²</div>
+                <div><b>Loại đất:</b> ${loaiDat}</div>
+                <div style="grid-column: span 2;"><b>Tên chủ:</b> ${tenChu}</div>
+                <div><b>Số định danh:</b> ${soDinhDanh}</div>
+                <div><b>Cột N:</b> ${columnNLinkHTML}</div>
+            `;
+            
+            const panelContentEl = document.getElementById('panel-content');
+            if (panelContentEl) panelContentEl.innerHTML = panelContent;
+        }
 
-            // 2. Gửi request POST đến Web App URL của Google Apps Script (Sử dụng mode 'no-cors' để tối ưu ghi ngầm, tránh chặn CORS từ trình duyệt)
-            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec';
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 
-                    'Content-Type': 'application/json' 
-                },
-                body: JSON.stringify({
-                    action: 'update_column_n',
-                    id_thua_dat: parcelId,
-                    ghi_chu: val
-                })
-            });
-
-            // 3. Đóng popup và thông báo thành công ngay lập tức
-            popupContainer.style.display = 'none';
-
-            if (window.selectedThuaDatId === parcelId && window._currentParcelRawProps) {
-                renderParcelPanel(window._currentParcelRawProps, parcelId);
-            }
-
-            alert('Đã cập nhật dữ liệu cột N thành công vào Google Sheet!');
-        };
-    }
+        alert('Đã cập nhật dữ liệu cột N thành công vào Google Sheet!');
+    };
 }
 
 // ==========================================
