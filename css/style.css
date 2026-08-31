@@ -58,7 +58,7 @@ body {
     position: absolute;            /* Đặt vị trí tuyệt đối ở góc trên bên trái bản đồ */
     top: 12px;                     /* Cách mép trên 12 pixel */
     left: 12px;                    /* Cách mép trái 12 pixel */
-    z-index: 10;                   /* Đảm bảo hiển thị nổi lên trên nền bản đồ */
+    z-index: 10000;                   /* Đảm bảo hiển thị nổi lên trên nền bản đồ */
     background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt 92% */
     backdrop-filter: blur(10px);   /* Hiệu ứng làm mờ nội dung phía sau bảng điều khiển */
     -webkit-backdrop-filter: blur(10px); /* Hỗ trợ hiệu ứng làm mờ cho trình duyệt Safari/WebKit */
