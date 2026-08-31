@@ -168,14 +168,14 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
             })
         });
 
-        // 3. Đóng popup và cập nhật lại giao diện bảng thông tin (chuyển đổi link thành "xem" với dữ liệu mới)
+        // 3. Đóng popup và cập nhật lại giao diện bảng thông tin (chuyển đổi link thành "Xem" với dữ liệu mới)
         popupContainer.style.display = 'none';
 
         if (window.selectedThuaDatId === parcelId && window._currentParcelRawProps) {
-            // Tái tạo lại HTML liên kết Cột N thành "xem" với dữ liệu mới cập nhật
+            // Tái tạo lại HTML liên kết Cột N thành "Xem" với dữ liệu mới cập nhật
             window[`_viewColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'view', val);
             
-            const columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._viewColN_${parcelId}();" style="color: #007bff; text-decoration: underline; font-weight: bold;">xem</a>`;
+            const columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._viewColN_${parcelId}();" style="color: #007bff; text-decoration: underline; font-weight: bold;">Xem</a>`;
             
             // Cập nhật lại nội dung hiển thị trong panel thông tin thửa đất
             const soTo = window._currentParcelRawProps['Số tờ'] || window._currentParcelRawProps['So to'] || '-';
@@ -745,10 +745,10 @@ function initMap() {
 
             if (columnNValue && columnNValue.trim() !== '' && columnNValue !== 'Không có') {
                 window[`_viewColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'view', columnNValue);
-                columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._viewColN_${parcelId}();" style="color: #007bff; text-decoration: underline; font-weight: bold;">xem</a>`;
+                columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._viewColN_${parcelId}();" style="color: #007bff; text-decoration: underline; font-weight: bold;">Xem</a>`;
             } else {
                 window[`_inputColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'input', '');
-                columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._inputColN_${parcelId}();" style="color: #d93025; text-decoration: underline; font-weight: bold;">nhập</a>`;
+                columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._inputColN_${parcelId}();" style="color: #d93025; text-decoration: underline; font-weight: bold;">Nhập</a>`;
             }
 
             let selectFilter = parcelId ? ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId] : ['==', ['get', 'Tên Chủ'], tenChu];
