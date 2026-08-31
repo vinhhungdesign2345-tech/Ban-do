@@ -103,11 +103,14 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
             left: 0; 
             width: 100%; 
             height: 100%;
-            background: rgba(0, 0, 0, 0.5); 
+            background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(2px);
             display: flex; 
             align-items: center;
             justify-content: center; 
             z-index: 9999;
+            padding: 16px;
+            box-sizing: border-box;
         `;
         document.body.appendChild(popupContainer);
     }
@@ -116,18 +119,19 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
     const isViewMode = mode === 'view';
     
     popupContainer.innerHTML = `
-        <div style="background: #fff; padding: 20px; border-radius: 8px; width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-            <h3 style="margin-top: 0; color: #333;">${isViewMode ? '📖 Chỉnh sửa Ghi chú' : '✍️ Nhập Ghi chú'}</h3>
-            <p style="font-size: 13px; color: #666;">ID Thửa đất: <b>${parcelId}</b></p>
+        <div style="background: #fff; padding: 20px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+            <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #1a73e8; display: flex; align-items: center; gap: 8px;">
+                ${isViewMode ? '📖 Chỉnh sửa Ghi chú' : '✍️ Nhập Ghi chú'}
+            </h3>
+            <p style="font-size: 13px; color: #5f6368; margin: 0 0 16px 0;">ID Thửa đất: <b>${parcelId}</b></p>
             
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Nội dung:</label>
-                <textarea id="popup-n-content" style="width: 100%; height: 100px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; resize: vertical;">${currentData}</textarea>
+            <div style="margin-bottom: 20px;">
+                <textarea id="popup-n-content" placeholder="Nhập nội dung ghi chú..." style="width: 100%; height: 120px; padding: 12px; border: 1px solid #dadce0; border-radius: 8px; resize: none; font-size: 14px; box-sizing: border-box; outline: none;" onfocus="this.style.borderColor='#1a73e8'" onblur="this.style.borderColor='#dadce0'">${currentData}</textarea>
             </div>
             
-            <div style="text-align: right;">
-                <button id="popup-close-btn" style="padding: 6px 12px; margin-right: 5px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Đóng</button>
-                <button id="popup-save-btn" style="padding: 6px 12px; background: #28a745; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Lưu lại</button>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="popup-close-btn" style="flex: 1; padding: 10px 16px; background: #f1f3f4; color: #3c4043; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">Đóng</button>
+                <button id="popup-save-btn" style="flex: 1; padding: 10px 16px; background: #1a73e8; color: #fff; border: none; border-radius: 8px; font-weight: 500; cursor: pointer;">Lưu lại</button>
             </div>
         </div>
     `;
@@ -168,16 +172,14 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
             })
         });
 
-        // 3. Đóng popup và cập nhật lại giao diện bảng thông tin (chuyển đổi link thành "Xem" với dữ liệu mới)
+        // 3. Đóng popup và cập nhật lại giao diện bảng thông tin
         popupContainer.style.display = 'none';
 
         if (window.selectedThuaDatId === parcelId && window._currentParcelRawProps) {
-            // Tái tạo lại HTML liên kết Cột N thành "Xem" với dữ liệu mới cập nhật
             window[`_viewColN_${parcelId}`] = () => openColumnNPopup(parcelId, 'view', val);
             
-            const columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._viewColN_${parcelId}();" style="color: #007bff; text-decoration: underline; font-weight: bold;">Xem</a>`;
+            const columnNLinkHTML = `<a href="javascript:void(0);" onclick="window._viewColN_${parcelId}();" style="color: #007bff; text-decoration: underline; font-weight: bold;">xem</a>`;
             
-            // Cập nhật lại nội dung hiển thị trong panel thông tin thửa đất
             const soTo = window._currentParcelRawProps['Số tờ'] || window._currentParcelRawProps['So to'] || '-';
             const soThua = window._currentParcelRawProps['Số thửa'] || window._currentParcelRawProps['So thua'] || '-';
             const rawDienTich = window._currentParcelRawProps['Diện tích'] || window._currentParcelRawProps['Dien tich'] || window._currentParcelRawProps['dien_tich'] || window._currentParcelRawProps['DienTich'] || window._currentParcelRawProps['DIỆN TÍCH'] || '-';
@@ -200,7 +202,7 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
             if (panelContentEl) panelContentEl.innerHTML = panelContent;
         }
 
-        alert('Đã cập nhật Ghi chú thành công vào GG Sheet!');
+        alert('Đã cập nhật Ghi chú thành công vào Google Sheet!');
     };
 }
 
