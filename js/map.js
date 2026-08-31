@@ -324,15 +324,16 @@ function resetMeasure(map) {
         }
     }
 }
-
-// --- HÀM XỬ LÝ SỰ KIỆN KHI BẤM NÚT XEM HOẶC NHẬP CỘT N ---
-window.handleActionN = function(type, parcelId) {
+// --- HÀM XỬ LÝ SỰ KIỆN KHI BẤM VÀO CHỮ XEM HOẶC NHẬP CỘT N ---
+window.handleActionN = function(type, parcelId, content = '') {
     if (type === 'xem') {
-        console.log('Xem dữ liệu cột N của thửa:', parcelId);
-        // Thêm logic mở modal / hiển thị nội dung cột N tại đây
+        // Hiển thị popup với nội dung của cột N (ví dụ: "Đất vàng")
+        alert(`Nội dung ghi chú / Cột N: ${content}`);
+        // Hoặc nếu bạn có modal riêng thì thay hàm alert ở đây bằng lệnh mở modal của bạn
     } else {
         console.log('Nhập dữ liệu cột N cho thửa:', parcelId);
         // Thêm logic mở form nhập liệu / Google Sheet tại đây
+        alert(`Mở form nhập dữ liệu cột N cho thửa đất ID: ${parcelId}`);
     }
 };
 
@@ -599,25 +600,25 @@ function initMap() {
             const rawColN = rawProps['Cột N'] || rawProps['cot_n'] || rawProps['N'] || '';
             const hasDataN = rawColN !== null && rawColN !== undefined && String(rawColN).trim() !== '' && String(rawColN).trim() !== '-';
 
-            // 👉 SINH THẺ BẤM "XEM" (NẾU CÓ DỮ LIỆU) HOẶC "NHẬP" (NẾU TRỐNG)
-            const actionButtonHtml = hasDataN 
-                ? `<button onclick="handleActionN('xem', '${parcelId}')" style="background-color: #4CAF50; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Xem</button>`
-                : `<button onclick="handleActionN('nhap', '${parcelId}')" style="background-color: #2196F3; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Nhập</button>`;
+            // 👉 NẾU CÓ DỮ LIỆU THÌ HIỂN THỊ CHÍNH NỘI DUNG ĐÓ (BẤM VÀO HIỆN POPUP), NẾU TRỐNG THÌ HIỆN NÚT "NHẬP"
+            const actionHtml = hasDataN 
+                ? `<a href="javascript:void(0)" onclick="handleActionN('xem', '${parcelId}', '${encodeURIComponent(rawColN)}')" style="color: #1a73e8; text-decoration: underline; font-weight: bold;">${rawColN}</a>`
+                : `<button onclick="handleActionN('nhap', '${parcelId}')" style="background-color: #2196F3; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Nhập</button>`;
 
             let selectFilter = parcelId ? ['==', ['get', 'ID Thửa Đất'], rawProps['ID Thửa Đất'] || parcelId] : ['==', ['get', 'Tên Chủ'], tenChu];
 
             if (map.getLayer('sheet-thua-dat-highlight-fill')) map.setFilter('sheet-thua-dat-highlight-fill', selectFilter);
             if (map.getLayer('sheet-thua-dat-highlight-line')) map.setFilter('sheet-thua-dat-highlight-line', selectFilter);
 
-            // Gộp trạng thái Xem / Nhập vào ngay dòng Ghi chú
-                const panelContent = `
+            // Ghi chú hiển thị trực tiếp nội dung cột N (ví dụ: Đất vàng) dạng bấm được
+            const panelContent = `
                 <div><b>Số tờ:</b> ${soTo}</div>
                 <div><b>Số thửa:</b> ${soThua}</div>
                 <div><b>Diện tích:</b> ${dienTich} m²</div>
                 <div><b>Loại đất:</b> ${loaiDat}</div>
                 <div style="grid-column: span 2;"><b>Tên chủ:</b> ${tenChu}</div>
                 <div><b>Số định danh:</b> ${soDinhDanh}</div>
-                <div style="grid-column: span 2;"><b>Ghi chú:</b> ${ghiChu} &nbsp;|&nbsp; <b>Cột N:</b> ${actionButtonHtml}</div>
+                <div style="grid-column: span 2;"><b>Ghi chú:</b> ${actionHtml}</div>
             `;
 
             const panelContentEl = document.getElementById('panel-content');
