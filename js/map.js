@@ -167,30 +167,49 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
     };
 
     // Xử lý sự kiện lưu (ở chế độ nhập)
-    if (!isViewMode) {
-        document.getElementById('popup-save-btn').onclick = () => {
-            const val = document.getElementById('popup-n-content').value;
-            
-            // 1. Cập nhật dữ liệu vào thuộc tính hiện tại của thửa đất trong bộ nhớ
-            if (window._currentParcelRawProps) {
-                window._currentParcelRawProps['Cột N'] = val;
-            }
+if (!isViewMode) {
+    document.getElementById('popup-save-btn').onclick = () => {
+        const val = document.getElementById('popup-n-content').value;
+        
+        // 1. Cập nhật ngay vào bộ nhớ tạm để UI phản hồi
+        if (window._currentParcelRawProps) {
+            window._currentParcelRawProps['Cột N'] = val;
+        }
 
-            // 2. [TÙY CHỌN] Nơi để thực hiện đẩy dữ liệu ngược về Google Sheet / Backend của bạn
-            // Ví dụ: syncDataToGoogleSheet(parcelId, val);
-            console.log(`Đã đẩy dữ liệu cột N thành công về sheet cho thửa ${parcelId}:`, val);
+        const saveBtn = document.getElementById('popup-save-btn');
+        saveBtn.innerText = 'Đang lưu...';
+        saveBtn.disabled = true;
 
-            // 3. Đóng popup
+        // 2. Gửi request POST đến Web App URL của Google Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec'; // Thay link Web App của bạn vào đây
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Hoặc bỏ nếu cấu hình CORS chuẩn, với Apps Script Web App thường dùng no-cors hoặc xử lý response dạng text
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'update_column_n',
+                id_thua_dat: parcelId,
+                ghi_chu: val
+            })
+        })
+        .then(() => {
+            // Do chế độ no-cors của Google Apps Script, ta tiến hành cập nhật giao diện luôn
             popupContainer.style.display = 'none';
 
-            // 4. CẬP NHẬT NGAY LẬP TỨC GIAO DIỆN PANEL (Link "nhập" sẽ tự động chuyển thành "xem")
             if (window.selectedThuaDatId === parcelId && window._currentParcelRawProps) {
                 renderParcelPanel(window._currentParcelRawProps, parcelId);
             }
 
-            alert('Đã cập nhật dữ liệu cột N thành công!');
-        };
-    }
+            alert('Đã cập nhật dữ liệu cột N thành công vào Google Sheet!');
+        })
+        .catch((error) => {
+            console.error("Lỗi khi lưu:", error);
+            alert('Có lỗi xảy ra khi lưu vào sheet!');
+            saveBtn.innerText = 'Lưu lại';
+            saveBtn.disabled = false;
+        });
+    };
 }
 
 // --- HÀM CẬP NHẬT HÌNH HỌC VÀ NHÃN ĐO ĐẠC ---
