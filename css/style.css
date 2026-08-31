@@ -117,6 +117,7 @@ body {
     border-radius: 8px !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18) !important;
     overflow: hidden;
+    z-index: 10000 !important;      /* ÉP NÚT ĐỊNH VỊ LÊN TRÊN CÙNG */
 }
 
 /* --- CÁC THÀNH PHẦN BỘ LỌC VÀ TÌM KIẾM --- */
