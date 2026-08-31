@@ -316,7 +316,7 @@ input {
 
     /* Căn chỉnh cụm nút định vị gióng thẳng hàng dọc tuyệt đối và nằm dưới thanh trượt trên mobile */
     .maplibregl-ctrl-top-right {
-        top: 88px !important;               /* Nằm ngay phía dưới thanh trượt độ mờ */
+        top: 83px !important;               /* Nằm ngay phía dưới thanh trượt độ mờ */
         right: 8px !important;              /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
     }
 
