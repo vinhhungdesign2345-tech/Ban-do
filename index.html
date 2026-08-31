@@ -246,5 +246,18 @@
     <script src="js/giaDatFilter.js"></script><!-- Tệp xử lý logic tra cứu giá đất theo tên đường, popup gợi ý -->
     <script src="js/searchThuaDat.js"></script><!-- Tệp xử lý logic tìm kiếm thông tin thửa đất -->
     <script src="js/map.js"></script>         <!-- Tệp khởi tạo bản đồ MapLibre, quản lý lớp nền và sự kiện click -->
+    <!-- Modal Popup cho Ghi chú / Cập nhật Cột N -->
+<div id="noteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+        <h3 id="noteModalTitle" style="margin-top: 0; font-size: 16px; color: #333;">Ghi chú thửa đất</h3>
+        <div id="noteModalBody" style="margin-bottom: 15px;">
+            <!-- Nội dung xem hoặc form nhập liệu sẽ tự động điền vào đây -->
+        </div>
+        <div style="text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+            <button id="noteModalSaveBtn" style="display: none; padding: 6px 14px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Lưu</button>
+            <button onclick="closeNoteModal()" style="padding: 6px 14px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Đóng</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
