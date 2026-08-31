@@ -2,8 +2,8 @@
 
 /* --- CÀI ĐẶT CHUNG CHO TOÀN BỘ TRANG WEB --- */
 body { 
-    margin: 0;                     /* Loại bỏ hoàn toàn khoảng cách thừa (margin) mặc định quanh viền trang */
-    padding: 0;                    /* Loại bỏ khoảng đệm (padding) mặc định của trình duyệt */
+    margin: 0;                    /* Loại bỏ hoàn toàn khoảng cách thừa (margin) mặc định quanh viền trang */
+    padding: 0;                  /* Loại bỏ khoảng đệm (padding) mặc định của trình duyệt */
     font-family: Arial, sans-serif; /* Đặt font chữ mặc định là Arial, dự phòng sang sans-serif */
 }
 
@@ -73,7 +73,7 @@ body {
 /* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (GÓC TRÊN PHẢI) --- */
 #opacity-control-panel {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
-    top: 120px;                    /* Đặt vị trí cách mép trên 120px */
+    top: 10px;                     /* Căn chỉnh nằm sát mép trên cùng (cách 10px ngang với cụm tìm kiếm) */
     right: 10px;                   /* Cố định khoảng cách lề phải khớp hoàn hảo với nút định vị */
     z-index: 1000;                 /* Độ ưu tiên hiển thị cao */
     background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt đồng bộ */
@@ -105,7 +105,7 @@ body {
 
 /* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
 .maplibregl-ctrl-top-right {
-    top: 200px !important;         /* Đặt vị trí cách mép trên 200px (nằm ngay phía dưới thanh trượt độ mờ) */
+    top: 90px !important;          /* Đặt vị trí nằm ngay phía dưới thanh trượt độ mờ ở góc trên phải */
     right: 10px !important;        /* Căn lề phải bằng với thanh trượt độ mờ ở trên */
 }
 
@@ -266,61 +266,61 @@ input {
 /* --- TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI / MOBILE --- */
 @media screen and (max-width: 768px) {
     .parcel-panel {
-        width: 95% !important;             /* Mở rộng bề ngang khung thông tin chiếm 95% màn hình di động */
-        max-width: none !important;        /* Xóa bỏ giới hạn chiều rộng tối đa trên điện thoại */
-        bottom: 10px !important;           /* Đưa khung thông tin sát xuống đáy màn hình hơn (cách 10px) */
-        padding: 8px 10px !important;      /* Thu nhỏ khoảng đệm bên trong để tiết kiệm diện tích */
-        max-height: 45vh !important;       /* Giới hạn chiều cao tối đa của khung bằng 45% chiều cao màn hình */
-        overflow-y: auto !important;       /* Cho phép cuộn dọc bên trong khung nếu nội dung quá dài */
+        width: 95% !important;              /* Mở rộng bề ngang khung thông tin chiếm 95% màn hình di động */
+        max-width: none !important;         /* Xóa bỏ giới hạn chiều rộng tối đa trên điện thoại */
+        bottom: 10px !important;            /* Đưa khung thông tin sát xuống đáy màn hình hơn (cách 10px) */
+        padding: 8px 10px !important;       /* Thu nhỏ khoảng đệm bên trong để tiết kiệm diện tích */
+        max-height: 45vh !important;        /* Giới hạn chiều cao tối đa của khung bằng 45% chiều cao màn hình */
+        overflow-y: auto !important;        /* Cho phép cuộn dọc bên trong khung nếu nội dung quá dài */
     }
 
     .panel-header {
-        font-size: 12px !important;        /* Thu nhỏ kích thước chữ tiêu đề trên mobile xuống 12px */
-        padding-bottom: 4px !important;    /* Thu hẹp khoảng đệm dưới của tiêu đề */
-        margin-bottom: 6px !important;     /* Thu hẹp khoảng cách lề dưới */
+        font-size: 12px !important;         /* Thu nhỏ kích thước chữ tiêu đề trên mobile xuống 12px */
+        padding-bottom: 4px !important;     /* Thu hẹp khoảng đệm dưới của tiêu đề */
+        margin-bottom: 6px !important;      /* Thu hẹp khoảng cách lề dưới */
     }
 
     .panel-body {
-        display: flex !important;          /* Chuyển đổi lưới thành dạng danh sách xếp dọc trên mobile */
-        flex-direction: column !important; /* Xếp các dòng thông tin lần lượt từ trên xuống dưới */
-        gap: 4px !important;               /* Thu hẹp khoảng cách giữa các dòng thông tin xuống còn 4px */
+        display: flex !important;           /* Chuyển đổi lưới thành dạng danh sách xếp dọc trên mobile */
+        flex-direction: column !important;  /* Xếp các dòng thông tin lần lượt từ trên xuống dưới */
+        gap: 4px !important;                /* Thu hẹp khoảng cách giữa các dòng thông tin xuống còn 4px */
     }
 
     .panel-body div {
-        width: 100% !important;            /* Mỗi dòng thông tin chiếm trọn 100% bề ngang màn hình */
-        font-size: 11px !important;        /* Thu nhỏ cỡ chữ xuống 11px để hiển thị vừa vặn trên màn hình nhỏ */
-        white-space: normal !important;    /* Cho phép chữ xuống dòng tự nhiên thay vì bị ẩn đi */
-        overflow: visible !important;      /* Hiển thị toàn bộ nội dung văn bản, không bị cắt bớt */
+        width: 100% !important;             /* Mỗi dòng thông tin chiếm trọn 100% bề ngang màn hình */
+        font-size: 11px !important;         /* Thu nhỏ cỡ chữ xuống 11px để hiển thị vừa vặn trên màn hình nhỏ */
+        white-space: normal !important;     /* Cho phép chữ xuống dòng tự nhiên thay vì bị ẩn đi */
+        overflow: visible !important;       /* Hiển thị toàn bộ nội dung văn bản, không bị cắt bớt */
     }
 
     .map-control {
-        top: 8px;                          /* Đặt bảng điều khiển dịch lên sát mép trên màn hình điện thoại (8px) */
-        left: 8px;                         /* Đặt bảng điều khiển sát lề trái hơn (8px) */
-        width: calc(100% - 16px);          /* Tự động tính toán chiều rộng phủ kín màn hình trừ 2 bên lề */
-        padding: 4px;                      /* Thu nhỏ khoảng đệm bên trong bảng điều khiển trên mobile */
+        top: 8px;                           /* Đặt bảng điều khiển dịch lên sát mép trên màn hình điện thoại (8px) */
+        left: 8px;                          /* Đặt bảng điều khiển sát lề trái hơn (8px) */
+        width: calc(100% - 16px);           /* Tự động tính toán chiều rộng phủ kín màn hình trừ 2 bên lề */
+        padding: 4px;                       /* Thu nhỏ khoảng đệm bên trong bảng điều khiển trên mobile */
     }
 
     .map-control select, 
     #searchThuaDatInput, 
     #searchThuaDatBtn {
-        font-size: 11px;                   /* Thu nhỏ kích thước chữ các ô nhập liệu và nút xuống 11px */
-        height: 30px;                      /* Thu nhỏ chiều cao các thành phần điều khiển xuống còn 30px */
+        font-size: 11px;                    /* Thu nhỏ kích thước chữ các ô nhập liệu và nút xuống 11px */
+        height: 30px;                       /* Thu nhỏ chiều cao các thành phần điều khiển xuống còn 30px */
     }
 
     /* Đặt vị trí thanh trượt độ mờ bên phải màn hình di động */
     #opacity-control-panel {
-        top: 135px !important;             /* Đặt vị trí nằm dưới cụm dropdown tìm kiếm */
-        right: 8px !important;             /* Cách lề phải màn hình di động một khoảng 8px */
-        width: 34px !important;            /* Cố định chiều rộng đồng nhất trên mobile */
+        top: 8px !important;                /* Căn sát mép trên mobile ngang hàng với cụm tìm kiếm */
+        right: 8px !important;              /* Cách lề phải màn hình di động một khoảng 8px */
+        width: 34px !important;             /* Cố định chiều rộng đồng nhất trên mobile */
     }
 
-    /* Căn chỉnh cụm nút định vị gióng thẳng hàng dọc tuyệt đối và cùng chiều rộng với thanh trượt bên trên trên mobile */
+    /* Căn chỉnh cụm nút định vị gióng thẳng hàng dọc tuyệt đối và nằm dưới thanh trượt trên mobile */
     .maplibregl-ctrl-top-right {
-        top: 215px !important;             /* Cách mép trên màn hình di động 215px */
-        right: 8px !important;             /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
+        top: 88px !important;               /* Nằm ngay phía dưới thanh trượt độ mờ */
+        right: 8px !important;              /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
     }
 
     .maplibregl-ctrl-top-right .maplibregl-ctrl {
-        width: 34px !important;            /* Đảm bảo nút định vị có cùng độ rộng trên mobile */
+        width: 34px !important;             /* Đảm bảo nút định vị có cùng độ rộng trên mobile */
     }
 }
