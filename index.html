@@ -26,9 +26,9 @@
 
     <!-- Khung chứa các điều khiển bộ lọc không gian và tìm kiếm cách mép trên 10px -->
     <div class="map-control" style="
-        width: 320px;                         /* Chiều rộng cố định ban đầu của khung tổng */
-        max-width: 100%;                      /* Giới hạn chiều rộng tối đa không vượt quá màn hình */
-        box-sizing: border-box;               /* Tính toán kích thước bao gồm cả viền và khoảng đệm padding */
+        width: 320px;                             /* Chiều rộng cố định ban đầu của khung tổng */
+        max-width: 100%;                          /* Giới hạn chiều rộng tối đa không vượt quá màn hình */
+        box-sizing: border-box;                   /* Tính toán kích thước bao gồm cả viền và khoảng đệm padding */
     ">
         <div class="filter-row" style="
             display: flex;                        /* Sử dụng mô hình sắp xếp linh hoạt Flexbox */
@@ -158,7 +158,7 @@
     </div>
 
     <!-- ================================================================= -->
-    <!-- KHUNG HIỂN THỊ CHÍNH BẢN ĐỒ ĐỊA LÝ TƯƠNG TÁC                         -->
+    <!-- KHUNG HIỂN THỊ CHÍNH BẢN ĐỒ ĐỊA LÝ TƯƠng TÁC                      -->
     <!-- ================================================================= -->
     <div id="map"></div>
 
@@ -229,7 +229,7 @@
     </div>
 
     <!-- ================================================================= -->
-    <!-- THANH TRƯỢT ĐIỀU CHỈNH ĐỘ MỜ (OPACITY) CỦA LỚP BẢN ĐỒ NỀN                -->
+    <!-- THANH TRƯỢT ĐIỀU CHỈNH ĐỘ MỜ (OPACITY) CỦA LỚP BẢN ĐỒ NỀN           -->
     <!-- ================================================================= -->
     <div id="opacity-control-panel">
         <label for="opacitySlider">Mờ: <span id="opacityValue">0.6</span></label>
@@ -242,22 +242,26 @@
     <script src="js/config.js"></script>     <!-- Tệp cấu hình thông số hệ thống, token, URL API -->
     <script src="js/api.js"></script>         <!-- Tệp xử lý các yêu cầu gọi dữ liệu API bên ngoài -->
     <script src="js/sheet.js"></script>       <!-- Tệp xử lý kết nối và đồng bộ dữ liệu Google Sheet -->
-    <script src="js/province.js"></script>   <!-- Tệp xử lý dữ liệu hành chính Tỉnh/Thành phố, Phường/Xã -->
+    <script src="js/province.js"></script>    <!-- Tệp xử lý dữ liệu hành chính Tỉnh/Thành phố, Phường/Xã -->
     <script src="js/giaDatFilter.js"></script><!-- Tệp xử lý logic tra cứu giá đất theo tên đường, popup gợi ý -->
     <script src="js/searchThuaDat.js"></script><!-- Tệp xử lý logic tìm kiếm thông tin thửa đất -->
+    <script src="js/note.js"></script>        <!-- Tệp xử lý Ghi chú / Cập nhật dữ liệu) -->
     <script src="js/map.js"></script>         <!-- Tệp khởi tạo bản đồ MapLibre, quản lý lớp nền và sự kiện click -->
-    <!-- Modal Popup cho Ghi chú / Cập nhật Cột N -->
-<div id="noteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
-    <div style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-        <h3 id="noteModalTitle" style="margin-top: 0; font-size: 16px; color: #333;">Ghi chú thửa đất</h3>
-        <div id="noteModalBody" style="margin-bottom: 15px;">
-            <!-- Nội dung xem hoặc form nhập liệu sẽ tự động điền vào đây -->
-        </div>
-        <div style="text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
-            <button id="noteModalSaveBtn" style="display: none; padding: 6px 14px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Lưu</button>
-            <button onclick="closeNoteModal()" style="padding: 6px 14px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Đóng</button>
+
+    <!-- ================================================================= -->
+    <!-- MODAL POPUP GHI CHÚ / CẬP NHẬT CỘT N                                -->
+    <!-- ================================================================= -->
+    <div id="noteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 20px; border-radius: 8px; width: 400px; max-width: 90%; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+            <h3 id="noteModalTitle" style="margin-top: 0; font-size: 16px; color: #333;">Ghi chú thửa đất</h3>
+            <div id="noteModalBody" style="margin-bottom: 15px;">
+                <!-- Nội dung xem hoặc form nhập liệu sẽ tự động điền vào đây -->
+            </div>
+            <div style="text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+                <button id="noteModalSaveBtn" style="display: none; padding: 6px 14px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Lưu</button>
+                <button onclick="closeNoteModal()" style="padding: 6px 14px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Đóng</button>
+            </div>
         </div>
     </div>
-</div>
 </body>
 </html>
