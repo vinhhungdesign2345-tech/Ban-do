@@ -1,6 +1,26 @@
 // ==========================================
-// meassure.js - HÀM CẬP NHẬT HÌNH HỌC VÀ NHÃN ĐO ĐẠC
+// js/measure.js - QUẢN LÝ ĐO ĐẠC (ĐO KHOẢNG CÁCH, DIỆN TÍCH VÀ CHU VI)
 // ==========================================
+
+let isMeasuring = false;
+let measureCoordinates = [];
+let measureMarkers = [];
+let measurePointMarkers = [];
+let measureHistory = [];
+let measureRedoStack = [];
+
+function pushMeasureState() {
+    measureHistory.push([...measureCoordinates]);
+    measureRedoStack = [];
+}
+
+function clearMeasureMarkers() {
+    measureMarkers.forEach(marker => marker.remove());
+    measureMarkers = [];
+    measurePointMarkers.forEach(marker => marker.remove());
+    measurePointMarkers = [];
+}
+
 function updateMeasureGeometry(map, skipRecreateMarkers = false) {
     const features = [];
     
@@ -243,9 +263,6 @@ function updateMeasureGeometry(map, skipRecreateMarkers = false) {
     }
 }
 
-// ==========================================
-// HÀM HỦY ĐO ĐẠC
-// ==========================================
 function resetMeasure(map) {
     isMeasuring = false;
     measureCoordinates = [];
@@ -269,4 +286,76 @@ function resetMeasure(map) {
             });
         }
     }
+}
+
+function initMeasureFeature(map) {
+    if (!map.getSource('measure-source')) {
+        map.addSource('measure-source', {
+            type: 'geojson',
+            data: { type: 'FeatureCollection', features: [] }
+        });
+
+        map.addLayer({
+            id: 'measure-polygon-fill',
+            type: 'fill',
+            source: 'measure-source',
+            filter: ['==', '$type', 'Polygon'],
+            paint: {
+                'fill-color': '#ff0055',
+                'fill-opacity': 0.2
+            }
+        });
+
+        map.addLayer({
+            id: 'measure-lines',
+            type: 'line',
+            source: 'measure-source',
+            filter: ['in', '$type', 'LineString', 'Polygon'],
+            paint: {
+                'line-color': '#ff0055',
+                'line-width': 3,
+                'line-dasharray': [2, 2]
+            }
+        });
+    }
+
+    const measureBtn = document.getElementById('measureDistBtn');
+    if (measureBtn) {
+        measureBtn.onclick = function() {
+            isMeasuring = !isMeasuring;
+            if (isMeasuring) {
+                this.style.backgroundColor = '#e0e0e0';
+                this.style.color = '#d93025';
+                this.innerText = '🛑 Hủy đo';
+                map.getCanvas().style.cursor = 'crosshair';
+                if (typeof closeParcelPanel === 'function') closeParcelPanel();
+            } else {
+                resetMeasure(map);
+            }
+        };
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (!isMeasuring) return;
+
+        const isCtrlOrMeta = e.ctrlKey || e.metaKey;
+        const keyLower = e.key.toLowerCase();
+
+        if (isCtrlOrMeta && ((e.shiftKey && keyLower === 'z') || keyLower === 'y')) {
+            e.preventDefault();
+            if (measureRedoStack.length > 0) {
+                measureHistory.push([...measureCoordinates]);
+                measureCoordinates = measureRedoStack.pop();
+                updateMeasureGeometry(map, false);
+            }
+        } 
+        else if (isCtrlOrMeta && keyLower === 'z') {
+            e.preventDefault();
+            if (measureHistory.length > 0) {
+                measureRedoStack.push([...measureCoordinates]);
+                measureCoordinates = measureHistory.pop();
+                updateMeasureGeometry(map, false);
+            }
+        }
+    });
 }
