@@ -28,7 +28,7 @@ body {
 /* --- NÚT CHUYỂN ĐỔI LỚP BẢN ĐỒ --- */
 .map-layer-control {
     position: absolute;            /* Đặt vị trí nổi lên trên bản đồ */
-    bottom: 20px;                  /* Cách mép dưới khung bản đồ 20 pixel */
+    bottom: 10px;                  /* Cách mép dưới khung bản đồ 10 pixel */
     left: 10px;                    /* Cách mép trái khung bản đồ 10 pixel */
     z-index: 100;                  /* Mức độ ưu tiên hiển thị lớp, nằm trên bản đồ */
 }
@@ -295,7 +295,7 @@ input {
     z-index: 100 !important;
     cursor: default !important;
 }
-/* --- 📱 TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI (BỐ TRÍ 2 CỘT CHO BẢNG THÔNG TIN) --- */
+/* --- 📱 GIAO DIỆN CHO ĐIỆN THOẠI --- */
 @media screen and (max-width: 768px) {
     .parcel-panel {
         width: 95% !important;         /* Mở rộng bề ngang khung thông tin chiếm 95% màn hình di động */
