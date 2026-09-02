@@ -27,7 +27,7 @@ function initGPSControl(map) {
     const tooltipBorderRadius = '4px';            // Độ bo tròn các góc của hộp chữ
     const tooltipPointerEvents = 'none';          // Vô hiệu hóa tương chuột qua hộp này (tránh cản trở click bản đồ)
     const tooltipDisplay = 'none';                // Mặc định ẩn đi khi chuột chưa vào bản đồ
-    const tooltipZIndex = '1000';                 // Đảm bảo hiển thị nổi lên trên cùng của bản đồ
+    const tooltipZIndex = '100';                  // Đảm bảo hiển thị nổi lên trên cùng của bản đồ
     const tooltipWhiteSpace = 'nowrap';           // Không cho phép chữ bị xuống dòng
 
     // Áp dụng các thông số kiểu dáng (CSS) vừa khai báo vào thẻ div Tooltip
@@ -285,11 +285,11 @@ function initGPSControl(map) {
 
             // Đổi giao diện nút thành trạng thái "Đã lưu / Bỏ đánh dấu"
             actionBtn.innerText = "Bỏ đánh dấu";                            
-            actionBtn.style.background = "#d93025"; // Đổi sang màu đỏ cảnh báo                         
-            nameInput.disabled = true;              // Khóa ô nhập tên lại không cho sửa nữa                                         
+            actionBtn.style.background = "#d93025"; // Đổi sang màu đỏ                        
+            nameInput.disabled = true;              // Khóa ô nhập tên lại không cho sửa                                       
             nameInput.style.background = "#f1f3f4"; // Làm xám nền ô nhập để biểu thị trạng thái đã khóa                            
 
-            // Đổi hành vi của nút: Khi bấm lại vào nút này thì sẽ xóa hẳn điểm ghim này khỏi bản đồ
+            // Đổi hành vi của nút: Khi bấm lại vào nút này thì sẽ xóa hẳn điểm ghim tạm khỏi bản đồ
             actionBtn.onclick = function () {
                 savedMarker.remove();
             };
@@ -297,7 +297,7 @@ function initGPSControl(map) {
             event.stopPropagation(); // Ngăn sự kiện click lan truyền ngược lên bản đồ
         };
 
-        // Tự động kích hoạt bật mở bảng Popup ngay khi vừa tạo xong điểm ghim
+        // Tự động bật mở bảng Popup ngay khi vừa tạo xong điểm ghim
         tempMarker.togglePopup();
     });
 }
