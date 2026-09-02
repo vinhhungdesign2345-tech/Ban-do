@@ -18,9 +18,9 @@ function initGPSControl(map) {
     
     // Định nghĩa các biến chứa thông số cấu hình giao diện cho thanh tọa độ cố định mép dưới
     const tooltipPosition = 'absolute';                           // Đặt vị trí tuyệt đối để neo vào khung chứa bản đồ
-    const tooltipBottom = '55px';                                 // Khoảng cách neo từ mép dưới lên: 55     pixel
-    const tooltipLeft = '10px';                                   // Khoảng cách neo từ mép trái sang: 10 pixel
-    const tooltipBg = 'rgba(0, 0, 0, 0.50)';                      // Màu nền: Màu đen có độ trong suốt 50% tạo hiệu ứng tối giản
+    const tooltipBottom = '10px';                                 // Khoảng cách neo từ mép dưới lên: 10 pixel
+    const tooltipLeft = '10px';                                   // Khoảng cách neo từ mép trái sang: 10 pixel (hoặc đổi thành right nếu muốn sang phải)
+    const tooltipBg = 'rgba(0, 0, 0, 0.75)';                      // Màu nền: Màu đen có độ trong suốt 75% tạo hiệu ứng tối giản
     const tooltipColor = '#ffffff';                               // Màu chữ: Màu trắng sáng giúp nổi bật trên nền tối
     const tooltipPaddingTopBot = '4px';                           // Khoảng đệm bên trong theo chiều dọc (trên/dưới)
     const tooltipPaddingLeftRight = '8px';                        // Khoảng đệm bên trong theo chiều ngang (trái/phải)
@@ -29,7 +29,7 @@ function initGPSControl(map) {
     const tooltipBorderRadius = '4px';                            // Bo tròn 4 góc của hộp với bán kính 4 pixel
     const tooltipPointerEvents = 'none';                          // QUAN TRỌNG: Vô hiệu hóa mọi sự kiện chuột trên hộp (giúp chuột không bị vướng)
     const tooltipDisplay = 'block';                               // Trạng thái: Luôn hiển thị sẵn sàng trên bản đồ
-    const tooltipZIndex = '50';                                   // Mức hiển thị ưu tiên lớp (z-index)
+    const tooltipZIndex = '1000';                                 // Mức hiển thị ưu tiên lớp (z-index): Đặt cao (1000) để luôn đè lên trên bản đồ
     const tooltipWhiteSpace = 'nowrap';                           // Ép nội dung tọa độ hiển thị trên một dòng duy nhất
 
     // Gom nhóm và gán chuỗi định dạng CSS hoàn chỉnh vào thuộc tính style của tooltip
@@ -91,8 +91,8 @@ function initGPSControl(map) {
             // Tạo phần tử thẻ <button> đại diện cho nút ghim điểm
             const pinButton = document.createElement('button');
             pinButton.type = 'button';
-            pinButton.title = 'Bật/Tắt chế độ ghim địa điểm'; // Chú thích khi rê chuột vào nút
-            pinButton.innerHTML = '📍';                      // Biểu tượng icon
+            pinButton.title = 'Bật/Tắt chế độ ghim địa điểm'; // Chú thích gợi ý khi rê chuột vào nút
+            pinButton.innerHTML = '📍';                      // Biểu tượng icon chiếc ghim bản đồ
             
             // Khai báo các thông số giao diện chi tiết cho nút bấm
             const ctrlBtnWidth = '29px';                     // Chiều rộng chuẩn của nút điều khiển bản đồ MapLibre
@@ -100,9 +100,10 @@ function initGPSControl(map) {
             const ctrlBtnDisplay = 'flex';                   // Sử dụng mô hình Flexbox để canh chỉnh nội dung bên trong
             const ctrlBtnAlign = 'center';                   // Canh giữa theo chiều dọc
             const ctrlBtnJustify = 'center';                 // Canh giữa theo chiều ngang
-            const ctrlBtnFontSize = '15px';                  // Cỡ chữ của icon 📍
+            const ctrlBtnFontSize = '15px';                   // Cỡ chữ của icon 📍
             const ctrlBtnBorder = 'none';                    // Không viền mặc định
             const ctrlBtnBg = '#ffffff';                     // Màu nền mặc định: Trắng sáng
+            const ctrlBtnCursor = 'pointer';                 // Con trỏ chuột chuyển thành dạng bàn tay khi rê vào
             const ctrlBtnOutline = 'none';                   // Loại bỏ đường viền sáng (outline) khi bấm vào nút
 
             // Áp dụng chuỗi thông số CSS vào nút bấm
@@ -125,7 +126,7 @@ function initGPSControl(map) {
                 
                 if (isPinModeActive) {
                     // TRƯỜNG HỢP BẬT CHẾ ĐỘ GHIM:
-                    pinButton.style.background = '#8eb3ed';          // Đổi màu nền nút sang màu xanh dương nhạt báo hiệu đang kích hoạt
+                    pinButton.style.background = '#e8f0fe';          // Đổi màu nền nút sang màu xanh dương nhạt báo hiệu đang kích hoạt
                     mapInstance.getContainer().style.cursor = 'crosshair'; // Đổi hình dạng con trỏ chuột thành hình dấu cộng (+) đặc trưng chọn điểm
                 } else {
                     // TRƯỜNG HỢP TẮT CHẾ ĐỘ GHIM:
