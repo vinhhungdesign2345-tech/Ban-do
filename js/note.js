@@ -169,6 +169,6 @@ function openColumnNPopup(parcelId, mode, currentData = '') {
         // ----------------------------------------------------
         // BƯỚC 6: THÔNG BÁO HOÀN TẤT CHO NGƯỜI DÙNG
         // ----------------------------------------------------
-        alert('Đã cập nhật Ghi chú và Ngày Ghi chú thành công vào Google Sheet!');
+        alert('Đã cập nhật Ghi chú thành công!');
     };
 }
