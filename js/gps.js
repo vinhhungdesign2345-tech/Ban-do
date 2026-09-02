@@ -82,7 +82,7 @@ function initGPSControl(map) {
         localStorage.setItem('pinned_locations', JSON.stringify(markers));
     }
 
-    // Hàm tạo popup dùng chung (Đã tối ưu kích thước chuẩn gọn cho mobile)
+    // Hàm tạo nội dung HTML bên trong popup
     function createPopupHTML(placeName, lat, lng, uniqueId, isPermanent = false) {
         const container = document.createElement('div');
         container.style.cssText = `
@@ -135,6 +135,23 @@ function initGPSControl(map) {
         return container;
     }
 
+    // Hàm áp dụng style chuẩn ép sát khung popup của MapLibre (Khắc phục lỗi phình to trên mobile)
+    function applyPopupFix(popupInstance) {
+        const popupElement = popupInstance.getElement();
+        if (popupElement) {
+            const contentEl = popupElement.querySelector('.maplibregl-popup-content');
+            if (contentEl) {
+                contentEl.style.cssText = `
+                    padding: 8px !important;
+                    border-radius: 6px !important;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+                    width: 150px !important;
+                    box-sizing: border-box !important;
+                `;
+            }
+        }
+    }
+
     function createPermanentMarker(mapInstance, lng, lat, placeName, markerId = null, isRestoring = false) {
         const uniqueId = markerId || 'marker_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
         const popupContent = createPopupHTML(placeName, lat, lng, uniqueId, true);
@@ -160,6 +177,11 @@ function initGPSControl(map) {
             .setLngLat([lng, lat])
             .setPopup(popup)
             .addTo(mapInstance);
+
+        // Ép style ngay sau khi popup mở
+        popup.on('open', () => {
+            applyPopupFix(popup);
+        });
 
         const removeBtn = popupContent.querySelector(`#btn-${uniqueId}`);
         removeBtn.onclick = function (event) {
@@ -289,6 +311,11 @@ function initGPSControl(map) {
             .setLngLat([e.lngLat.lng, e.lngLat.lat])
             .setPopup(popup)
             .addTo(map);
+
+        // Ép style ngay sau khi popup mở
+        popup.on('open', () => {
+            applyPopupFix(popup);
+        });
 
         const actionBtn = popupContent.querySelector(`#btn-${uniqueTempId}`);
         const nameInput = popupContent.querySelector(`#input-${uniqueTempId}`);
