@@ -265,8 +265,20 @@ function initGPSControl(map) {
 
         const markerColor = '#ea4335';  // Màu sắc của biểu tượng ghim định vị (Mã màu đỏ đặc trưng Google Marker)
 
-        // Khởi tạo đối tượng Marker (ghim vị trí) trên bản đồ tại tọa độ người dùng click, gắn kèm popup vừa tạo
-        tempMarker = new maplibregl.Marker({ color: markerColor })
+        // Tạo một thẻ div nhỏ gọn làm icon thay thế cho Marker mặc định
+        const markerEl = document.createElement('div');
+        markerEl.style.cssText = `
+            width: 14px;
+            height: 14px;
+            background-color: #ea4335;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            cursor: pointer;
+        `;
+
+        // Khởi tạo Marker với phần tử HTML tùy chỉnh vừa tạo
+        tempMarker = new maplibregl.Marker({ element: markerEl })
             .setLngLat([e.lngLat.lng, e.lngLat.lat])
             .setPopup(popup)
             .addTo(map);
