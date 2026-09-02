@@ -217,7 +217,7 @@ function initGPSControl(map) {
     }
 
     // ----------------------------------------------------
-    // PHẦN 3: NÚT BẬT/TẮT CHẾ ĐỘ GHIM (CÓ SẴN THÔNG SỐ CHỈNH KÍCH THƯỚC Ở ĐÂY)
+    // PHẦN 3: NÚT BẬT/TẮT CHẾ ĐỘ GHIM (ĐÃ FIX PHỦ XANH TOÀN BỘ KHUNG)
     // ----------------------------------------------------
     let isPinModeActive = false;
 
@@ -232,7 +232,6 @@ function initGPSControl(map) {
             pinButton.title = 'Bật/Tắt chế độ ghim địa điểm';
             pinButton.innerHTML = '📍';
             
-            // KÍCH THƯỚC NÚT BẬT/TẮT GHIM:
             pinButton.style.cssText = `
                 width: 29px;
                 height: 29px;
@@ -250,9 +249,12 @@ function initGPSControl(map) {
             pinButton.onclick = () => {
                 isPinModeActive = !isPinModeActive;
                 if (isPinModeActive) {
+                    // Tô xanh toàn bộ cả nút bấm lẫn khung bao ngoài để không bị lộ nền trắng
                     pinButton.style.background = '#6a9ceb';
+                    this._container.style.background = '#6a9ceb';
                 } else {
                     pinButton.style.background = 'transparent';
+                    this._container.style.background = ''; // Trả về màu mặc định của bản đồ
                     if (tempMarker) {
                         tempMarker.remove();
                         tempMarker = null;
@@ -271,8 +273,6 @@ function initGPSControl(map) {
     }
 
     map.addControl(new PinControl(), 'top-right');
-
-    let tempMarker = null;
 
     // ----------------------------------------------------
     // PHẦN 4: SỰ KIỆN CLICK BẢN ĐỒ TẠO ĐIỂM GHIM TẠM THỜI
