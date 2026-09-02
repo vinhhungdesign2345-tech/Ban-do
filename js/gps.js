@@ -217,7 +217,7 @@ function initGPSControl(map) {
     }
 
     // ----------------------------------------------------
-    // PHẦN 3: NÚT BẬT/TẮT CHẾ ĐỘ GHIM (ĐÃ FIX PHỦ XANH TOÀN BỘ KHUNG)
+    // PHẦN 3: NÚT BẬT/TẮT CHẾ ĐỘ GHIM
     // ----------------------------------------------------
     let isPinModeActive = false;
 
