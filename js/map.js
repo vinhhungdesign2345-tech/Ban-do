@@ -196,6 +196,13 @@ function initMap() {
     // Gọi các hàm khởi tạo bộ lọc và tìm kiếm thửa đất
     initFilter(map);
     initThuaDatSearch(map);
+    
+    // =========================================================================
+    // LỆNH GỌI TÍNH NĂNG GPS
+    // =========================================================================
+    if (typeof initGPSControl === 'function') {
+        initGPSControl(map);
+      }
   });
 
   // Mảng chứa ID các lớp (layer) của thửa đất trên bản đồ cần lắng nghe sự kiện click
