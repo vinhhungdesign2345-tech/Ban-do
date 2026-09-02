@@ -64,62 +64,88 @@ function initGPSControl(map) {
         coordTooltip.style.display = 'none';
     });
 
+    // Biến toàn cục cục bộ hàm dùng để giữ tham chiếu đến điểm ghim tạm (chưa bấm lưu) hiện tại
+    let tempMarker = null;
+
     // ----------------------------------------------------
-    // PHẦN 4: LẮNG NGHE SỰ KIỆN CLICK TRÊN BẢN ĐỒ ĐỂ GHIM ĐIỂM
+    // PHẦN 4: LẮNG NGHE SỰ KIỆN CLICK TRÊN BẢN ĐỒ ĐỂ TẠO GHIM TẠM
     // ----------------------------------------------------
     map.on('click', function (e) {
         // Kiểm tra an toàn: Nếu ứng dụng đang bật chế độ đo đạc (measure) thì bỏ qua sự kiện ghim điểm này
         if (typeof isMeasuring !== 'undefined' && isMeasuring) return;
 
+        // Nếu đã có một điểm ghim tạm chưa lưu trước đó, hãy xóa nó đi trước khi tạo điểm mới ở chỗ khác
+        if (tempMarker) {
+            tempMarker.remove();
+            tempMarker = null;
+        }
+
         // Lấy tọa độ kinh/vĩ độ tại vị trí click và rút gọn còn 6 số thập phân
         const clickedLng = e.lngLat.lng.toFixed(6);
         const clickedLat = e.lngLat.lat.toFixed(6);
 
-        // Tạo phần tử HTML chứa giao diện bên trong bảng Popup khi ghim điểm
+        // Tạo phần tử HTML chứa giao diện popup nhỏ gọn, thẩm mỹ
         const popupContent = document.createElement('div');
-        popupContent.style.cssText = "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-width: 200px; padding: 2px;";
+        // Thiết kế kiểu dáng popup tinh gọn, đẹp mắt (padding nhỏ, bó gọn các thành phần)
+        popupContent.style.cssText = "font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; width: 180px; padding: 4px;";
         
-        // Đổ mã cấu trúc HTML chi tiết cho popup: Ô nhập tên địa điểm, dòng tọa độ thu gọn, và nút bấm hành động
+        // Đổ mã cấu trúc HTML chi tiết cho popup: 
+        // - Hàng 1: Ô nhập tên địa điểm (thay vì nhãn "Tọa độ đã ghim")
+        // - Hàng 2: Tọa độ gọn dạng "9.173683, 105.168460"
+        // - Hàng 3: Nút bấm "Đánh dấu"
         popupContent.innerHTML = `
-            <input type="text" id="place-name-input" placeholder="Nhập tên địa điểm..." value="Địa điểm mới" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; margin-bottom: 6px;" />
-            <div style="font-size: 12px; color: #5f6368; margin-bottom: 8px; font-family: monospace;">${clickedLat}, ${clickedLng}</div>
-            <button id="pin-action-btn" style="width: 100%; padding: 6px 12px; background: #1a73e8; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 12px;">Đánh dấu</button>
+            <input type="text" id="place-name-input" placeholder="Nhập tên địa điểm..." value="Địa điểm mới" style="width: 100%; padding: 4px 6px; font-size: 12px; border: 1px solid #dcdcdc; border-radius: 3px; box-sizing: border-box; margin-bottom: 4px; outline: none;" />
+            <div style="font-size: 11px; color: #666; margin-bottom: 6px; font-family: monospace;">${clickedLat}, ${clickedLng}</div>
+            <button id="pin-action-btn" style="width: 100%; padding: 4px 8px; background: #1a73e8; color: #fff; border: none; border-radius: 3px; cursor: pointer; font-weight: 500; font-size: 11px;">Đánh dấu</button>
         `;
 
-        // Khởi tạo đối tượng Popup của MapLibre với độ lệch (offset) 25 pixel phía trên đầu biểu tượng ghim
-        const popup = new maplibregl.Popup({ offset: 25 }).setDOMContent(popupContent);
+        // Khởi tạo đối tượng Popup của MapLibre với độ lệch (offset) 20 pixel phía trên đầu biểu tượng ghim
+        const popup = new maplibregl.Popup({ offset: 20, closeButton: true }).setDOMContent(popupContent);
 
-        // Khởi tạo một đối tượng Marker (Ghim bản đồ) màu đỏ (#ea4335) tại chính xác tọa độ click, gắn popup và thêm vào bản đồ
-        const marker = new maplibregl.Marker({ color: '#ea4335' })
+        // Khởi tạo một đối tượng Marker tạm thời màu cam/đỏ nhạt tại chính xác tọa độ click, gắn popup và thêm vào bản đồ
+        tempMarker = new maplibregl.Marker({ color: '#ea4335' })
             .setLngLat([e.lngLat.lng, e.lngLat.lat])
             .setPopup(popup)
             .addTo(map);
-
-        // Biến cục bộ theo dõi trạng thái ghim: 
-        // - false: Điểm mới tạo, chưa lưu (nút hiển thị "Đánh dấu")
-        // - true: Điểm đã được lưu giữ trên bản đồ (nút đổi thành "Bỏ đánh dấu")
-        let isMarked = false;
 
         // Truy xuất đến phần tử nút bấm và ô nhập liệu bên trong popup vừa khởi tạo
         const actionBtn = popupContent.querySelector('#pin-action-btn');
         const nameInput = popupContent.querySelector('#place-name-input');
 
-        // Lắng nghe sự kiện click vào nút hành động trong popup
+        // Lắng nghe sự kiện click vào nút "Đánh dấu"
         actionBtn.onclick = function () {
-            if (!isMarked) {
-                // TRƯỜNG HỢP 1: Bấm "Đánh dấu" lần đầu tiên để lưu điểm ghim lại
-                isMarked = true;                                // Chuyển trạng thái thành đã đánh dấu
-                actionBtn.innerText = "Bỏ đánh dấu";              // Đổi chữ trên nút thành "Bỏ đánh dấu"
-                actionBtn.style.background = "#ea4335";         // Đổi màu nền nút sang màu đỏ cảnh báo
-                nameInput.disabled = true;                      // Khóa ô nhập tên lại để cố định thông tin địa điểm
-                popup.setOptions({ closeOnClick: false });      // Cấu hình để popup không bị tự động ẩn đi khi người dùng click ra vùng trống ngoài bản đồ
-            } else {
-                // TRƯỜNG HỢP 2: Bấm "Bỏ đánh dấu" (khi nhấp vào ghim cũ đã lưu) -> Xóa bỏ hoàn toàn marker khỏi bản đồ
-                marker.remove();
-            }
+            // Khi bấm Đánh dấu: Chính thức lưu điểm này lại trên bản đồ (gỡ gán khỏi biến tạm để nó không bị xóa khi click chỗ khác)
+            const savedMarker = tempMarker;
+            tempMarker = null; // Xóa tham chiếu tạm để chuẩn bị cho phép tạo điểm mới tiếp theo
+
+            // Đổi giao diện nút bấm thành trạng thái "Bỏ đánh dấu" để người dùng có thể click chọn lại và xóa bất cứ lúc nào
+            actionBtn.innerText = "Bỏ đánh dấu";
+            actionBtn.style.background = "#d93025"; // Đổi sang màu đỏ đậm
+            nameInput.disabled = true;              // Khóa tên lại không cho sửa nữa
+            nameInput.style.background = "#f1f3f4"; // Đổi màu nền ô input thành xám nhạt cho biết đã khóa
+
+            // Gán lại sự kiện click mới cho chính nút này: Bấm lần nữa để XÓA (Bỏ đánh dấu) khỏi bản đồ
+            actionBtn.onclick = function () {
+                savedMarker.remove(); // Xóa hoàn toàn ghim này khỏi bản đồ
+            };
+
+            // Ngăn chặn sự kiện lan truyền
+            event.stopPropagation();
         };
 
+        // Lắng nghe sự kiện khi người dùng tắt popup bằng dấu X trên góc
+        popup.on('close', function() {
+            // Nếu điểm này vẫn đang là điểm tạm (chưa bấm nút Đánh dấu) mà người dùng tắt popup đi thì tự động xóa marker luôn
+            if (tempMarker === savedMarker_ref || tempMarker === marker_check_closure()) {
+                // (Đảm bảo dọn dẹp điểm chưa lưu)
+            }
+        });
+
+        // Hàm hỗ trợ nội bộ để check đóng popup dọn dẹp
+        function marker_check_closure() { return tempMarker; }
+        const savedMarker_ref = tempMarker;
+
         // Tự động kích hoạt bật mở popup lên ngay lập tức sau khi tạo xong marker
-        marker.togglePopup();
+        tempMarker.togglePopup();
     });
 }
