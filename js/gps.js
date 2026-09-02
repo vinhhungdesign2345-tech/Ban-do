@@ -2,37 +2,29 @@
 // gps.js - HỆ THỐNG HIỂN THỊ TỌA ĐỘ CỐ ĐỊNH MÉP DƯỚI VÀ GHIM ĐIỂM (MAPLIBRE GL)
 // ==========================================
 
-/**
- * Hàm khởi tạo toàn bộ tính năng GPS, tọa độ chuột, nút Ghim điểm và khôi phục điểm ghim từ localStorage.
- * @param {maplibregl.Map} map - Đối tượng bản đồ chính của ứng dụng.
- */
 function initGPSControl(map) {
     
     // ----------------------------------------------------
     // PHẦN 1: TẠO HỘP CÔNG CỤ HIỂN THỊ TỌA ĐỘ CỐ ĐỊNH Ở MÉP DƯỚI BẢN ĐỒ
     // ----------------------------------------------------
-    
-    // Tạo một thẻ phần tử `div` động trong DOM để chứa nội dung tọa độ ở góc bản đồ
     const coordTooltip = document.createElement('div');
-    coordTooltip.id = 'mouse-coord-tooltip'; // Gán ID để dễ quản lý hoặc định nghĩa thêm trong CSS nếu cần
+    coordTooltip.id = 'mouse-coord-tooltip';
     
-    // Định nghĩa các biến chứa thông số cấu hình giao diện cho thanh tọa độ cố định mép dưới
-    const tooltipPosition = 'absolute';                           // Đặt vị trí tuyệt đối để neo vào khung chứa bản đồ
-    const tooltipBottom = '55px';                                 // Khoảng cách neo từ mép dưới lên: 55 pixel
-    const tooltipLeft = '10px';                                   // Khoảng cách neo từ mép trái sang: 10 pixel
-    const tooltipBg = 'rgba(0, 0, 0, 0.75)';                      // Màu nền: Màu đen có độ trong suốt 75% tạo hiệu ứng tối giản
-    const tooltipColor = '#ffffff';                               // Màu chữ: Màu trắng sáng giúp nổi bật trên nền tối
-    const tooltipPaddingTopBot = '4px';                           // Khoảng đệm bên trong theo chiều dọc (trên/dưới)
-    const tooltipPaddingLeftRight = '8px';                        // Khoảng đệm bên trong theo chiều ngang (trái/phải)
-    const tooltipFontSize = '12px';                               // Cỡ chữ hiển thị: 12 pixel (nhỏ gọn, rõ ràng)
-    const tooltipFontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"; // Bộ font chữ hệ thống hiện đại
-    const tooltipBorderRadius = '4px';                            // Bo tròn 4 góc của hộp với bán kính 4 pixel
-    const tooltipPointerEvents = 'none';                          // QUAN TRỌNG: Vô hiệu hóa mọi sự kiện chuột trên hộp
-    const tooltipDisplay = 'block';                               // Trạng thái: Luôn hiển thị sẵn sàng trên bản đồ
-    const tooltipZIndex = '1000';                                 // Mức hiển thị ưu tiên lớp (z-index): Đặt cao (1000) để luôn đè lên trên bản đồ
-    const tooltipWhiteSpace = 'nowrap';                           // Ép nội dung tọa độ hiển thị trên một dòng duy nhất
+    const tooltipPosition = 'absolute';
+    const tooltipBottom = '55px';
+    const tooltipLeft = '10px';
+    const tooltipBg = 'rgba(0, 0, 0, 0.75)';
+    const tooltipColor = '#ffffff';
+    const tooltipPaddingTopBot = '4px';
+    const tooltipPaddingLeftRight = '8px';
+    const tooltipFontSize = '12px';
+    const tooltipFontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    const tooltipBorderRadius = '4px';
+    const tooltipPointerEvents = 'none';
+    const tooltipDisplay = 'block';
+    const tooltipZIndex = '1000';
+    const tooltipWhiteSpace = 'nowrap';
 
-    // Gom nhóm và gán chuỗi định dạng CSS hoàn chỉnh vào thuộc tính style của tooltip
     coordTooltip.style.cssText = `
         position: ${tooltipPosition};
         bottom: ${tooltipBottom};
@@ -49,39 +41,25 @@ function initGPSControl(map) {
         white-space: ${tooltipWhiteSpace};
     `;
     
-    // Giá trị mặc định ban đầu khi chuột chưa vào bản đồ
     coordTooltip.innerHTML = 'Lat: --, Lng: --';
-
-    // Đưa thẻ tọa độ vừa tạo vào bên trong khung chứa chính của bản đồ (Map Container)
     map.getContainer().appendChild(coordTooltip);
 
     // ----------------------------------------------------
-    // PHẦN 2: LẮNG NGHE SỰ KIỆN DI CHUYỂN CHUỘT TRÊN BẢN ĐỒ (MOUSEMOVE)
+    // PHẦN 2 & 3: LẮNG NGHE SỰ KIỆN CHUỘT (MOUSEMOVE / MOUSEOUT)
     // ----------------------------------------------------
     map.on('mousemove', function (e) {
-        // Lấy tọa độ Kinh độ (Lng) và Vĩ độ (Lat) tại vị trí con trỏ chuột, làm tròn chính xác đến 6 chữ số thập phân
         const lng = e.lngLat.lng.toFixed(6);
         const lat = e.lngLat.lat.toFixed(6);
-
-        // Cập nhật nội dung tọa độ cố định tại ô ở mép dưới bản đồ
         coordTooltip.innerHTML = `Lat: ${lat}, Lng: ${lng}`;
     });
 
-    // ----------------------------------------------------
-    // PHẦN 3: LẮNG NGHE SỰ KIỆN KHI CHUỘT RỜI KHỎI KHUNG BẢN ĐỒ (MOUSEOUT)
-    // ----------------------------------------------------
     map.on('mouseout', function () {
-        // Trả về trạng thái chờ khi con trỏ chuột rê ra ngoài biên giới hạn của khung bản đồ
         coordTooltip.innerHTML = 'Lat: --, Lng: --';
     });
 
     // ----------------------------------------------------
-    // PHẦN 4: HỆ THỐNG LƯU TRỮ VÀ KHÔI PHỤC ĐIỂM GHIM (QUẢN LÝ TRỰC TIẾP MẢNG JSON)
+    // PHẦN 4: HỆ THỐNG LƯU TRỮ VÀ KHÔI PHỤC ĐIỂM GHIM (LOCALSTORAGE)
     // ----------------------------------------------------
-    
-    /**
-     * Hàm kiểm tra localStorage khả dụng
-     */
     function isLocalStorageAvailable() {
         try {
             const testKey = '__test_storage__';
@@ -93,9 +71,6 @@ function initGPSControl(map) {
         }
     }
 
-    /**
-     * Hàm lấy danh sách điểm ghim từ localStorage
-     */
     function getStoredMarkers() {
         if (!isLocalStorageAvailable()) return [];
         const data = localStorage.getItem('pinned_locations');
@@ -106,9 +81,6 @@ function initGPSControl(map) {
         }
     }
 
-    /**
-     * Hàm lưu một điểm mới vào localStorage
-     */
     function saveMarkerToStorage(markerData) {
         if (!isLocalStorageAvailable()) return;
         const markers = getStoredMarkers();
@@ -121,9 +93,6 @@ function initGPSControl(map) {
         localStorage.setItem('pinned_locations', JSON.stringify(markers));
     }
 
-    /**
-     * Hàm xóa một điểm ra khỏi localStorage dựa vào ID
-     */
     function removeMarkerFromStorage(markerId) {
         if (!isLocalStorageAvailable()) return;
         let markers = getStoredMarkers();
@@ -131,9 +100,6 @@ function initGPSControl(map) {
         localStorage.setItem('pinned_locations', JSON.stringify(markers));
     }
 
-    /**
-     * Hàm dựng điểm ghim chính thức lên bản đồ.
-     */
     function createPermanentMarker(mapInstance, lng, lat, placeName, markerId = null, isRestoring = false) {
         const uniqueId = markerId || 'marker_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
 
@@ -188,7 +154,12 @@ function initGPSControl(map) {
             </button>
         `;
 
-        const popup = new maplibregl.Popup({ offset: 15, closeButton: true }).setDOMContent(popupContent);
+        // Ép style trực tiếp để ghi đè giao diện mặc định bị bóp méo trên mobile
+        const popup = new maplibregl.Popup({ 
+            offset: 15, 
+            closeButton: true,
+            maxWidth: '180px' // Chặn không cho mobile tự phóng to khung popup
+        }).setDOMContent(popupContent);
 
         const markerEl = document.createElement('div');
         markerEl.style.cssText = `
@@ -206,7 +177,6 @@ function initGPSControl(map) {
             .setPopup(popup)
             .addTo(mapInstance);
 
-        // Xử lý sự kiện khi bấm nút "Bỏ đánh dấu"
         const removeBtn = popupContent.querySelector(`#remove-btn-${uniqueId}`);
         removeBtn.onclick = function (event) {
             permanentMarker.remove();
@@ -214,7 +184,6 @@ function initGPSControl(map) {
             event.stopPropagation();
         };
 
-        // Nếu là tạo mới, lưu vào localStorage
         if (!isRestoring) {
             saveMarkerToStorage({
                 id: uniqueId,
@@ -225,9 +194,6 @@ function initGPSControl(map) {
         }
     }
 
-    /**
-     * Hàm tự động khôi phục toàn bộ danh sách điểm ghim từ localStorage khi khởi động bản đồ.
-     */
     function loadSavedMarkers(mapInstance) {
         const storedLocations = getStoredMarkers();
         if (storedLocations.length === 0) return;
@@ -237,7 +203,6 @@ function initGPSControl(map) {
         });
     }
 
-    // Tải lại điểm ghim cũ ngay khi khởi tạo
     if (map.loaded()) {
         loadSavedMarkers(map);
     } else {
@@ -247,9 +212,9 @@ function initGPSControl(map) {
     }
 
     // ----------------------------------------------------
-    // PHẦN 5: TẠO NÚT BẤM "GHIM ĐIỂM" ĐỒNG BỘ TRONG CỤM ĐIỀU KHIỂN BẢN ĐỒ
+    // PHẦN 5: TẠO NÚT BẤM "GHIM ĐIỂM" TRÊN BẢN ĐỒ
     // ----------------------------------------------------
-    let isPinModeActive = false; // Biến cờ kiểm tra trạng thái bật/tắt chế độ ghim điểm
+    let isPinModeActive = false;
 
     class PinControl {
         onAdd(mapInstance) {
@@ -316,7 +281,7 @@ function initGPSControl(map) {
     let tempMarker = null;
 
     // ----------------------------------------------------
-    // PHẦN 6: LẮNG NGHE SỰ KIỆN CLICK TRÊN BẢN ĐỒ ĐỂ TẠO ĐIỂM GHIM TẠM THỜI
+    // PHẦN 6: SỰ KIỆN CLICK TẠO ĐIỂM GHIM TẠM THỜI
     // ----------------------------------------------------
     map.on('click', function (e) {
         if (!isPinModeActive) return;
@@ -406,9 +371,11 @@ function initGPSControl(map) {
         const popupOffset = 15;
         const popupCloseButton = true;
 
+        // Cố định maxWidth để ngăn mobile tự động làm giãn to khung popup
         const popup = new maplibregl.Popup({ 
             offset: popupOffset, 
-            closeButton: popupCloseButton 
+            closeButton: popupCloseButton,
+            maxWidth: '180px' 
         }).setDOMContent(popupContent);
 
         const markerEl = document.createElement('div');
