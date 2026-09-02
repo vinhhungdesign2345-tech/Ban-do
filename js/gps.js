@@ -273,10 +273,21 @@ function initGPSControl(map) {
             }
         };
 
+        // Lắng nghe sự kiện khi popup bị đóng lại (bấm nút X hoặc click ra ngoài)
+        let isMarked = false; // Biến cờ kiểm tra xem đã bấm đánh dấu hay chưa
+        popup.on('close', function() {
+            // Nếu chưa bấm đánh dấu mà popup đóng lại, tự động xóa marker tạm
+            if (!isMarked && tempMarker) {
+                tempMarker.remove();
+                tempMarker = null;
+            }
+        });
+
         // Xử lý sự kiện khi bấm nút "Đánh dấu" trong popup
         actionBtn.onclick = function (event) {
+            isMarked = true;      // Đánh dấu là đã được lưu chính thức
             const savedMarker = tempMarker;
-            tempMarker = null; // Gỡ biến tạm để nhường chỗ cho marker mới nếu có click tiếp theo
+            tempMarker = null;    // Gỡ biến tạm để nhường chỗ cho marker mới nếu có click tiếp theo
 
             actionBtn.innerText = "Bỏ đánh dấu";               // Đổi tên nhãn nút thành "Bỏ đánh dấu"
             actionBtn.style.background = "#d93025";               // Đổi màu nền nút sang màu đỏ cảnh báo
