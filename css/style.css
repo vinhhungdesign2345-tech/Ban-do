@@ -282,7 +282,7 @@ input {
     background-color: #a8a8a8;     /* Màu sắc khi rê chuột vào thanh trượt */
 }
 
-/* --- 📱 TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI / MOBILE (ĐÃ THU GỌN KHOẢNG ĐỆM) --- */
+/* --- 📱 TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI --- */
 @media screen and (max-width: 768px) {
     .parcel-panel {
         width: 95% !important;         /* Mở rộng bề ngang khung thông tin chiếm 95% màn hình di động */
@@ -339,25 +339,25 @@ input {
 
     /* --- THU GỌN THANH TRƯỢT ĐỘ MỜ GÓC TRÊN PHẢI (MOBILE) --- */
     #opacity-control-panel {
-        top: 6px !important;           /* Căn sát mép trên mobile ngang hàng với cụm tìm kiếm */
-        right: 6px !important;         /* Cách lề phải màn hình di động một khoảng 6px */
-        width: 28px !important;        /* Thu hẹp bề ngang thanh trượt xuống 28px */
+        top: 6px !important;           /* Cách cạnh trên 6px */
+        right: 6px !important;         /* Cách cạnh phải 6px */
+        width: 28px !important;        /* Bề ngang thanh trượt 28px */
         padding: 4px 2px !important;   /* Khoảng đệm siêu gọn */
     }
 
     #opacity-control-panel input[type="range"] {
-        height: 48px !important;       /* Giảm chiều dài thanh trượt dọc xuống còn 48px */
-        width: 12px !important;        /* Giảm độ rộng thanh trượt */
+        height: 50px !important;       /* Chiều dài thanh trượt dọc 50px */
+        width: 12px !important;        /* Độ rộng thanh trượt dọc 12px */
     }
 
     /* --- ĐIỀU CHỈNH CỤM NÚT ĐỊNH VỊ NẰM SÁT DƯỚI THANH TRƯỢT (MOBILE) --- */
     .maplibregl-ctrl-top-right {
-        top: 70px !important;          /* Kéo dịch cụm định vị lên sát phía dưới thanh trượt độ mờ */
-        right: 6px !important;         /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
+        top: 70px !important;          /* Nút định vị cách cạnh trên 70px */
+        right: 6px !important;         /* Cách cạnh phải 6px */
     }
 
     .maplibregl-ctrl-top-right .maplibregl-ctrl {
-        width: 28px !important;        /* Đồng bộ độ rộng 28px với thanh trượt độ mờ trên mobile */
+        width: 28px !important;        /* Độ rộng 28px */
     }
 
     /* --- ẨN MŨI TÊN NHỌN VÀ TỐI ƯU POPUP TỌA ĐỘ TRÊN DI ĐỘNG --- */
