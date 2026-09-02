@@ -2,7 +2,7 @@
 body { 
     margin: 0;                     /* Loại bỏ hoàn toàn khoảng cách thừa (margin) mặc định quanh viền trang */
     padding: 0;                    /* Loại bỏ khoảng đệm (padding) mặc định của trình duyệt */
-    font-family: Arial, sans-serif; /* Đặt font chữ mặc định là Arial, dự phòng sang sans-serif */
+    font-family: Arial, sans-serif;/* Đặt font chữ mặc định là Arial, dự phòng sang sans-serif */
 }
 
 /* --- KHUNG HIỂN THỊ BẢN ĐỒ --- */
@@ -51,7 +51,7 @@ body {
     border-color: #b0b0b0;         /* Đổi màu viền đậm hơn một chút khi rê chuột */
 }
 
-/* --- BẢNG ĐIỀU KHIỂN DROPDOWN GỌN GÀNG --- */
+/* --- BẢNG ĐIỀU KHIỂN DROPDOWN GỌN GÀNG (PC) --- */
 .map-control {
     position: absolute;            /* Đặt vị trí tuyệt đối ở góc trên bên trái bản đồ */
     top: 12px;                     /* Cách mép trên 12 pixel */
@@ -68,11 +68,11 @@ body {
     box-sizing: border-box;        /* Tính toán padding và border gộp chung vào kích thước width */
 }
 
-/* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (GÓC TRÊN PHẢI) --- */
+/* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (GÓC TRÊN PHẢI - PC) --- */
 #opacity-control-panel {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
-    top: 10px;                     /* Căn chỉnh nằm sát mép trên cùng (cách 10px ngang với cụm tìm kiếm) */
-    right: 10px;                   /* Cố định khoảng cách lề phải khớp hoàn hảo với nút định vị */
+    top: 10px;                     /* Căn chỉnh nằm sát mép trên cùng */
+    right: 10px;                   /* Cố định khoảng cách lề phải */
     z-index: 100;                  /* Độ ưu tiên hiển thị cao */
     background: rgba(255, 255, 255, 0.92); /* Màu nền trắng trong suốt đồng bộ */
     backdrop-filter: blur(10px);   /* Hiệu ứng làm mờ nền */
@@ -83,7 +83,7 @@ body {
     display: flex;                 /* Sử dụng Flexbox để xếp dọc */
     flex-direction: column;        /* Xếp các phần tử theo chiều dọc từ trên xuống */
     align-items: center;           /* Canh giữa các phần tử theo chiều ngang */
-    width: 34px;                   /* Cố định chiều rộng chuẩn xác để bằng với cụm nút định vị phía dưới */
+    width: 34px;                   /* Cố định chiều rộng chuẩn xác */
     box-sizing: border-box;        /* Bao gồm padding vào tổng kích thước width */
 }
 
@@ -101,13 +101,13 @@ body {
     margin: 0;                     /* Loại bỏ khoảng cách thừa */
 }
 
-/* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ --- */
+/* --- ĐIỀU CHỈNH NÚT ĐỊNH VỊ (GEOLOCATE CONTROL) TRÊN BẢN ĐỒ (PC) --- */
 .maplibregl-ctrl-top-right {
     top: 85px !important;          /* Vị trí cách cạnh trên 85px */
     right: 10px !important;        /* Vị trí cách cạnh phải 10px */
 }
 
-/* Đồng bộ kích thước khung chứa nút điều khiển của MapLibre để thẳng hàng và cùng chiều rộng chuẩn 34px */
+/* Đồng bộ kích thước khung chứa nút điều khiển của MapLibre */
 .maplibregl-ctrl-top-right .maplibregl-ctrl {
     margin-right: 0 !important;
     width: 34px !important;        /* Chiều rộng bằng với khối thanh trượt độ mờ 34px */
@@ -219,7 +219,7 @@ input {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); /* Tạo hiệu ứng đổ bóng đậm và rộng quanh khung */
     width: 90%;                    /* Chiều rộng khung chiếm 90% màn hình ở các thiết bị nhỏ */
     max-width: 450px;              /* Giới hạn chiều rộng tối đa của khung thông tin là 450 pixel */
-    font-family: Arial, sans-serif; /* Quy định font chữ chuẩn cho toàn bộ panel */
+    font-family: Arial, sans-serif;/* Quy định font chữ chuẩn cho toàn bộ panel */
     font-size: 12px;               /* Kích thước chữ bên trong panel là 12px */
     color: #1a1a1a;                /* Màu chữ hiển thị là màu đen đậm vừa (#1a1a1a) */
     box-sizing: border-box;        /* Tính toán kích thước khung bao gồm cả padding và border */
@@ -227,7 +227,7 @@ input {
 
 .panel-header {
     display: flex;                 /* Sắp xếp tiêu đề và nút đóng theo chiều ngang bằng Flexbox */
-    justify-content: space-between; /* Đẩy tiêu đề sang trái và nút đóng sang phải tối đa */
+    justify-content: space-between;/* Đẩy tiêu đề sang trái và nút đóng sang phải tối đa */
     align-items: center;           /* Canh chỉnh tiêu đề và nút đóng thẳng hàng theo chiều dọc */
     border-bottom: 1px solid #ddd; /* Tạo đường kẻ ngang mỏng màu xám phân cách phần đầu và nội dung */
     padding-bottom: 6px;           /* Khoảng cách từ chữ tiêu đề xuống đường kẻ dưới là 6px */
@@ -251,7 +251,7 @@ input {
 
 .panel-body {
     display: grid;                 /* Sử dụng hệ thống lưới (Grid) để sắp xếp thông tin thửa đất */
-    grid-template-columns: 1fr 1fr; /* Chia nội dung thành đúng 2 cột có chiều rộng bằng nhau (1fr mỗi cột) */
+    grid-template-columns: 1fr 1fr;/* Chia nội dung thành đúng 2 cột có chiều rộng bằng nhau (1fr mỗi cột) */
     gap: 6px 12px;                 /* Khoảng cách lưới: hàng cách hàng 6px, cột cách cột 12px */
 }
 
@@ -282,71 +282,96 @@ input {
     background-color: #a8a8a8;     /* Màu sắc khi rê chuột vào thanh trượt */
 }
 
-/* --- TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI / MOBILE --- */
+/* --- 📱 TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI / MOBILE (ĐÃ THU GỌN KHOẢNG ĐỆM) --- */
 @media screen and (max-width: 768px) {
     .parcel-panel {
-        width: 95% !important;             /* Mở rộng bề ngang khung thông tin chiếm 95% màn hình di động */
-        max-width: none !important;        /* Xóa bỏ giới hạn chiều rộng tối đa trên điện thoại */
-        bottom: 10px !important;           /* Đưa khung thông tin sát xuống đáy màn hình hơn (cách 10px) */
-        padding: 8px 10px !important;      /* Thu nhỏ khoảng đệm bên trong để tiết kiệm diện tích */
-        max-height: 45vh !important;       /* Giới hạn chiều cao tối đa của khung bằng 45% chiều cao màn hình */
-        overflow-y: auto !important;       /* Cho phép cuộn dọc bên trong khung nếu nội dung quá dài */
+        width: 95% !important;         /* Mở rộng bề ngang khung thông tin chiếm 95% màn hình di động */
+        max-width: none !important;    /* Xóa bỏ giới hạn chiều rộng tối đa trên điện thoại */
+        bottom: 10px !important;       /* Đưa khung thông tin sát xuống đáy màn hình hơn (cách 10px) */
+        padding: 8px 10px !important;  /* Thu nhỏ khoảng đệm bên trong để tiết kiệm diện tích */
+        max-height: 45vh !important;   /* Giới hạn chiều cao tối đa của khung bằng 45% chiều cao màn hình */
+        overflow-y: auto !important;   /* Cho phép cuộn dọc bên trong khung nếu nội dung quá dài */
     }
 
     .panel-header {
-        font-size: 12px !important;         /* Thu nhỏ kích thước chữ tiêu đề trên mobile xuống 12px */
-        padding-bottom: 4px !important;    /* Thu hẹp khoảng đệm dưới của tiêu đề */
-        margin-bottom: 6px !important;     /* Thu hẹp khoảng cách lề dưới */
+        font-size: 12px !important;    /* Thu nhỏ kích thước chữ tiêu đề trên mobile xuống 12px */
+        padding-bottom: 4px !important;/* Thu hẹp khoảng đệm dưới của tiêu đề */
+        margin-bottom: 6px !important; /* Thu hẹp khoảng cách lề dưới */
     }
 
     .panel-body {
-        display: flex !important;          /* Chuyển đổi lưới thành dạng danh sách xếp dọc trên mobile */
+        display: flex !important;      /* Chuyển đổi lưới thành dạng danh sách xếp dọc trên mobile */
         flex-direction: column !important; /* Xếp các dòng thông tin lần lượt từ trên xuống dưới */
-        gap: 4px !important;               /* Thu hẹp khoảng cách giữa các dòng thông tin xuống còn 4px */
+        gap: 4px !important;           /* Thu hẹp khoảng cách giữa các dòng thông tin xuống còn 4px */
     }
 
     .panel-body div {
-        width: 100% !important;            /* Mỗi dòng thông tin chiếm trọn 100% bề ngang màn hình */
-        font-size: 11px !important;        /* Thu nhỏ cỡ chữ xuống 11px để hiển thị vừa vặn trên màn hình nhỏ */
-        white-space: normal !important;    /* Cho phép chữ xuống dòng tự nhiên thay vì bị ẩn đi */
-        overflow: visible !important;      /* Hiển thị toàn bộ nội dung văn bản, không bị cắt bớt */
+        width: 100% !important;        /* Mỗi dòng thông tin chiếm trọn 100% bề ngang màn hình */
+        font-size: 11px !important;    /* Thu nhỏ cỡ chữ xuống 11px để hiển thị vừa vặn trên màn hình nhỏ */
+        white-space: normal !important;/* Cho phép chữ xuống dòng tự nhiên thay vì bị ẩn đi */
+        overflow: visible !important;  /* Hiển thị toàn bộ nội dung văn bản, không bị cắt bớt */
     }
 
+    /* --- THU GỌN KHUNG TÌM KIẾM GÓC TRÊN TRÁI (MOBILE) --- */
     .map-control {
-        top: 8px;                          /* Đặt bảng điều khiển dịch lên sát mép trên màn hình điện thoại (8px) */
-        left: 8px;                         /* Đặt bảng điều khiển sát lề trái hơn (8px) */
-        width: calc(100% - 16px);          /* Tự động tính toán chiều rộng phủ kín màn hình trừ 2 bên lề */
-        padding: 4px;                      /* Thu nhỏ khoảng đệm bên trong bảng điều khiển trên mobile */
+        top: 6px !important;           /* Đặt bảng điều khiển sát mép trên màn hình điện thoại hơn (6px) */
+        left: 6px !important;          /* Đặt bảng điều khiển sát lề trái hơn (6px) */
+        width: calc(100% - 44px !important); /* Chừa khoảng trống bên phải cho thanh trượt không bị đè */
+        max-width: 320px !important;   /* Giới hạn chiều ngang tối đa để không bị bè ra quá rộng */
+        padding: 4px !important;       /* Thu nhỏ khoảng đệm bên trong bảng điều khiển trên mobile */
+    }
+
+    .filter-row {
+        gap: 4px !important;           /* Thu hẹp khoảng cách giữa các hàng/ô tìm kiếm */
     }
 
     .map-control select, 
     #searchThuaDatInput, 
     #searchThuaDatBtn {
-        font-size: 11px;                   /* Thu nhỏ kích thước chữ các ô nhập liệu và nút xuống 11px */
-        height: 30px;                      /* Thu nhỏ chiều cao các thành phần điều khiển xuống còn 30px */
+        font-size: 11px !important;    /* Thu nhỏ kích thước chữ các ô nhập liệu và nút xuống 11px */
+        height: 26px !important;       /* Thu gọn chiều cao các thành phần điều khiển xuống còn 26px cho gọn */
+        padding: 3px 6px !important;   /* Thu hẹp khoảng đệm trong các ô nhập */
     }
 
-    /* Đặt vị trí thanh trượt độ mờ bên phải màn hình di động */
+    #searchThuaDatBtn {
+        padding: 0 10px !important;    /* Thu gọn bề ngang nút Tìm */
+    }
+
+    /* --- THU GỌN THANH TRƯỢT ĐỘ MỜ GÓC TRÊN PHẢI (MOBILE) --- */
     #opacity-control-panel {
-        top: 8px !important;               /* Căn sát mép trên mobile ngang hàng với cụm tìm kiếm */
-        right: 8px !important;             /* Cách lề phải màn hình di động một khoảng 8px */
-        width: 34px !important;            /* Cố định chiều rộng đồng nhất trên mobile */
+        top: 6px !important;           /* Căn sát mép trên mobile ngang hàng với cụm tìm kiếm */
+        right: 6px !important;         /* Cách lề phải màn hình di động một khoảng 6px */
+        width: 28px !important;        /* Thu hẹp bề ngang thanh trượt xuống 28px */
+        padding: 4px 2px !important;   /* Khoảng đệm siêu gọn */
     }
 
-    /* Căn chỉnh cụm nút định vị gióng thẳng hàng dọc tuyệt đối và nằm dưới thanh trượt trên mobile */
+    #opacity-control-panel input[type="range"] {
+        height: 48px !important;       /* Giảm chiều dài thanh trượt dọc xuống còn 48px */
+        width: 12px !important;        /* Giảm độ rộng thanh trượt */
+    }
+
+    /* --- ĐIỀU CHỈNH CỤM NÚT ĐỊNH VỊ NẰM SÁT DƯỚI THANH TRƯỢT (MOBILE) --- */
     .maplibregl-ctrl-top-right {
-        top: 83px !important;              /* Nằm ngay phía dưới thanh trượt độ mờ */
-        right: 8px !important;             /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
+        top: 62px !important;          /* Kéo dịch cụm định vị lên sát phía dưới thanh trượt độ mờ */
+        right: 6px !important;         /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
     }
 
     .maplibregl-ctrl-top-right .maplibregl-ctrl {
-        width: 34px !important;            /* Đảm bảo nút định vị có cùng độ rộng trên mobile */
+        width: 28px !important;        /* Đồng bộ độ rộng 28px với thanh trượt độ mờ trên mobile */
     }
 
-    /* --- ÉP KHUNG TỌA ĐỘ GHIM ĐIỂM XUỐNG DƯỚI CÙNG TRÊN MOBILE --- */
+    /* --- ẨN MŨI TÊN NHỌN VÀ TỐI ƯU POPUP TỌA ĐỘ TRÊN DI ĐỘNG --- */
+    .maplibregl-popup-anchor-top .maplibregl-popup-tip,
+    .maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+    .maplibregl-popup-anchor-left .maplibregl-popup-tip,
+    .maplibregl-popup-anchor-right .maplibregl-popup-tip,
+    .maplibregl-popup-tip {
+        display: none !important;
+    }
+
     .maplibregl-popup {
         position: fixed !important;
-        bottom: 70px !important;           /* Nằm ngay phía trên cụm nút chuyển bản đồ & đo khoảng cách */
+        bottom: 70px !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
         top: auto !important;
@@ -356,16 +381,6 @@ input {
         z-index: 10000 !important;
     }
 
-    /* Ẩn mũi tên nhọn mặc định của Popup trên điện thoại để giao diện phẳng gọn gàng */
-    .maplibregl-popup-anchor-top .maplibregl-popup-tip,
-    .maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
-    .maplibregl-popup-anchor-left .maplibregl-popup-tip,
-    .maplibregl-popup-anchor-right .maplibregl-popup-tip,
-    .maplibregl-popup-tip {
-        display: none !important;
-    }
-
-    /* Tối ưu bo tròn và hiệu ứng nền cho khung popup tọa độ ghim trên di động */
     .maplibregl-popup-content {
         width: 100% !important;
         box-sizing: border-box !important;
