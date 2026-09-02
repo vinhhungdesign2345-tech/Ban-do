@@ -76,11 +76,11 @@ function initGPSControl(map) {
     });
 
     // ----------------------------------------------------
-    // PHẦN 4: HỆ THỐNG LƯU TRỮ VÀ KHÔI PHỤC ĐIỂM GHIM (LOCALSTORAGE AN TOÀN)
+    // PHẦN 4: HỆ THỐNG LƯU TRỮ VÀ KHÔI PHỤC ĐIỂM GHIM (QUẢN LÝ TRỰC TIẾP MẢNG JSON)
     // ----------------------------------------------------
     
     /**
-     * Hàm kiểm tra xem localStorage có khả dụng hay không
+     * Hàm kiểm tra localStorage khả dụng
      */
     function isLocalStorageAvailable() {
         try {
@@ -89,28 +89,47 @@ function initGPSControl(map) {
             localStorage.removeItem(testKey);
             return true;
         } catch (e) {
-            console.error("localStorage bị chặn hoặc không khả dụng:", e);
             return false;
         }
     }
 
     /**
-     * Hàm quét toàn bộ các điểm ghim đang tồn tại trên DOM để cập nhật lại danh sách mới nhất vào localStorage.
+     * Hàm lấy danh sách điểm ghim từ localStorage
      */
-    function saveMarkersToStorage() {
-        if (!isLocalStorageAvailable()) return;
+    function getStoredMarkers() {
+        if (!isLocalStorageAvailable()) return [];
+        const data = localStorage.getItem('pinned_locations');
+        try {
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            return [];
+        }
+    }
 
-        const markersList = [];
-        document.querySelectorAll('.stored-marker-item').forEach(el => {
-            markersList.push({
-                id: el.dataset.id,
-                lng: parseFloat(el.dataset.lng),
-                lat: parseFloat(el.dataset.lat),
-                name: el.dataset.name
-            });
-        });
-        localStorage.setItem('pinned_locations', JSON.stringify(markersList));
-        console.log("Đã lưu thành công các điểm vào localStorage:", markersList);
+    /**
+     * Hàm lưu một điểm mới vào localStorage
+     */
+    function saveMarkerToStorage(markerData) {
+        if (!isLocalStorageAvailable()) return;
+        const markers = getStoredMarkers();
+        // Tránh trùng lặp ID
+        const existingIndex = markers.findIndex(m => m.id === markerData.id);
+        if (existingIndex >= 0) {
+            markers[existingIndex] = markerData;
+        } else {
+            markers.push(markerData);
+        }
+        localStorage.setItem('pinned_locations', JSON.stringify(markers));
+    }
+
+    /**
+     * Hàm xóa một điểm ra khỏi localStorage dựa vào ID
+     */
+    function removeMarkerFromStorage(markerId) {
+        if (!isLocalStorageAvailable()) return;
+        let markers = getStoredMarkers();
+        markers = markers.filter(m => m.id !== markerId);
+        localStorage.setItem('pinned_locations', JSON.stringify(markers));
     }
 
     /**
@@ -120,12 +139,7 @@ function initGPSControl(map) {
         const uniqueId = markerId || 'marker_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
 
         const popupContent = document.createElement('div');
-        popupContent.className = 'stored-marker-item';
-        popupContent.dataset.id = uniqueId;
-        popupContent.dataset.lng = lng;
-        popupContent.dataset.lat = lat;
-        popupContent.dataset.name = placeName;
-
+        
         const popupWidth = '150px';
         const popupPadding = '0px';
         const popupMargin = '0px';
@@ -193,16 +207,22 @@ function initGPSControl(map) {
             .setPopup(popup)
             .addTo(mapInstance);
 
+        // Xử lý sự kiện khi bấm nút "Bỏ đánh dấu"
         const removeBtn = popupContent.querySelector(`#remove-btn-${uniqueId}`);
         removeBtn.onclick = function (event) {
             permanentMarker.remove();
-            popupContent.remove();
-            saveMarkersToStorage();
+            removeMarkerFromStorage(uniqueId); // Xóa khỏi LocalStorage ngay lập tức
             event.stopPropagation();
         };
 
+        // Nếu là tạo mới, lưu vào localStorage
         if (!isRestoring) {
-            saveMarkersToStorage();
+            saveMarkerToStorage({
+                id: uniqueId,
+                lng: parseFloat(lng),
+                lat: parseFloat(lat),
+                name: placeName
+            });
         }
     }
 
@@ -210,26 +230,15 @@ function initGPSControl(map) {
      * Hàm tự động khôi phục toàn bộ danh sách điểm ghim từ localStorage khi khởi động bản đồ.
      */
     function loadSavedMarkers(mapInstance) {
-        if (!isLocalStorageAvailable()) return;
+        const storedLocations = getStoredMarkers();
+        if (storedLocations.length === 0) return;
 
-        const storedData = localStorage.getItem('pinned_locations');
-        if (!storedData) {
-            console.log("Không tìm thấy dữ liệu điểm ghim cũ trong localStorage.");
-            return;
-        }
-
-        try {
-            const parsedLocations = JSON.parse(storedData);
-            console.log("Đang khôi phục các điểm ghim:", parsedLocations);
-            parsedLocations.forEach(loc => {
-                createPermanentMarker(mapInstance, loc.lng, loc.lat, loc.name, loc.id, true);
-            });
-        } catch (e) {
-            console.error("Lỗi khi phân tích dữ liệu điểm ghim từ localStorage:", e);
-        }
+        storedLocations.forEach(loc => {
+            createPermanentMarker(mapInstance, loc.lng, loc.lat, loc.name, loc.id, true);
+        });
     }
 
-    // Đảm bảo bản đồ đã sẵn sàng hoàn toàn (sử dụng sự kiện 'load' của MapLibre) trước khi khôi phục điểm ghim
+    // Tải lại điểm ghim cũ ngay khi khởi tạo
     if (map.loaded()) {
         loadSavedMarkers(map);
     } else {
