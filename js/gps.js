@@ -144,7 +144,8 @@ function initGPSControl(map) {
         if (!isPinModeActive) return;
         if (typeof isMeasuring !== 'undefined' && isMeasuring) return;
 
-        // Xóa ngay lập tức điểm ghim tạm cũ (nếu có) để giải phóng hoàn toàn bộ nhớ và trạng thái
+        // Nếu đã có điểm ghim tạm trước đó (dù người dùng có tắt popup hay chưa), 
+        // ta dọn sạch ngay lập tức để giải phóng hoàn toàn bộ nhớ và không làm nghẽn sự kiện.
         if (tempMarker) {
             tempMarker.remove();
             tempMarker = null;
@@ -252,26 +253,17 @@ function initGPSControl(map) {
             }
         };
 
-        let isMarked = false; 
-
-        // Sự kiện close giữ lại để phòng hờ khi người dùng bấm dấu X hoặc click ra ngoài bản đồ
-        popup.on('close', function() {
-            if (!isMarked && tempMarker) {
-                tempMarker.remove();
-                tempMarker = null;
-            }
-        });
-
+        // Xử lý sự kiện khi bấm nút "Đánh dấu"
         actionBtn.onclick = function (event) {
-            isMarked = true;      
             const savedMarker = tempMarker;
-            tempMarker = null;    
+            tempMarker = null;    // Tách biến tạm ra để điểm này chính thức được giữ lại trên bản đồ
 
             actionBtn.innerText = "Bỏ đánh dấu";                            
             actionBtn.style.background = "#d93025";                            
             nameInput.disabled = true;                                         
             nameInput.style.background = "#f1f3f4";                            
 
+            // Khi bấm lại vào nút "Bỏ đánh dấu", tiến hành xóa điểm ghim chính thức khỏi bản đồ
             actionBtn.onclick = function () {
                 savedMarker.remove();
             };
