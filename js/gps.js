@@ -18,7 +18,7 @@ function initGPSControl(map) {
     
     // Định nghĩa các biến chứa thông số cấu hình giao diện cho thanh tọa độ cố định mép dưới
     const tooltipPosition = 'absolute';                           // Đặt vị trí tuyệt đối để neo vào khung chứa bản đồ
-    const tooltipBottom = '10px';                                 // Khoảng cách neo từ mép dưới lên: 10 pixel
+    const tooltipBottom = '55px';                                 // Khoảng cách neo từ mép dưới lên: 55 pixel
     const tooltipLeft = '10px';                                   // Khoảng cách neo từ mép trái sang: 10 pixel (hoặc đổi thành right nếu muốn sang phải)
     const tooltipBg = 'rgba(0, 0, 0, 0.75)';                      // Màu nền: Màu đen có độ trong suốt 75% tạo hiệu ứng tối giản
     const tooltipColor = '#ffffff';                               // Màu chữ: Màu trắng sáng giúp nổi bật trên nền tối
@@ -126,7 +126,7 @@ function initGPSControl(map) {
                 
                 if (isPinModeActive) {
                     // TRƯỜNG HỢP BẬT CHẾ ĐỘ GHIM:
-                    pinButton.style.background = '#e8f0fe';          // Đổi màu nền nút sang màu xanh dương nhạt báo hiệu đang kích hoạt
+                    pinButton.style.background = '#6a9ceb';          // Đổi màu nền nút sang màu xanh dương nhạt báo hiệu đang kích hoạt
                     mapInstance.getContainer().style.cursor = 'crosshair'; // Đổi hình dạng con trỏ chuột thành hình dấu cộng (+) đặc trưng chọn điểm
                 } else {
                     // TRƯỜNG HỢP TẮT CHẾ ĐỘ GHIM:
