@@ -217,7 +217,7 @@ function initGPSControl(map) {
     }
 
     // ----------------------------------------------------
-    // PHẦN 3: NÚT BẬT/TẮT CHẾ ĐỘ GHIM
+    // PHẦN 3: NÚT BẬT/TẮT CHẾ ĐỘ GHIM (CÓ SẴN THÔNG SỐ CHỈNH KÍCH THƯỚC Ở ĐÂY)
     // ----------------------------------------------------
     let isPinModeActive = false;
 
@@ -232,9 +232,10 @@ function initGPSControl(map) {
             pinButton.title = 'Bật/Tắt chế độ ghim địa điểm';
             pinButton.innerHTML = '📍';
             
+            // 👉 ÔNG CÓ THỂ TÙY CHỈNH KÍCH THƯỚC TRỰC TIẾP TẠI ĐÂY:
             pinButton.style.cssText = `
-                width: 100%;
-                height: 100%;
+                width: 29px;
+                height: 29px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -243,6 +244,7 @@ function initGPSControl(map) {
                 background: transparent;
                 cursor: pointer;
                 outline: none;
+                padding: 0;
             `;
             
             pinButton.onclick = () => {
