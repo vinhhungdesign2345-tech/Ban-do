@@ -39,7 +39,7 @@ body {
     padding: 7px 7px;              /* Khoảng đệm bên trong: trên dưới 7px, trái phải 7px */
     background: white;             /* Màu nền của nút là màu trắng */
     border: 1px solid #ccc;        /* Viền bo xung quanh nút màu xám nhạt */
-    cursor: pointer;               /* Hiển thị con trỏ chuột khi rê vào nút */
+    cursor: default !important;    /* Con trỏ chuột mặc định */
     border-radius: 6px;            /* Bo tròn 4 góc của nút với bán kính 6 pixel */
     font-size: 11px;               /* Cỡ chữ hiển thị trong nút là 11px */
     font-weight: bold;             /* Định dạng chữ in đậm */
@@ -71,7 +71,7 @@ body {
 }
 
 /* ==========================================================================
-   🎛️ KHU VỰC ĐIỀU KHIỂN GÓC TRÊN BÊN PHẢI (THANH ĐỘ MỜ & CÁC NÚT MAPLIBRE)
+   🎛️ KHU VỰC ĐIỀU KHIỂN GÓC TRÊN BÊN PHẢI (THANH ĐỘ MỜ, NÚT GHIM & CÁC NÚT MAPLIBRE)
    ========================================================================== */
 
 /* 1. Thanh điều chỉnh độ mờ dạng dọc (Nằm ở vị trí trên cùng của cột bên phải) */
@@ -106,120 +106,161 @@ body {
     margin: 0;                     /* Loại bỏ khoảng cách thừa */
 }
 
-/* 2. Cụm nút điều khiển của MapLibre (Nút định vị, phóng to/thu nhỏ) nằm ngay dưới thanh độ mờ */
+/* 2. Nút ghim điểm (Nằm ngay phía dưới thanh độ mờ, đồng bộ kiểu dáng) */
 .maplibregl-ctrl-top-right {
-    top: 105px !important;         /* Đặt dịch xuống dưới thanh trượt độ mờ một khoảng hoàn hảo */
-    right: 10px !important;        /* Canh sát lề phải, thẳng hàng tuyệt đối với thanh trượt */
-    left: auto !important;         /* Hủy bỏ canh trái */
-    display: flex !important;      /* Sử dụng Flexbox */
-    flex-direction: column !important; /* Xếp dọc các nút điều khiển */
-    align-items: flex-end !important;  /* Canh phải */
-    gap: 8px !important;           /* Khoảng cách đều giữa các nút bấm là 8px */
+    top: 95px !important;          /* Đặt dịch xuống dưới thanh trượt độ mờ */
+    right: 10px !important;        /* Canh sát lề phải, thẳng hàng tuyệt đối */
+    left: auto !important;         
+    display: flex !important;      
+    flex-direction: column !important; 
+    align-items: flex-end !important;  
+    gap: 8px !important;           
 }
 
-/* Đồng bộ kích thước chuẩn chiều rộng 34px cho tất cả các nhóm điều khiển bên phải */
+/* Khung chứa nút Ghim tùy chỉnh độc lập */
+.custom-pin-ctrl {
+    width: 34px !important;
+    height: 34px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 8px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: default !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+}
+
+.custom-pin-ctrl button, 
+#pinLocationBtn {
+    width: 34px !important;
+    height: 34px !important;
+    background: transparent !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: default !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+#pinLocationBtn svg {
+    width: 18px;
+    height: 18px;
+    fill: #333;
+}
+
+#pinLocationBtn.active {
+    background-color: #d3e4ed !important;
+    border-radius: 8px;
+}
+
+/* 3. Cụm nút điều khiển của MapLibre (Nút định vị, phóng to/thu nhỏ) nằm phía dưới nút ghim */
 .maplibregl-ctrl-top-right .maplibregl-ctrl {
-    margin: 0 !important;          /* Xóa khoảng cách margin mặc định */
-    margin-right: 0 !important;    /* Xóa margin phải */
-    width: 34px !important;        /* Cố định chiều rộng 34px khớp với thanh trượt */
-    box-sizing: border-box !important; /* Tính toán kích thước chuẩn */
-    border-radius: 8px !important; /* Bo tròn các góc khung chứa nút */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18) !important; /* Đổ bóng đồng bộ */
-    overflow: hidden;              /* Ẩn phần tràn khung */
-    background: rgba(255, 255, 255, 0.92); /* Màu nền kính mờ đồng bộ */
-    backdrop-filter: blur(10px);   /* Hiệu ứng làm mờ nền */
+    margin: 0 !important;          
+    margin-right: 0 !important;    
+    width: 34px !important;        
+    box-sizing: border-box !important; 
+    border-radius: 8px !important; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18) !important; 
+    overflow: hidden;              
+    background: rgba(255, 255, 255, 0.92); 
+    backdrop-filter: blur(10px);   
 }
 
-/* Tùy chỉnh nhóm nút bấm bên trong cụm điều khiển */
 .maplibregl-ctrl-top-right .maplibregl-ctrl-group {
-    background: rgba(255, 255, 255, 0.92) !important; /* Màu nền đồng bộ */
-    border: none !important;       /* Xóa đường viền mặc định */
-    margin: 0 !important;          /* Xóa margin mặc định */
+    background: rgba(255, 255, 255, 0.92) !important; 
+    border: none !important;       
+    margin: 0 !important;          
 }
 
 .maplibregl-ctrl-top-right .maplibregl-ctrl-group button {
-    width: 34px !important;        /* Cố định chiều rộng nút bấm là 34px */
-    height: 34px !important;       /* Cố định chiều cao nút bấm là 34px */
-    display: flex !important;      /* Sử dụng Flexbox canh giữa icon */
-    align-items: center !important; /* Canh giữa theo chiều dọc */
-    justify-content: center !important; /* Canh giữa theo chiều ngang */
+    width: 34px !important;        
+    height: 34px !important;       
+    display: flex !important;      
+    align-items: center !important; 
+    justify-content: center !important; 
 }
 
 /* --- CÁC THÀNH PHẦN BỘ LỌC VÀ TÌM KIẾM --- */
 .filter-row {
-    display: flex;                 /* Hiển thị dạng linh hoạt (Flexbox) */
-    flex-wrap: wrap;               /* Tự động xuống hàng khi không đủ chỗ */
-    gap: 6px;                      /* Khoảng cách giữa các phần tử lọc */
-    width: 100%;                   /* Chiều rộng phủ kín 100% */
-    align-items: center;           /* Canh giữa các phần tử theo chiều dọc */
+    display: flex;                 
+    flex-wrap: wrap;               
+    gap: 6px;                      
+    width: 100%;                   
+    align-items: center;           
 }
 
 .filter-item {
-    min-width: 0;                  /* Tránh bị vỡ khung flex */
+    min-width: 0;                  
 }
 
 .filter-row > .filter-item:first-child {
-    width: 100%;                   /* Hàng đầu tiên chiếm toàn bộ chiều rộng */
-    display: flex;                 /* Flexbox cho ô nhập và nút tìm kiếm */
-    gap: 6px;                      /* Khoảng cách giữa ô nhập và nút tìm */
+    width: 100%;                   
+    display: flex;                 
+    gap: 6px;                      
 }
 
 #searchThuaDatInput {
-    flex: 1;                       /* Tự động co giãn chiếm phần lớn không gian */
-    padding: 6px 8px;              /* Khoảng đệm bên trong ô nhập */
-    border: 1px solid #d0d0d0;     /* Đường viền xám nhạt */
-    border-radius: 6px;            /* Bo góc 6px */
-    font-size: 12px;               /* Cỡ chữ 12px */
-    height: 34px;                  /* Chiều cao chuẩn 34px */
-    box-sizing: border-box;        /* Tính toán padding vào kích thước */
-    outline: none;                 /* Bỏ viền sáng khi click */
-    background-color: #fff;        /* Nền trắng */
-    color: #222;                   /* Màu chữ đậm rõ */
+    flex: 1;                       
+    padding: 6px 8px;              
+    border: 1px solid #d0d0d0;     
+    border-radius: 6px;            
+    font-size: 12px;               
+    height: 34px;                  
+    box-sizing: border-box;        
+    outline: none;                 
+    background-color: #fff;        
+    color: #222;                   
 }
 
 #searchThuaDatBtn {
-    padding: 0 14px;               /* Khoảng đệm trái phải cho nút tìm */
-    background-color: #1a73e8;     /* Màu nền xanh dương chủ đạo */
-    color: white;                  /* Chữ màu trắng */
-    border: none;                  /* Không viền */
-    border-radius: 6px;            /* Bo tròn góc 6px */
-    font-size: 12px;               /* Cỡ chữ 12px */
-    font-weight: bold;             /* Chữ in đậm */
-    height: 34px;                  /* Chiều cao chuẩn 34px */
-    cursor: default !important;    /* Ép con trỏ chuột mặc định */
-    white-space: nowrap;           /* Không xuống dòng chữ */
-    transition: background-color 0.2s; /* Hiệu ứng chuyển màu mượt mà */
+    padding: 0 14px;               
+    background-color: #1a73e8;     
+    color: white;                  
+    border: none;                  
+    border-radius: 6px;            
+    font-size: 12px;               
+    font-weight: bold;             
+    height: 34px;                  
+    cursor: default !important;    
+    white-space: nowrap;           
+    transition: background-color 0.2s; 
 }
 
 #searchThuaDatBtn:hover {
-    background-color: #1557b0;     /* Đổi màu xanh đậm hơn khi rê chuột */
+    background-color: #1557b0;     
 }
 
 .filter-row > .filter-item:not(:first-child) {
-    flex: 1;                       /* Chia đều không gian cho các ô chọn phía dưới */
+    flex: 1;                       
 }
 
 .map-control select {
-    width: 100%;                   /* Chiều rộng phủ kín 100% */
-    padding: 6px 8px;              /* Khoảng đệm bên trong */
-    border-radius: 6px;            /* Bo góc 6px */
-    border: 1px solid #d0d0d0;     /* Đường viền xám */
-    font-size: 12px;               /* Cỡ chữ 12px */
-    font-weight: 500;              /* Độ đậm trung bình */
-    outline: none;                 /* Bỏ viền sáng mặc định */
-    background-color: #fff;        /* Nền trắng */
-    color: #222;                   /* Màu chữ */
-    height: 34px;                  /* Chiều cao chuẩn 34px */
-    box-sizing: border-box;        /* Tính kích thước chuẩn */
-    text-overflow: ellipsis;       /* Cắt bớt văn bản quá dài bằng dấu ba chấm */
-    white-space: nowrap;           /* Không xuống dòng */
-    overflow: hidden;              /* Ẩn nội dung tràn */
+    width: 100%;                   
+    padding: 6px 8px;              
+    border-radius: 6px;            
+    border: 1px solid #d0d0d0;     
+    font-size: 12px;               
+    font-weight: 500;              
+    outline: none;                 
+    background-color: #fff;        
+    color: #222;                   
+    height: 34px;                  
+    box-sizing: border-box;        
+    text-overflow: ellipsis;       
+    white-space: nowrap;           
+    overflow: hidden;              
 }
 
 .map-control select:disabled {
-    background-color: #f0f0f0;     /* Màu nền xám khi bị vô hiệu hóa */
-    color: #888;                   /* Màu chữ mờ đi */
-    cursor: not-allowed;           /* Con trỏ báo không được phép */
+    background-color: #f0f0f0;     
+    color: #888;                   
+    cursor: not-allowed;           
 }
 
 /* --- ÉP CON TRỎ CHUỘT MẶC ĐỊNH (MŨI TÊN) --- */
@@ -229,113 +270,113 @@ body {
 button, 
 select, 
 input {
-    cursor: default !important;    /* Đảm bảo toàn bộ các thành phần hiển thị con trỏ chuột mặc định */
+    cursor: default !important;    
 }
 
 /* --- KHUNG THÔNG TIN THỬA ĐẤT DƯỚI MÀN HÌNH (PC) --- */
 .parcel-panel {
-    position: fixed;               /* Cố định vị trí trên màn hình */
-    bottom: 20px;                  /* Cách mép dưới 20 pixel */
-    left: 50%;                     /* Canh giữa màn hình theo chiều ngang */
-    transform: translateX(-50%);   /* Dịch chuyển ngược lại 50% để cân bằng tuyệt đối */
-    z-index: 200;                  /* Lớp hiển thị cao hơn bản đồ */
-    background: rgba(255, 255, 255, 0.95); /* Nền trắng đục 95% */
-    backdrop-filter: blur(10px);   /* Làm mờ hậu cảnh */
-    -webkit-backdrop-filter: blur(10px); /* Làm mờ hậu cảnh trên Safari */
-    padding: 12px 16px;            /* Khoảng đệm trong khung */
-    border-radius: 12px;           /* Bo tròn góc khung 12px */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); /* Đổ bóng sâu nổi bật */
-    width: 90%;                    /* Chiều rộng 90% */
-    max-width: 450px;              /* Giới hạn chiều rộng tối đa 450px */
-    font-family: Arial, sans-serif; /* Phông chữ */
-    font-size: 12px;               /* Cỡ chữ 12px */
-    color: #1a1a1a;                /* Màu chữ tối */
-    box-sizing: border-box;        /* Tính toán kích thước chuẩn */
+    position: fixed;               
+    bottom: 20px;                  
+    left: 50%;                     
+    transform: translateX(-50%);   
+    z-index: 200;                  
+    background: rgba(255, 255, 255, 0.95); 
+    backdrop-filter: blur(10px);   
+    -webkit-backdrop-filter: blur(10px); 
+    padding: 12px 16px;            
+    border-radius: 12px;           
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); 
+    width: 90%;                    
+    max-width: 450px;              
+    font-family: Arial, sans-serif; 
+    font-size: 12px;               
+    color: #1a1a1a;                
+    box-sizing: border-box;        
 }
 
 .panel-header {
-    display: flex;                 /* Flexbox cho tiêu đề */
-    justify-content: space-between; /* Đẩy các phần tử sang hai bên */
-    align-items: center;           /* Canh giữa theo chiều dọc */
-    border-bottom: 1px solid #ddd; /* Đường kẻ dưới phân cách */
-    padding-bottom: 6px;           /* Khoảng cách đệm dưới */
-    margin-bottom: 8px;            /* Khoảng cách ngoài dưới */
-    font-size: 14px;               /* Cỡ chữ tiêu đề 14px */
-    color: #007bff;                /* Màu chữ xanh nổi bật */
+    display: flex;                 
+    justify-content: space-between; 
+    align-items: center;           
+    border-bottom: 1px solid #ddd; 
+    padding-bottom: 6px;           
+    margin-bottom: 8px;            
+    font-size: 14px;               
+    color: #007bff;                
 }
 
 .close-btn {
-    background: none;              /* Không nền cho nút đóng */
-    border: none;                  /* Không viền */
-    font-size: 18px;               /* Cỡ chữ dấu X lớn */
-    font-weight: bold;             /* In đậm */
-    cursor: default;               /* Con trỏ mặc định */
-    color: #666;                   /* Màu xám */
+    background: none;              
+    border: none;                  
+    font-size: 18px;               
+    font-weight: bold;             
+    cursor: default;               
+    color: #666;                   
 }
 
 .close-btn:hover {
-    color: #000;                   /* Đổi màu đen khi rê chuột */
+    color: #000;                   
 }
 
 .panel-body {
-    display: grid;                 /* Sử dụng dạng lưới (Grid) hiển thị thông tin */
-    grid-template-columns: 1fr 1fr; /* Chia làm 2 cột bằng nhau */
-    gap: 6px 12px;                 /* Khoảng cách giữa các ô lưới */
+    display: grid;                 
+    grid-template-columns: 1fr 1fr; 
+    gap: 6px 12px;                 
 }
 
 .panel-body div {
-    overflow: hidden;              /* Ẩn nội dung tràn */
-    text-overflow: ellipsis;       /* Hiển thị dấu ba chấm nếu chữ quá dài */
-    white-space: nowrap;           /* Không xuống dòng */
+    overflow: hidden;              
+    text-overflow: ellipsis;       
+    white-space: nowrap;           
 }
 
 /* --- KHUNG KẾT QUẢ GIÁ ĐẤT --- */
 #giaDatResultPanel {
-    max-height: 55vh !important;   /* Giới hạn chiều cao tối đa bằng 55% màn hình */
-    overflow-y: auto !important;   /* Cho phép cuộn dọc khi nội dung dài */
-    overflow-x: hidden !important; /* Ẩn cuộn ngang */
+    max-height: 55vh !important;   
+    overflow-y: auto !important;   
+    overflow-x: hidden !important; 
 }
 
 #giaDatResultPanel::-webkit-scrollbar {
-    width: 6px;                    /* Độ rộng thanh cuộn nhỏ gọn */
+    width: 6px;                    
 }
 
 #giaDatResultPanel::-webkit-scrollbar-thumb {
-    background-color: #c1c1c1;     /* Màu thanh cuộn xám */
-    border-radius: 3px;            /* Bo tròn thanh cuộn */
+    background-color: #c1c1c1;     
+    border-radius: 3px;            
 }
 
 #giaDatResultPanel::-webkit-scrollbar-thumb:hover {
-    background-color: #a8a8a8;     /* Màu thanh cuộn đậm hơn khi rê chuột */
+    background-color: #a8a8a8;     
 }
 
 /* --- TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI / MOBILE --- */
 @media screen and (max-width: 768px) {
     .parcel-panel {
-        width: 95% !important;             /* Chiều rộng trên di động chiếm 95% */
-        max-width: none !important;        /* Hủy giới hạn tối đa */
-        bottom: 10px !important;           /* Cách đáy màn hình 10px */
-        padding: 8px 10px !important;      /* Thu nhỏ khoảng đệm */
-        max-height: 45vh !important;       /* Giới hạn chiều cao */
-        overflow-y: auto !important;       /* Cho phép cuộn */
+        width: 95% !important;             
+        max-width: none !important;        
+        bottom: 10px !important;           
+        padding: 8px 10px !important;      
+        max-height: 45vh !important;       
+        overflow-y: auto !important;       
     }
 
     .panel-header {
-        font-size: 12px !important;        /* Thu nhỏ cỡ chữ tiêu đề */
+        font-size: 12px !important;        
         padding-bottom: 4px !important;    
         margin-bottom: 6px !important;     
     }
 
     .panel-body {
-        display: flex !important;          /* Chuyển sang dạng dọc trên di động */
+        display: flex !important;          
         flex-direction: column !important; 
         gap: 4px !important;               
     }
 
     .panel-body div {
-        width: 100% !important;            /* Chiếm trọn bề ngang */
-        font-size: 11px !important;        /* Thu nhỏ cỡ chữ */
-        white-space: normal !important;    /* Cho phép xuống dòng linh hoạt */
+        width: 100% !important;            
+        font-size: 11px !important;        
+        white-space: normal !important;    
         overflow: visible !important;      
     }
 
@@ -355,19 +396,20 @@ input {
 
     /* Định vị lại nhóm điều khiển bên phải trên màn hình di động */
     #opacity-control-panel {
-        top: 8px !important;               /* Đặt sát mép trên di động */
-        right: 8px !important;             /* Sát mép phải */
-        width: 34px !important;            /* Chuẩn rộng 34px */
+        top: 8px !important;               
+        right: 8px !important;             
+        width: 34px !important;            
     }
 
     .maplibregl-ctrl-top-right {
-        top: 90px !important;              /* Đẩy xuống ngay phía dưới thanh trượt độ mờ */
-        right: 8px !important;             /* Sát mép phải */
-        gap: 6px;                          /* Khoảng cách giữa các cụm nút */
+        top: 85px !important;              
+        right: 8px !important;             
+        gap: 6px;                          
     }
 
-    .maplibregl-ctrl-top-right .maplibregl-ctrl {
-        width: 34px !important;            /* Đồng bộ rộng 34px */
+    .maplibregl-ctrl-top-right .maplibregl-ctrl,
+    .custom-pin-ctrl {
+        width: 34px !important;            
     }
 }
 
@@ -375,12 +417,14 @@ input {
 .maplibregl-ctrl-top-right,
 .maplibregl-ctrl-top-right .maplibregl-ctrl,
 .maplibregl-ctrl-top-right .maplibregl-ctrl-group,
-.maplibregl-ctrl-top-right .maplibregl-ctrl-geolocate {
-    z-index: 10000 !important;             /* Ép mức ưu tiên hiển thị cao nhất */
+.maplibregl-ctrl-top-right .maplibregl-ctrl-geolocate,
+.custom-pin-ctrl {
+    z-index: 10000 !important;             
     position: relative !important;         
 }
 
-.maplibregl-ctrl-top-right .maplibregl-ctrl-group button {
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group button,
+#pinLocationBtn {
     z-index: 100 !important;
     cursor: default !important;
 }
