@@ -3,7 +3,7 @@
 // ==========================================
 
 /**
- * Hàm khởi tạo toàn bộ tính năng GPS, tọa độ chuột và nút Ghim điểm trên bản đồ MapLibre.
+ * Hàm khởi tạo toàn bộ tính năng GPS, tọa độ chuột, nút Ghim điểm và khôi phục điểm ghim từ localStorage.
  * @param {maplibregl.Map} map - Đối tượng bản đồ chính của ứng dụng.
  */
 function initGPSControl(map) {
@@ -76,7 +76,144 @@ function initGPSControl(map) {
     });
 
     // ----------------------------------------------------
-    // PHẦN 4: TẠO NÚT BẤM "GHIM ĐIỂM" ĐỒNG BỘ TRONG CỤM ĐIỀU KHIỂN BẢN ĐỒ
+    // PHẦN 4: HỆ THỐNG LƯU TRỮ VÀ KHÔI PHỤC ĐIỂM GHIM (LOCALSTORAGE)
+    // ----------------------------------------------------
+    
+    /**
+     * Hàm quét toàn bộ các điểm ghim đang tồn tại trên DOM để cập nhật lại danh sách mới nhất vào localStorage.
+     */
+    function saveMarkersToStorage() {
+        const markersList = [];
+        document.querySelectorAll('.stored-marker-item').forEach(el => {
+            markersList.push({
+                id: el.dataset.id,
+                lng: parseFloat(el.dataset.lng),
+                lat: parseFloat(el.dataset.lat),
+                name: el.dataset.name
+            });
+        });
+        localStorage.setItem('pinned_locations', JSON.stringify(markersList));
+    }
+
+    /**
+     * Hàm dựng điểm ghim chính thức lên bản đồ (dùng chung cho cả khi người dùng ghim mới lẫn khi tải lại trang).
+     */
+    function createPermanentMarker(mapInstance, lng, lat, placeName, markerId = null, isRestoring = false) {
+        const uniqueId = markerId || 'marker_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+
+        // Tạo phần tử HTML chứa giao diện popup cho điểm ghim đã lưu
+        const popupContent = document.createElement('div');
+        popupContent.className = 'stored-marker-item';
+        popupContent.dataset.id = uniqueId;
+        popupContent.dataset.lng = lng;
+        popupContent.dataset.lat = lat;
+        popupContent.dataset.name = placeName;
+
+        const popupWidth = '150px';
+        const popupPadding = '0px';
+        const popupMargin = '0px';
+        const popupFont = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+        popupContent.style.cssText = `
+            font-family: ${popupFont};
+            width: ${popupWidth};
+            padding: ${popupPadding};
+            margin: ${popupMargin};
+        `;
+
+        popupContent.innerHTML = `
+            <input type="text" value="${placeName}" disabled style="
+                width: 100%; 
+                padding: 3px 5px; 
+                font-size: 13px; 
+                border: 1px solid #ccc; 
+                border-radius: 3px; 
+                box-sizing: border-box; 
+                margin-bottom: 3px; 
+                background: #f1f3f4;
+                outline: none;
+            " />
+            
+            <div style="
+                font-size: 12px; 
+                color: #555; 
+                margin-bottom: 4px; 
+                font-family: monospace;
+            ">
+                ${lat}, ${lng}
+            </div>
+            
+            <button id="remove-btn-${uniqueId}" style="
+                width: 100%; 
+                padding: 3px 6px; 
+                background: #d93025; 
+                color: #fff; 
+                border: none; 
+                border-radius: 3px; 
+                cursor: pointer; 
+                font-weight: 500; 
+                font-size: 11px;
+            ">
+                Bỏ đánh dấu
+            </button>
+        `;
+
+        const popup = new maplibregl.Popup({ offset: 15, closeButton: true }).setDOMContent(popupContent);
+
+        // Tạo icon chấm tròn cho Marker
+        const markerEl = document.createElement('div');
+        markerEl.style.cssText = `
+            width: 14px;
+            height: 14px;
+            background-color: #ea4335;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            cursor: pointer;
+        `;
+
+        const permanentMarker = new maplibregl.Marker({ element: markerEl })
+            .setLngLat([lng, lat])
+            .setPopup(popup)
+            .addTo(mapInstance);
+
+        // Xử lý sự kiện khi bấm nút "Bỏ đánh dấu"
+        const removeBtn = popupContent.querySelector(`#remove-btn-${uniqueId}`);
+        removeBtn.onclick = function (event) {
+            permanentMarker.remove();
+            popupContent.remove();
+            saveMarkersToStorage(); // Cập nhật lại bộ nhớ sau khi xóa
+            event.stopPropagation();
+        };
+
+        // Nếu không phải đang trong quá trình khôi phục (tức là người dùng vừa bấm ghim mới), tiến hành lưu ngay vào localStorage
+        if (!isRestoring) {
+            saveMarkersToStorage();
+        }
+    }
+
+    /**
+     * Hàm tự động khôi phục toàn bộ danh sách điểm ghim từ localStorage khi khởi động bản đồ.
+     */
+    function loadSavedMarkers(mapInstance) {
+        const storedData = localStorage.getItem('pinned_locations');
+        if (!storedData) return;
+
+        try {
+            const parsedLocations = JSON.parse(storedData);
+            parsedLocations.forEach(loc => {
+                createPermanentMarker(mapInstance, loc.lng, loc.lat, loc.name, loc.id, true);
+            });
+        } catch (e) {
+            console.error("Lỗi khi khôi phục điểm ghim từ localStorage:", e);
+        }
+    }
+
+    // Tiến hành tải các điểm ghim cũ ngay khi khởi tạo bản đồ
+    loadSavedMarkers(map);
+
+    // ----------------------------------------------------
+    // PHẦN 5: TẠO NÚT BẤM "GHIM ĐIỂM" ĐỒNG BỘ TRONG CỤM ĐIỀU KHIỂN BẢN ĐỒ
     // ----------------------------------------------------
     let isPinModeActive = false; // Biến cờ (flag) kiểm tra trạng thái: true = đang bật chế độ ghim điểm, false = tắt
 
@@ -156,7 +293,7 @@ function initGPSControl(map) {
     let tempMarker = null; // Biến lưu trữ đối tượng Marker (ghim tạm thời) hiện tại trên bản đồ
 
     // ----------------------------------------------------
-    // PHẦN 5: LẮNG NGHE SỰ KIỆN CLICK TRÊN BẢN ĐỒ ĐỂ TẠO ĐIỂM GHIM
+    // PHẦN 6: LẮNG NGHE SỰ KIỆN CLICK TRÊN BẢN ĐỒ ĐỂ TẠO ĐIỂM GHIM TẠM THỜI
     // ----------------------------------------------------
     map.on('click', function (e) {
         // Kiểm tra điều kiện: Nếu chế độ ghim chưa được bật HOẶC đang trong chế độ đo đạc (isMeasuring) thì dừng lại, không làm gì cả
@@ -204,7 +341,7 @@ function initGPSControl(map) {
         const coordMarginBot = '4px';                           // Khoảng cách lề dưới tọa độ: 4px
         const coordFontFamily = 'monospace';                    // Sử dụng font chữ dạng đơn không đổi chiều (monospace) giúp các con số thẳng hàng đẹp mắt
 
-        // Khai báo thông số cho nút bấm hành động ("Đánh dấu" / "Bỏ đánh dấu")
+        // Khai báo thông số cho nút bấm hành động ("Đánh dấu")
         const btnWidth = '100%';                                // Chiều rộng nút: phủ kín 100%
         const btnPaddingTopBot = '3px';                         // Đệm trên/dưới nút: 3px
         const btnPaddingLeftRight = '6px';                      // Đệm trái/phải nút: 6px
@@ -303,18 +440,16 @@ function initGPSControl(map) {
 
         // Xử lý sự kiện khi người dùng bấm vào nút "Đánh dấu"
         actionBtn.onclick = function (event) {
-            const savedMarker = tempMarker;
-            tempMarker = null;    // Tách biến tạm ra để điểm ghim này chính thức được cố định lại trên bản đồ, không bị xóa tự động nữa
+            const currentLng = e.lngLat.lng;
+            const currentLat = e.lngLat.lat;
+            const currentName = nameInput.value || "Địa điểm mới";
 
-            actionBtn.innerText = "Bỏ đánh dấu";                 // Đổi nhãn nút thành "Bỏ đánh dấu"
-            actionBtn.style.background = "#d93025";               // Đổi màu nền nút sang màu đỏ cảnh báo
-            nameInput.disabled = true;                            // Khóa ô nhập tên lại, không cho chỉnh sửa nữa
-            nameInput.style.background = "#f1f3f4";               // Đổi màu nền ô input sang màu xám nhạt biểu thị trạng thái bị khóa
+            // Xóa điểm ghim tạm thời hiện tại
+            tempMarker.remove();
+            tempMarker = null;
 
-            // Khi người dùng bấm tiếp vào nút "Bỏ đánh dấu" lần nữa, tiến hành xóa hẳn điểm ghim này khỏi bản đồ
-            actionBtn.onclick = function () {
-                savedMarker.remove();
-            };
+            // Gọi hàm tạo điểm ghim chính thức (có lưu trữ vào localStorage)
+            createPermanentMarker(map, currentLng, currentLat, currentName);
 
             event.stopPropagation(); // Ngăn sự kiện click lan truyền ra các lớp bên dưới bản đồ
         };
