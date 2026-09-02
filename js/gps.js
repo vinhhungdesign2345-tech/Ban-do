@@ -18,7 +18,7 @@ function initGPSControl(map) {
     
     // Định nghĩa các biến chứa thông số cấu hình giao diện cho tooltip tọa độ
     const tooltipPosition = 'absolute';                           // Đặt vị trí tuyệt đối để linh hoạt trôi nổi theo tọa độ màn hình của chuột
-    const tooltipBg = 'rgba(0, 0, 0, 0.75);';                     // Màu nền: Màu đen có độ trong suốt 75% tạo hiệu ứng tối giản
+    const tooltipBg = 'rgba(0, 0, 0, 0.75)';                      // Màu nền: Màu đen có độ trong suốt 75% tạo hiệu ứng tối giản
     const tooltipColor = '#ffffff';                               // Màu chữ: Màu trắng sáng giúp nổi bật trên nền tối
     const tooltipPaddingTopBot = '4px';                           // Khoảng đệm bên trong theo chiều dọc (trên/dưới)
     const tooltipPaddingLeftRight = '8px';                        // Khoảng đệm bên trong theo chiều ngang (trái/phải)
@@ -192,7 +192,7 @@ function initGPSControl(map) {
         `;
         
         // Khai báo các thông số cho ô nhập tên địa điểm (Input)
-        const inputWidth = '100%T';                             // Chiều rộng phủ kín 100% khung chứa popup (Sửa lại chuẩn cú pháp: '100%')
+        const inputWidth = '100%';                              // Chiều rộng phủ kín 100% khung chứa popup
         const inputPaddingTopBot = '3px';                       // Đệm trên/dưới ô nhập liệu: 3px
         const inputPaddingLeftRight = '5px';                    // Đệm trái/phải ô nhập liệu: 5px
         const inputFontSize = '13px';                           // Cỡ chữ trong ô nhập: 13px
@@ -220,7 +220,7 @@ function initGPSControl(map) {
         // Ghép nối cấu trúc HTML hoàn chỉnh bên trong Popup gồm: Ô nhập tên, dòng tọa độ chi tiết và nút bấm xác nhận
         popupContent.innerHTML = `
             <input type="text" id="place-name-input" placeholder="Tên địa điểm..." value="Địa điểm mới" style="
-                width: 100%; 
+                width: ${inputWidth}; 
                 padding: ${inputPaddingTopBot} ${inputPaddingLeftRight}; 
                 font-size: ${inputFontSize}; 
                 border: ${inputBorder}; 
