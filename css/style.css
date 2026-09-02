@@ -282,14 +282,27 @@ input {
     background-color: #a8a8a8;     /* Màu sắc khi rê chuột vào thanh trượt */
 }
 
-/* --- 📱 TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI --- */
+/* --- ÉP TOÀN BỘ NÚT ĐỊNH VỊ VÀ THÀNH PHẦN CON LÊN LỚP CAO NHẤT --- */
+.maplibregl-ctrl-top-right,
+.maplibregl-ctrl-top-right .maplibregl-ctrl,
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group,
+.maplibregl-ctrl-top-right .maplibregl-ctrl-geolocate {
+    z-index: 200 !important;
+    position: relative !important;
+}
+
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group button {
+    z-index: 100 !important;
+    cursor: default !important;
+}
+/* --- 📱 TỐI ƯU GIAO DIỆN CHO ĐIỆN THOẠI (BỐ TRÍ 2 CỘT CHO BẢNG THÔNG TIN) --- */
 @media screen and (max-width: 768px) {
     .parcel-panel {
         width: 95% !important;         /* Mở rộng bề ngang khung thông tin chiếm 95% màn hình di động */
         max-width: none !important;    /* Xóa bỏ giới hạn chiều rộng tối đa trên điện thoại */
         bottom: 10px !important;       /* Đưa khung thông tin sát xuống đáy màn hình hơn (cách 10px) */
         padding: 8px 10px !important;  /* Thu nhỏ khoảng đệm bên trong để tiết kiệm diện tích */
-        max-height: 45vh !important;   /* Giới hạn chiều cao tối đa của khung bằng 45% chiều cao màn hình */
+        max-height: 48vh !important;   /* Giới hạn chiều cao tối đa của khung */
         overflow-y: auto !important;   /* Cho phép cuộn dọc bên trong khung nếu nội dung quá dài */
     }
 
@@ -299,17 +312,20 @@ input {
         margin-bottom: 6px !important; /* Thu hẹp khoảng cách lề dưới */
     }
 
+    /* --- SẮP XẾP BẢNG THÔNG TIN THỬA ĐẤT THÀNH 2 CỘT ĐỀU NHAU --- */
     .panel-body {
-        display: flex !important;      /* Chuyển đổi lưới thành dạng danh sách xếp dọc trên mobile */
-        flex-direction: column !important; /* Xếp các dòng thông tin lần lượt từ trên xuống dưới */
-        gap: 4px !important;           /* Thu hẹp khoảng cách giữa các dòng thông tin xuống còn 4px */
+        display: grid !important;      /* Bật chế độ hiển thị dạng lưới (Grid) */
+        grid-template-columns: 1fr 1fr !important; /* Chia thành đúng 2 cột bằng nhau (mỗi cột 50%) */
+        flex-direction: unset !important;          /* Hủy bỏ kiểu xếp dọc cũ */
+        gap: 5px 10px !important;      /* Khoảng cách giữa các hàng là 5px, giữa 2 cột là 10px */
     }
 
     .panel-body div {
-        width: 100% !important;        /* Mỗi dòng thông tin chiếm trọn 100% bề ngang màn hình */
-        font-size: 11px !important;    /* Thu nhỏ cỡ chữ xuống 11px để hiển thị vừa vặn trên màn hình nhỏ */
-        white-space: normal !important;/* Cho phép chữ xuống dòng tự nhiên thay vì bị ẩn đi */
-        overflow: visible !important;  /* Hiển thị toàn bộ nội dung văn bản, không bị cắt bớt */
+        width: 100% !important;        /* Mỗi ô nội dung chiếm trọn 1 cột */
+        font-size: 11px !important;    /* Thu nhỏ cỡ chữ xuống 11px cho vừa vặn */
+        white-space: nowrap !important;/* Giữ nội dung trên một dòng cho ngay ngắn */
+        text-overflow: ellipsis !important; /* Tự động cắt bớt bằng dấu ba chấm (...) nếu quá dài */
+        overflow: hidden !important;   /* Ẩn phần văn bản bị tràn */
     }
 
     /* --- THU GỌN KHUNG TÌM KIẾM GÓC TRÊN TRÁI (MOBILE) --- */
@@ -346,13 +362,13 @@ input {
     }
 
     #opacity-control-panel input[type="range"] {
-        height: 50px !important;       /* Chiều dài thanh trượt dọc 50px */
+        height: 55px !important;       /* Chiều dài thanh trượt dọc 55px */
         width: 12px !important;        /* Độ rộng thanh trượt dọc 12px */
     }
 
     /* --- ĐIỀU CHỈNH CỤM NÚT ĐỊNH VỊ NẰM SÁT DƯỚI THANH TRƯỢT (MOBILE) --- */
     .maplibregl-ctrl-top-right {
-        top: 70px !important;          /* Nút định vị cách cạnh trên 70px */
+        top: 68px !important;          /* Nút định vị cách cạnh trên 68px */
         right: 6px !important;         /* Cách cạnh phải 6px */
     }
 
@@ -391,18 +407,4 @@ input {
         border-radius: 12px !important;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
     }
-}
-
-/* --- ÉP TOÀN BỘ NÚT ĐỊNH VỊ VÀ THÀNH PHẦN CON LÊN LỚP CAO NHẤT --- */
-.maplibregl-ctrl-top-right,
-.maplibregl-ctrl-top-right .maplibregl-ctrl,
-.maplibregl-ctrl-top-right .maplibregl-ctrl-group,
-.maplibregl-ctrl-top-right .maplibregl-ctrl-geolocate {
-    z-index: 10000 !important;
-    position: relative !important;
-}
-
-.maplibregl-ctrl-top-right .maplibregl-ctrl-group button {
-    z-index: 100 !important;
-    cursor: default !important;
 }
