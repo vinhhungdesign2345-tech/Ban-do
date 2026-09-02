@@ -352,7 +352,7 @@ input {
 
     /* --- ĐIỀU CHỈNH CỤM NÚT ĐỊNH VỊ NẰM SÁT DƯỚI THANH TRƯỢT (MOBILE) --- */
     .maplibregl-ctrl-top-right {
-        top: 62px !important;          /* Kéo dịch cụm định vị lên sát phía dưới thanh trượt độ mờ */
+        top: 70px !important;          /* Kéo dịch cụm định vị lên sát phía dưới thanh trượt độ mờ */
         right: 6px !important;         /* Thẳng hàng hoàn toàn với lề phải của thanh trượt độ mờ */
     }
 
