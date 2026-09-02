@@ -135,7 +135,7 @@ function initGPSControl(map) {
         return container;
     }
 
-    // Hàm ép style chuẩn cho khung popup của MapLibre (Chống phình to trên mobile)
+    // Hàm áp dụng style chuẩn ép sát khung popup của MapLibre (Khắc phục lỗi phình to trên mobile)
     function applyPopupFix(popupInstance) {
         const popupElement = popupInstance.getElement();
         if (popupElement) {
@@ -178,6 +178,7 @@ function initGPSControl(map) {
             .setPopup(popup)
             .addTo(mapInstance);
 
+        // Ép style ngay sau khi popup mở
         popup.on('open', () => {
             applyPopupFix(popup);
         });
@@ -216,7 +217,7 @@ function initGPSControl(map) {
     }
 
     // ----------------------------------------------------
-    // PHẦN 3: NÚT BẬT/TẮT CHẾ ĐỘ GHIM (ĐÃ FIX KÍCH THƯỚC VUÔNG VỨC)
+    // PHẦN 3: NÚT BẬT/TẮT CHẾ ĐỘ GHIM
     // ----------------------------------------------------
     let isPinModeActive = false;
 
@@ -231,10 +232,9 @@ function initGPSControl(map) {
             pinButton.title = 'Bật/Tắt chế độ ghim địa điểm';
             pinButton.innerHTML = '📍';
             
-            // Ép kích thước chuẩn nút vuông vức như cụm điều khiển mặc định (29x29px)
             pinButton.style.cssText = `
-                width: 29px;
-                height: 29px;
+                width: 100%;
+                height: 100%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -243,7 +243,6 @@ function initGPSControl(map) {
                 background: transparent;
                 cursor: pointer;
                 outline: none;
-                padding: 0;
             `;
             
             pinButton.onclick = () => {
@@ -313,6 +312,7 @@ function initGPSControl(map) {
             .setPopup(popup)
             .addTo(map);
 
+        // Ép style ngay sau khi popup mở
         popup.on('open', () => {
             applyPopupFix(popup);
         });
