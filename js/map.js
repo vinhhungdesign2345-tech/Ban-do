@@ -144,7 +144,7 @@ function initMap() {
       };
     }
 
-    // Cấu hình thanh kéo (slider) điều chỉnh độ mờ (opacity) của lớp thửa đất
+    // Cấu hình thanh kéo (slider) điều chỉnh độ mờ/đậm (opacity) của lớp bản đồ thửa đất
     const opacitySlider = document.getElementById('opacitySlider');
     const opacityValueLabel = document.getElementById('opacityValue');
 
@@ -196,13 +196,6 @@ function initMap() {
     // Gọi các hàm khởi tạo bộ lọc và tìm kiếm thửa đất
     initFilter(map);
     initThuaDatSearch(map);
-    
-    // =========================================================================
-    // LỆNH GỌI TÍNH NĂNG GPS
-    // =========================================================================
-    if (typeof initGPSControl === 'function') {
-        initGPSControl(map);
-      }
   });
 
   // Mảng chứa ID các lớp (layer) của thửa đất trên bản đồ cần lắng nghe sự kiện click
