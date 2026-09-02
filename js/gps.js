@@ -95,16 +95,16 @@ function initGPSControl(map) {
             pinButton.innerHTML = '📍';                      // Biểu tượng icon chiếc ghim bản đồ
             
             // Khai báo các thông số giao diện chi tiết cho nút bấm
-            const ctrlBtnWidth = '29px';                     // Chiều rộng chuẩn của nút điều khiển bản đồ MapLibre
-            const ctrlBtnHeight = '29px';                    // Chiều cao chuẩn của nút điều khiển bản đồ MapLibre
-            const ctrlBtnDisplay = 'flex';                   // Sử dụng mô hình Flexbox để canh chỉnh nội dung bên trong
-            const ctrlBtnAlign = 'center';                   // Canh giữa theo chiều dọc
-            const ctrlBtnJustify = 'center';                 // Canh giữa theo chiều ngang
-            const ctrlBtnFontSize = '15px';                   // Cỡ chữ của icon 📍
-            const ctrlBtnBorder = 'none';                    // Không viền mặc định
-            const ctrlBtnBg = '#ffffff';                     // Màu nền mặc định: Trắng sáng
-            const ctrlBtnCursor = 'pointer';                 // Con trỏ chuột chuyển thành dạng bàn tay khi rê vào
-            const ctrlBtnOutline = 'none';                   // Loại bỏ đường viền sáng (outline) khi bấm vào nút
+            const ctrlBtnWidth = '100%';                       // Chiều rộng phủ kín 100% khối chứa để không bị hở viền trắng
+            const ctrlBtnHeight = '100%';                      // Chiều cao phủ kín 100% khối chứa
+            const ctrlBtnDisplay = 'flex';                     // Sử dụng mô hình Flexbox để canh chỉnh nội dung bên trong
+            const ctrlBtnAlign = 'center';                     // Canh giữa theo chiều dọc
+            const ctrlBtnJustify = 'center';                   // Canh giữa theo chiều ngang
+            const ctrlBtnFontSize = '15px';                    // Cỡ chữ của icon 📍
+            const ctrlBtnBorder = 'none';                      // Không viền mặc định
+            const ctrlBtnBg = 'transparent';                   // Nền trong suốt để hiển thị màu đồng bộ theo trạng thái
+            const ctrlBtnCursor = 'pointer';                   // Con trỏ chuột chuyển thành dạng bàn tay khi rê vào
+            const ctrlBtnOutline = 'none';                     // Loại bỏ đường viền sáng (outline) khi bấm vào nút
 
             // Áp dụng chuỗi thông số CSS vào nút bấm
             pinButton.style.cssText = `
@@ -126,12 +126,10 @@ function initGPSControl(map) {
                 
                 if (isPinModeActive) {
                     // TRƯỜNG HỢP BẬT CHẾ ĐỘ GHIM:
-                    pinButton.style.background = '#6a9ceb';          // Đổi màu nền nút sang màu xanh dương nhạt báo hiệu đang kích hoạt
-                    mapInstance.getContainer().style.cursor = 'crosshair'; // Đổi hình dạng con trỏ chuột thành hình dấu cộng (+) đặc trưng chọn điểm
+                    pinButton.style.background = '#6a9ceb';         // Đổi màu nút sang xanh dương nhạt khi đang bật (phủ kín khít ô)
                 } else {
                     // TRƯỜNG HỢP TẮT CHẾ ĐỘ GHIM:
-                    pinButton.style.background = '#ffffff';          // Trả lại màu nền trắng ban đầu cho nút
-                    mapInstance.getContainer().style.cursor = '';   // Khôi phục con trỏ chuột về mặc định
+                    pinButton.style.background = 'transparent';     // Trả lại màu nền trong suốt ban đầu cho nút
                     
                     // Nếu đang có điểm ghim tạm thời trên bản đồ thì tiến hành xóa bỏ
                     if (tempMarker) {
@@ -263,18 +261,24 @@ function initGPSControl(map) {
             closeButton: popupCloseButton 
         }).setDOMContent(popupContent);
 
-        const markerColor = '#ea4335';  // Màu sắc của biểu tượng ghim định vị (Mã màu đỏ đặc trưng Google Marker)
-
-        // Tạo một thẻ div nhỏ gọn làm icon thay thế cho Marker mặc định
+        // Tạo một thẻ div nhỏ gọn làm icon chấm tròn thay thế cho Marker mặc định to bản
         const markerEl = document.createElement('div');
+        const markerWidth = '14px';                             // Chiều rộng icon ghim: 14px
+        const markerHeight = '14px';                            // Chiều cao icon ghim: 14px
+        const markerBgColor = '#ea4335';                        // Màu đỏ đặc trưng Google Marker
+        const markerBorder = '2px solid #ffffff';               // Viền trắng bao quanh
+        const markerRadius = '50%';                             // Bo tròn hoàn toàn tạo thành hình tròn
+        const markerShadow = '0 2px 4px rgba(0,0,0,0.3)';         // Đổ bóng nhẹ tạo chiều nổi
+        const markerCursor = 'pointer';                         // Con trỏ tay khi rê vào icon
+
         markerEl.style.cssText = `
-            width: 14px;
-            height: 14px;
-            background-color: #ea4335;
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            cursor: pointer;
+            width: ${markerWidth};
+            height: ${markerHeight};
+            background-color: ${markerBgColor};
+            border: ${markerBorder};
+            border-radius: ${markerRadius};
+            box-shadow: ${markerShadow};
+            cursor: ${markerCursor};
         `;
 
         // Khởi tạo Marker với phần tử HTML tùy chỉnh vừa tạo
@@ -302,10 +306,10 @@ function initGPSControl(map) {
             const savedMarker = tempMarker;
             tempMarker = null;    // Tách biến tạm ra để điểm ghim này chính thức được cố định lại trên bản đồ, không bị xóa tự động nữa
 
-            actionBtn.innerText = "Bỏ đánh dấu";                    // Đổi nhãn nút thành "Bỏ đánh dấu"
-            actionBtn.style.background = "#d93025";                 // Đổi màu nền nút sang màu đỏ cảnh báo
-            nameInput.disabled = true;                              // Khóa ô nhập tên lại, không cho chỉnh sửa nữa
-            nameInput.style.background = "#f1f3f4";                 // Đổi màu nền ô input sang màu xám nhạt biểu thị trạng thái bị khóa
+            actionBtn.innerText = "Bỏ đánh dấu";                 // Đổi nhãn nút thành "Bỏ đánh dấu"
+            actionBtn.style.background = "#d93025";               // Đổi màu nền nút sang màu đỏ cảnh báo
+            nameInput.disabled = true;                            // Khóa ô nhập tên lại, không cho chỉnh sửa nữa
+            nameInput.style.background = "#f1f3f4";               // Đổi màu nền ô input sang màu xám nhạt biểu thị trạng thái bị khóa
 
             // Khi người dùng bấm tiếp vào nút "Bỏ đánh dấu" lần nữa, tiến hành xóa hẳn điểm ghim này khỏi bản đồ
             actionBtn.onclick = function () {
