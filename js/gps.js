@@ -18,9 +18,9 @@ function initGPSControl(map) {
     
     // Định nghĩa các biến chứa thông số cấu hình giao diện cho thanh tọa độ cố định mép dưới
     const tooltipPosition = 'absolute';                           // Đặt vị trí tuyệt đối để neo vào khung chứa bản đồ
-    const tooltipBottom = '50px';                                 // Khoảng cách neo từ mép dưới lên: 10 pixel
-    const tooltipLeft = '10px';                                   // Khoảng cách neo từ mép trái sang: 10 pixel (hoặc đổi thành right nếu muốn sang phải)
-    const tooltipBg = 'rgba(0, 0, 0, 0.75)';                      // Màu nền: Màu đen có độ trong suốt 75% tạo hiệu ứng tối giản
+    const tooltipBottom = '55px';                                 // Khoảng cách neo từ mép dưới lên: 55     pixel
+    const tooltipLeft = '10px';                                   // Khoảng cách neo từ mép trái sang: 10 pixel
+    const tooltipBg = 'rgba(0, 0, 0, 0.50)';                      // Màu nền: Màu đen có độ trong suốt 50% tạo hiệu ứng tối giản
     const tooltipColor = '#ffffff';                               // Màu chữ: Màu trắng sáng giúp nổi bật trên nền tối
     const tooltipPaddingTopBot = '4px';                           // Khoảng đệm bên trong theo chiều dọc (trên/dưới)
     const tooltipPaddingLeftRight = '8px';                        // Khoảng đệm bên trong theo chiều ngang (trái/phải)
@@ -29,7 +29,7 @@ function initGPSControl(map) {
     const tooltipBorderRadius = '4px';                            // Bo tròn 4 góc của hộp với bán kính 4 pixel
     const tooltipPointerEvents = 'none';                          // QUAN TRỌNG: Vô hiệu hóa mọi sự kiện chuột trên hộp (giúp chuột không bị vướng)
     const tooltipDisplay = 'block';                               // Trạng thái: Luôn hiển thị sẵn sàng trên bản đồ
-    const tooltipZIndex = '1000';                                 // Mức hiển thị ưu tiên lớp (z-index): Đặt cao (1000) để luôn đè lên trên bản đồ
+    const tooltipZIndex = '50';                                   // Mức hiển thị ưu tiên lớp (z-index)
     const tooltipWhiteSpace = 'nowrap';                           // Ép nội dung tọa độ hiển thị trên một dòng duy nhất
 
     // Gom nhóm và gán chuỗi định dạng CSS hoàn chỉnh vào thuộc tính style của tooltip
