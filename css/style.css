@@ -224,7 +224,12 @@ input {
     color: #1a1a1a;                /* Màu chữ hiển thị là màu đen đậm vừa (#1a1a1a) */
     box-sizing: border-box;        /* Tính toán kích thước khung bao gồm cả padding và border */
 }
-
+/* --- TẠO ĐỘ TRONG SUỐT CHO BẢNG THÔNG TIN THỬA ĐẤT --- */
+.parcel-panel {
+    background: rgba(255, 255, 255, 0.85) !important; /* Ông có thể chỉnh số 0.85 thành 0.7 hoặc 0.5 tùy ý muốn mờ nhiều hay ít */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
 .panel-header {
     display: flex;                 /* Sắp xếp tiêu đề và nút đóng theo chiều ngang bằng Flexbox */
     justify-content: space-between; /* Đẩy tiêu đề sang trái và nút đóng sang phải tối đa */
