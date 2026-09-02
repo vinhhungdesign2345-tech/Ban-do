@@ -244,17 +244,15 @@ function initGPSControl(map) {
                 cursor: pointer;
                 outline: none;
                 padding: 0;
+                border-radius: 4px;
             `;
             
             pinButton.onclick = () => {
                 isPinModeActive = !isPinModeActive;
                 if (isPinModeActive) {
-                    // Tô xanh toàn bộ cả nút bấm lẫn khung bao ngoài để không bị lộ nền trắng
                     pinButton.style.background = '#6a9ceb';
-                    this._container.style.background = '#6a9ceb';
                 } else {
                     pinButton.style.background = 'transparent';
-                    this._container.style.background = ''; // Trả về màu mặc định của bản đồ
                     if (tempMarker) {
                         tempMarker.remove();
                         tempMarker = null;
