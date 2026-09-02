@@ -15,7 +15,7 @@ body {
     width: 100%;                   /* Chiều rộng phủ kín 100% màn hình ngang */
 }
 
-/* --- HIỂN THỊ VÀ TỐI ƯU NHÃN ĐỘ DÀI CẠNH THỬA ĐẤT --- */
+/* --- HIỂN THỊ ĐỘ DÀI CẠNH THỬA ĐẤT --- */
 .maplibregl-canvas-container .maplibregl-canvas {
     image-rendering: -webkit-optimize-contrast; /* Tăng cường độ tương phản và nét chữ trên màn hình WebKit/Safari */
     image-rendering: crisp-edges;               /* Giữ nét các con số độ dài cạnh sắc nét, tránh mờ khi phóng to/thu nhỏ */
