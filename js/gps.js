@@ -91,8 +91,8 @@ function initGPSControl(map) {
             // Tạo phần tử thẻ <button> đại diện cho nút ghim điểm
             const pinButton = document.createElement('button');
             pinButton.type = 'button';
-            pinButton.title = 'Bật/Tắt chế độ ghim địa điểm'; // Chú thích gợi ý khi rê chuột vào nút
-            pinButton.innerHTML = '📍';                      // Biểu tượng icon chiếc ghim bản đồ
+            pinButton.title = 'Bật/Tắt chế độ ghim địa điểm'; // Chú thích khi rê chuột vào nút
+            pinButton.innerHTML = '📍';                      // Biểu tượng icon
             
             // Khai báo các thông số giao diện chi tiết cho nút bấm
             const ctrlBtnWidth = '29px';                     // Chiều rộng chuẩn của nút điều khiển bản đồ MapLibre
@@ -100,10 +100,9 @@ function initGPSControl(map) {
             const ctrlBtnDisplay = 'flex';                   // Sử dụng mô hình Flexbox để canh chỉnh nội dung bên trong
             const ctrlBtnAlign = 'center';                   // Canh giữa theo chiều dọc
             const ctrlBtnJustify = 'center';                 // Canh giữa theo chiều ngang
-            const ctrlBtnFontSize = '15px';                   // Cỡ chữ của icon 📍
+            const ctrlBtnFontSize = '15px';                  // Cỡ chữ của icon 📍
             const ctrlBtnBorder = 'none';                    // Không viền mặc định
             const ctrlBtnBg = '#ffffff';                     // Màu nền mặc định: Trắng sáng
-            const ctrlBtnCursor = 'pointer';                 // Con trỏ chuột chuyển thành dạng bàn tay khi rê vào
             const ctrlBtnOutline = 'none';                   // Loại bỏ đường viền sáng (outline) khi bấm vào nút
 
             // Áp dụng chuỗi thông số CSS vào nút bấm
@@ -126,7 +125,7 @@ function initGPSControl(map) {
                 
                 if (isPinModeActive) {
                     // TRƯỜNG HỢP BẬT CHẾ ĐỘ GHIM:
-                    pinButton.style.background = '#e8f0fe';          // Đổi màu nền nút sang màu xanh dương nhạt báo hiệu đang kích hoạt
+                    pinButton.style.background = '#8eb3ed';          // Đổi màu nền nút sang màu xanh dương nhạt báo hiệu đang kích hoạt
                     mapInstance.getContainer().style.cursor = 'crosshair'; // Đổi hình dạng con trỏ chuột thành hình dấu cộng (+) đặc trưng chọn điểm
                 } else {
                     // TRƯỜNG HỢP TẮT CHẾ ĐỘ GHIM:
