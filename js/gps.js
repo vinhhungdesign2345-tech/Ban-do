@@ -179,7 +179,7 @@ function initGPSControl(map) {
         const inputWidth = '100%';             // Chiều rộng của ô nhập tên (chiếm 100% bề ngang khung popup)
         const inputPaddingTopBot = '3px';      // Khoảng cách đệm phía trên và phía dưới bên trong ô nhập tên
         const inputPaddingLeftRight = '5px';   // Khoảng cách đệm phía bên trái và bên phải bên trong ô nhập tên
-        const inputFontSize = '11px';          // Kích thước cỡ chữ của văn bản trong ô nhập tên
+        const inputFontSize = '13px';          // Kích thước cỡ chữ của văn bản trong ô nhập tên
         const inputBorder = '1px solid #ccc';  // Định dạng đường viền xung quanh ô nhập (độ dày 1px, nét liền, màu xám #ccc)
         const inputRadius = '3px';             // Bán kính bo tròn 4 góc của ô nhập tên
         const inputMarginBot = '3px';          // Khoảng cách khoảng trống (lề dưới) tách biệt ô nhập với dòng tọa độ phía dưới
@@ -187,7 +187,7 @@ function initGPSControl(map) {
         // ==========================================
         // CÁC THÔNG SỐ CẤU HÌNH CHO DÒNG HIỂN THỊ TỌA ĐỘ (<div>):
         // ==========================================
-        const coordFontSize = '10px';          // Kích thước cỡ chữ hiển thị tọa độ (nhỏ gọn)
+        const coordFontSize = '12px';          // Kích thước cỡ chữ hiển thị tọa độ (nhỏ gọn)
         const coordColor = '#555';             // Màu sắc chữ hiển thị tọa độ (màu xám tối)
         const coordMarginBot = '4px';          // Khoảng cách khoảng trống (lề dưới) tách biệt dòng tọa độ với nút bấm bên dưới
         const coordFontFamily = 'monospace';   // Kiểu phông chữ dạng mã nguồn (giúp các chữ số thẳng hàng đều nhau)
