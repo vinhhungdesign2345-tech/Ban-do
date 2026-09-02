@@ -16,20 +16,20 @@ function initGPSControl(map) {
     coordTooltip.id = 'mouse-coord-tooltip';
     
     // ==========================================
-    // CÁC THÔNG SỐ CẤU HÌNH GIAO DIỆN HỘP TỌA ĐỘ (TOOLTIP) THEO CHUỘT:
+    // THÔNG SỐ KHUNG TỌA ĐỘ (TOOLTIP) THEO CHUỘT:
     // ==========================================
-    const tooltipPosition = 'absolute';                     // Định vị tuyệt đối để hộp tự do dịch chuyển theo tọa độ pixel màn hình
-    const tooltipBg = 'rgba(0, 0, 0, 0.75)';                // Màu nền đen mờ 75% giúp nổi bật văn bản mà không che khuất hẳn bản đồ bên dưới
-    const tooltipColor = '#ffffff';                         // Màu sắc chữ hiển thị bên trong hộp (màu trắng sáng)
-    const tooltipPaddingTopBot = '4px';                     // Khoảng cách đệm phía trên và phía bên dưới của hộp tọa độ
-    const tooltipPaddingLeftRight = '8px';                  // Khoảng cách đệm phía bên trái và bên phải của hộp tọa độ
-    const tooltipFontSize = '12px';                         // Kích thước cỡ chữ hiển thị bên trong hộp tọa độ
+    const tooltipPosition = 'absolute';                      // Định vị tuyệt đối để hộp tự do dịch chuyển theo tọa độ pixel màn hình
+    const tooltipBg = 'rgba(0, 0, 0, 0.75)';                 // Màu nền đen mờ 75% giúp nổi bật văn bản mà không che khuất hẳn bản đồ bên dưới
+    const tooltipColor = '#ffffff';                          // Màu sắc chữ hiển thị bên trong hộp (màu trắng sáng)
+    const tooltipPaddingTopBot = '4px';                      // Khoảng cách đệm phía trên và phía bên dưới của hộp tọa độ
+    const tooltipPaddingLeftRight = '8px';                   // Khoảng cách đệm phía bên trái và bên phải của hộp tọa độ
+    const tooltipFontSize = '12px';                          // Kích thước cỡ chữ hiển thị bên trong hộp tọa độ
     const tooltipFontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"; // Bộ phông chữ chuẩn hiện đại, mượt mà
-    const tooltipBorderRadius = '4px';                      // Bán kính bo tròn 4 góc của hộp tọa độ
-    const tooltipPointerEvents = 'none';                    // Vô hiệu hóa mọi sự kiện tương tác chuột lên hộp để tránh cản trở thao tác click bản đồ
-    const tooltipDisplay = 'none';                          // Trạng thái hiển thị mặc định là ẩn (chỉ hiện khi con trỏ di chuyển vào bản đồ)
-    const tooltipZIndex = '1000';                           // Mức độ ưu tiên hiển thị lớp nằm ở tầng trên cùng so với các phần tử khác
-    const tooltipWhiteSpace = 'nowrap';                     // Buộc nội dung văn bản luôn nằm trên một dòng duy nhất, không bị xuống dòng
+    const tooltipBorderRadius = '4px';                       // Bán kính bo tròn 4 góc của hộp tọa độ
+    const tooltipPointerEvents = 'none';                     // Vô hiệu hóa mọi sự kiện tương tác chuột lên hộp để tránh cản trở thao tác click bản đồ
+    const tooltipDisplay = 'none';                           // Trạng thái hiển thị mặc định là ẩn (chỉ hiện khi con trỏ di chuyển vào bản đồ)
+    const tooltipZIndex = '1000';                            // Mức độ ưu tiên hiển thị lớp nằm ở tầng trên cùng so với các phần tử khác
+    const tooltipWhiteSpace = 'nowrap';                      // Buộc nội dung văn bản luôn nằm trên một dòng duy nhất, không bị xuống dòng
 
     coordTooltip.style.cssText = `
         position: ${tooltipPosition};
@@ -88,16 +88,16 @@ function initGPSControl(map) {
             // ==========================================
             // CÁC THÔNG SỐ CẤU HÌNH GIAO DIỆN NÚT ĐIỀU KHIỂN GHIM TRÊN BẢN ĐỒ:
             // ==========================================
-            const ctrlBtnWidth = '29px';           // Chiều rộng tiêu chuẩn của nút bấm trong cụm điều khiển MapLibre
-            const ctrlBtnHeight = '29px';          // Chiều cao tiêu chuẩn của nút bấm trong cụm điều khiển MapLibre
-            const ctrlBtnDisplay = 'flex';         // Sử dụng Flexbox để căn chỉnh nội dung icon vào chính giữa nút
-            const ctrlBtnAlign = 'center';         // Căn chỉnh theo chiều dọc ở giữa ô
-            const ctrlBtnJustify = 'center';       // Căn chỉnh theo chiều ngang ở giữa ô
-            const ctrlBtnFontSize = '15px';        // Kích thước cỡ chữ của biểu tượng icon 📍 bên trong nút
-            const ctrlBtnBorder = 'none';          // Loại bỏ hoàn toàn đường viền mặc định của trình duyệt
-            const ctrlBtnBg = '#ffffff';           // Màu nền mặc định của nút bấm (màu trắng)
-            const ctrlBtnCursor = 'pointer';       // Hiển thị con trỏ dạng bàn tay khi rê chuột vào nút
-            const ctrlBtnOutline = 'none';         // Loại bỏ đường viền sáng khi bấm vào nút
+            const ctrlBtnWidth = '29px';            // Chiều rộng tiêu chuẩn của nút bấm trong cụm điều khiển MapLibre
+            const ctrlBtnHeight = '29px';           // Chiều cao tiêu chuẩn của nút bấm trong cụm điều khiển MapLibre
+            const ctrlBtnDisplay = 'flex';          // Sử dụng Flexbox để căn chỉnh nội dung icon vào chính giữa nút
+            const ctrlBtnAlign = 'center';          // Căn chỉnh theo chiều dọc ở giữa ô
+            const ctrlBtnJustify = 'center';        // Căn chỉnh theo chiều ngang ở giữa ô
+            const ctrlBtnFontSize = '15px';         // Kích thước cỡ chữ của biểu tượng icon 📍 bên trong nút
+            const ctrlBtnBorder = 'none';           // Loại bỏ hoàn toàn đường viền mặc định của trình duyệt
+            const ctrlBtnBg = '#ffffff';            // Màu nền mặc định của nút bấm (màu trắng)
+            const ctrlBtnCursor = 'pointer';        // Hiển thị con trỏ dạng bàn tay khi rê chuột vào nút
+            const ctrlBtnOutline = 'none';          // Loại bỏ đường viền sáng khi bấm vào nút
 
             pinButton.style.cssText = `
                 width: ${ctrlBtnWidth};
@@ -117,10 +117,10 @@ function initGPSControl(map) {
                 isPinModeActive = !isPinModeActive; // Đảo ngược trạng thái bật/tắt
                 
                 if (isPinModeActive) {
-                    pinButton.style.background = '#e8f0fe';         // Đổi màu nền sang xanh nhạt khi chế độ được kích hoạt
+                    pinButton.style.background = '#e8f0fe';          // Đổi màu nền sang xanh nhạt khi chế độ được kích hoạt
                     mapInstance.getContainer().style.cursor = 'crosshair'; // Đổi con trỏ chuột thành hình dấu cộng (+)
                 } else {
-                    pinButton.style.background = '#ffffff';         // Trả lại màu nền trắng ban đầu khi tắt
+                    pinButton.style.background = '#ffffff';          // Trả lại màu nền trắng ban đầu khi tắt
                     mapInstance.getContainer().style.cursor = '';          // Trả lại hình dạng con trỏ chuột mặc định
                 }
             };
@@ -143,10 +143,10 @@ function initGPSControl(map) {
     // PHẦN 5: LẮNG NGHE SỰ KIỆN CLICK TRÊN BẢN ĐỒ (CHỈ HOẠT ĐỘNG KHI ĐÃ BẬT NÚT GHIM)
     // ----------------------------------------------------
     map.on('click', function (e) {
-        if (!isPinModeActive) return;                                      // Nếu chưa bật chế độ ghim thì bỏ qua sự kiện click
-        if (typeof isMeasuring !== 'undefined' && isMeasuring) return;     // Tránh xung đột nếu ứng dụng đang bật chế độ đo khoảng cách
+        if (!isPinModeActive) return;                                       // Nếu chưa bật chế độ ghim thì bỏ qua sự kiện click
+        if (typeof isMeasuring !== 'undefined' && isMeasuring) return;      // Tránh xung đột nếu ứng dụng đang bật chế độ đo khoảng cách
 
-        // Nếu đã có một điểm ghim tạm trước đó, hãy xóa nó đi để chỉ giữ lại 1 điểm ghim mới nhất
+        // Nếu đã có một điểm ghim tạm trước đó (chưa bấm đánh dấu), xóa nó đi ngay lập tức
         if (tempMarker) {
             tempMarker.remove();
             tempMarker = null;
@@ -176,7 +176,7 @@ function initGPSControl(map) {
         // ==========================================
         // CÁC THÔNG SỐ CẤU HÌNH CHO Ô NHẬP TÊN ĐỊA ĐIỂM (<input>):
         // ==========================================
-        const inputWidth = '100%';             // Chiều rộng của ô nhập tên (chiếm 100% bề ngang khung popup)
+        const inputWidth = '100vw';                  // Chiều rộng của ô nhập tên
         const inputPaddingTopBot = '3px';      // Khoảng cách đệm phía trên và phía dưới bên trong ô nhập tên
         const inputPaddingLeftRight = '5px';   // Khoảng cách đệm phía bên trái và bên phải bên trong ô nhập tên
         const inputFontSize = '13px';          // Kích thước cỡ chữ của văn bản trong ô nhập tên
@@ -208,7 +208,7 @@ function initGPSControl(map) {
         // Xây dựng cấu trúc HTML bên trong Popup bao gồm ô nhập tên, tọa độ và nút bấm
         popupContent.innerHTML = `
             <input type="text" id="place-name-input" placeholder="Tên địa điểm..." value="Địa điểm mới" style="
-                width: ${inputWidth}; 
+                width: 100%; 
                 padding: ${inputPaddingTopBot} ${inputPaddingLeftRight}; 
                 font-size: ${inputFontSize}; 
                 border: ${inputBorder}; 
@@ -264,12 +264,21 @@ function initGPSControl(map) {
         const actionBtn = popupContent.querySelector('#pin-action-btn');
         const nameInput = popupContent.querySelector('#place-name-input');
 
+        // Tự động xóa trắng chữ "Địa điểm mới" khi người dùng click vào ô nhập tên lần đầu tiên
+        let isClearedDefaultName = false;
+        nameInput.onfocus = function() {
+            if (!isClearedDefaultName && nameInput.value === "Địa điểm mới") {
+                nameInput.value = "";
+                isClearedDefaultName = true;
+            }
+        };
+
         // Xử lý sự kiện khi bấm nút "Đánh dấu" trong popup
         actionBtn.onclick = function (event) {
             const savedMarker = tempMarker;
-            tempMarker = null;
+            tempMarker = null; // Gỡ biến tạm để nhường chỗ cho marker mới nếu có click tiếp theo
 
-            actionBtn.innerText = "Bỏ đánh dấu";                  // Đổi tên nhãn nút thành "Bỏ đánh dấu"
+            actionBtn.innerText = "Bỏ đánh dấu";               // Đổi tên nhãn nút thành "Bỏ đánh dấu"
             actionBtn.style.background = "#d93025";               // Đổi màu nền nút sang màu đỏ cảnh báo
             nameInput.disabled = true;                            // Khóa ô nhập tên lại không cho chỉnh sửa nữa
             nameInput.style.background = "#f1f3f4";               // Đổi màu nền ô nhập thành xám nhạt thể hiện trạng thái khóa
