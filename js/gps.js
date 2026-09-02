@@ -232,7 +232,7 @@ function initGPSControl(map) {
             pinButton.title = 'Bật/Tắt chế độ ghim địa điểm';
             pinButton.innerHTML = '📍';
             
-            // 👉 ÔNG CÓ THỂ TÙY CHỈNH KÍCH THƯỚC TRỰC TIẾP TẠI ĐÂY:
+            // KÍCH THƯỚC NÚT BẬT/TẮT GHIM:
             pinButton.style.cssText = `
                 width: 29px;
                 height: 29px;
