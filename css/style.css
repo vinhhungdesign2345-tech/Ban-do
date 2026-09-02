@@ -25,7 +25,7 @@ body {
     z-index: 50;                   /* Đặt mức hiển thị cao hơn các lớp nền */
 }
 
-/* --- NÚT CHUYỂN ĐỔI LỚP BẢN ĐỒ --- */
+/* --- CỤM NÚT CHUYỂN ĐỔI LỚP BẢN ĐỒ VÀ ĐO KHOẢNG CÁCH --- */
 .map-layer-control {
     position: absolute;            /* Đặt vị trí nổi lên trên bản đồ */
     bottom: 10px;                  /* Cách mép dưới khung bản đồ 10 pixel */
