@@ -70,7 +70,7 @@ body {
 }
 
 /* --- 🎚️ THANH TRƯỢT ĐỘ MỜ DẠNG DỌC (GÓC TRÊN PHẢI) --- */
-#opacity-control-panel {
+    #opacity-control-panel {
     position: absolute;            /* Đặt vị trí tuyệt đối nổi lên trên bản đồ */
     top: 10px;                     /* Căn chỉnh nằm sát mép trên cùng (cách 10px ngang với cụm tìm kiếm) */
     right: 10px;                   /* Cố định khoảng cách lề phải khớp hoàn hảo với nút định vị */
