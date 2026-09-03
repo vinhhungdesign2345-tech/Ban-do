@@ -34,13 +34,12 @@ body {
 }
 
 #toggleLayerBtn {
-    padding: 7px 7px;              /* Khoảng đệm bên trong: trên dưới 7px, trái phải 7px */
+    padding: 3px 3px;              /* Khoảng đệm bên trong: trên dưới 3px, trái phải 3px */
     background: white;             /* Màu nền của nút là màu trắng */
     border: 1px solid #ccc;        /* Viền bo xung quanh nút màu xám nhạt */
     cursor: pointer;               /* Hiển thị con trỏ chuột khi rê vào nút */
     border-radius: 6px;            /* Bo tròn 4 góc của nút với bán kính 6 pixel */
-    font-size: 11px;               /* Cỡ chữ hiển thị trong nút là 11px */
-    font-weight: bold;             /* Định dạng chữ in đậm */
+    font-size: 10px;               /* Cỡ chữ hiển thị trong nút là 10px */
     color: #333;                   /* Màu chữ bên trong nút là màu xám đậm (#333) */
     transition: background-color 0.2s ease, border-color 0.2s ease; /* Hiệu ứng chuyển màu mượt mà trong 0.2 giây */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Đổ bóng nhẹ phía dưới nút tạo chiều sâu */
@@ -63,7 +62,7 @@ body {
     padding: 6px;                  /* Khoảng đệm bên trong bao quanh các thành phần là 6px */
     border-radius: 10px;           /* Bo tròn các góc của bảng điều khiển với bán kính 10px */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18); /* Tạo hiệu ứng đổ bóng sâu rõ nét cho khung */
-    max-width: 380px;              /* Giới hạn chiều rộng tối đa của bảng là 380 pixel */
+    max-width: 350px;              /* Giới hạn chiều rộng tối đa của bảng là 350 pixel */
     width: calc(100% - 24px);      /* Chiều rộng tự động co giãn theo màn hình trừ đi lề 24px */
     box-sizing: border-box;        /* Tính toán padding và border gộp chung vào kích thước width */
 }
