@@ -218,7 +218,7 @@ function initMap() {
       // ----------------------------------------------------
       coordDisplay.style.cssText = `
         position: absolute !important;     /* Đặt vị trí tuyệt đối so với khung chứa bản đồ */
-        bottom: 90px !important;           /* Khoảng cách cách đáy bản đồ lên cao 90px */
+        bottom: 80px !important;           /* Khoảng cách cách đáy bản đồ lên cao 80px */
         left: 10px !important;             /* Khoảng cách cách lề trái đúng 10px */
         background: rgba(0, 0, 0, 0.6);    /* Nền đen có độ trong suốt nhẹ 60% */
         padding: 4px 8px;                  /* Khoảng cách đệm bên trong (trên/dưới 4px, trái/phải 8px) */
