@@ -63,29 +63,40 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
 
   const popupDiv = document.createElement('div');
   popupDiv.id = 'mark-input-popup';
+  
+  // ----------------------------------------------------
+  // CẤU HÌNH GIAO DIỆN HỘP THOẠI POPUP (SIÊU GỌN)
+  // ----------------------------------------------------
   popupDiv.style.cssText = `
-    position: fixed; 
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%);
-    background: white; 
-    padding: 20px; 
-    border-radius: 8px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    z-index: 10000; 
-    width: 300px; 
-    font-family: sans-serif;
+    position: absolute !important;        /* Đặt vị trí tuyệt đối so với khung chứa bản đồ */
+    bottom: 45px !important;              /* Khoảng cách cách đáy bản đồ lên cao đúng 45px */
+    left: 10px !important;                /* Khoảng cách cách lề trái 10px cho gọn gàng */
+    background: #ffffff;                  /* Màu nền trắng hiển thị hộp thoại */
+    padding: 3px;                         /* Khoảng cách đệm bên trong siêu nhỏ gọn chỉ 3px */
+    border-radius: 6px;                   /* Độ bo tròn 4 góc của hộp thoại */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng đậm tạo chiều nổi khối */
+    z-index: 10000;                       /* Độ nổi lớp giao diện cao nhất, đè lên mọi thành phần khác */
+    width: 150px;                         /* Chiều rộng cố định rút gọn còn 150px */
+    font-family: sans-serif;              /* Kiểu font chữ hiển thị chuẩn dễ đọc */
   `;
+  
   popupDiv.innerHTML = `
-    <h3 style="margin-top: 0; font-size: 16px; color: #333;">Đánh dấu địa điểm</h3>
-    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Tọa độ: <b>${coordinatesStr}</b></p>
-    <input type="text" id="placeNameInput" placeholder="Nhập tên địa điểm..." style="width: 100%; padding: 8px; box-sizing: border-box; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;" autofocus>
+    <h3 style="margin: 2px 0; font-size: 13px; color: #333;">Đánh dấu địa điểm</h3>
+    <p style="font-size: 11px; color: #666; margin: 2px 0 6px 0;">Tọa độ: <b>${coordinatesStr}</b></p>
+    <input type="text" id="placeNameInput" placeholder="Nhập tên..." style="width: 100%; padding: 4px 6px; box-sizing: border-box; margin-bottom: 6px; border: 1px solid #ccc; border-radius: 3px; font-size: 11px;" autofocus>
     <div style="text-align: right;">
-      <button id="cancelMarkBtn" style="padding: 6px 12px; margin-right: 5px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Hủy</button>
-      <button id="saveMarkBtn" style="padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Đánh dấu</button>
+      <button id="cancelMarkBtn" style="padding: 2px 6px; margin-right: 3px; background: #ccc; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Hủy</button>
+      <button id="saveMarkBtn" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Lưu</button>
     </div>
   `;
-  document.body.appendChild(popupDiv);
+  
+  // Đưa thẳng vào thẻ chứa bản đồ để cố định vị trí theo mép bản đồ
+  const mapContainer = document.getElementById('map');
+  if (mapContainer) {
+    mapContainer.appendChild(popupDiv);
+  } else {
+    document.body.appendChild(popupDiv);
+  }
 
   // Sự kiện nút Hủy
   document.getElementById('cancelMarkBtn').onclick = () => popupDiv.remove();
@@ -106,6 +117,8 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const formattedDate = `${day}.${month}.${year} ${hours}:${minutes}`;
+  };
+}
 
     // ==========================================
     // CẤU TRÚC GÓI DỮ LIỆU (PAYLOAD) GỬI LÊN GOOGLE APPS SCRIPT
