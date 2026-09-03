@@ -214,7 +214,7 @@ function initMap() {
       coordDisplay.id = 'coordinate-display';
       
       // ----------------------------------------------------
-      // CẤU HÌNH GIAO DIỆN HỘP TỌA ĐỘ (ĐÃ TÁCH DÒNG & CHÚ THÍCH CHI TIẾT)
+      // CẤU HÌNH GIAO DIỆN HỘP TỌA ĐỘ
       // ----------------------------------------------------
       coordDisplay.style.cssText = `
         position: absolute !important;     /* Đặt vị trí tuyệt đối so với khung chứa bản đồ */
@@ -228,7 +228,7 @@ function initMap() {
         box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Hiệu ứng đổ bóng mờ nhẹ tạo chiều sâu */
         text-align: center;                /* Căn lề chữ ra giữa khung */
         color: #ffffff;                    /* Chữ màu trắng */
-        z-index: 1000;                     /* Độ nổi lớp giao diện (luôn nằm trên các thành phần khác) */
+        z-index: 100;                     /* Độ nổi lớp giao diện (luôn nằm trên các thành phần khác) */
         margin: 0 !important;              /* Triệt tiêu khoảng cách lề ngoài mặc định */
       `;
       
