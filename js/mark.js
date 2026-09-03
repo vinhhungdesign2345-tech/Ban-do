@@ -220,7 +220,8 @@ async function loadSavedMarkers(map) {
      // Tạo khung thông tin chi tiết (Popup) khi click vào marker (đã thu nhỏ gọn lại)
       const popup = new maplibregl.Popup({ 
         offset: 25,          // Khoảng hở theo chiều dọc giữa đầu nhọn icon ghim và khung popup
-        maxWidth: '180px'    // Giới hạn chiều rộng tối đa của khung popup nhỏ lại (tránh bị bè rộng mặc định)
+        maxWidth: '180px',   // Giới hạn chiều rộng tối đa
+        closeButton: false   // Bỏ nút "x" mặc định ở góc popup vì click ra ngoài là tự đóng
       }).setHTML(`
         <!-- Thẻ div bao ngoài: Thiết lập font chữ tổng thể, cỡ chữ nhỏ gọn 11px và khoảng cách dòng 1.3 -->
         <div style="font-family: sans-serif; font-size: 11px; line-height: 1.3;">
