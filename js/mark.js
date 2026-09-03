@@ -18,7 +18,7 @@ function initMarkFeature(map) {
     markControlDiv.className = 'maplibregl-ctrl maplibregl-ctrl-group';
     markControlDiv.innerHTML = `
       <button id="toggleMarkBtn" type="button" title="Bật/Tắt chế độ đánh dấu địa điểm" style="background: white; border: none; cursor: pointer; width: 29px; height: 29px; display: flex; align-items: center; justify-content: center; font-size: 16px;">
-        🚩
+        📍
       </button>
     `;
     topRightContainer.appendChild(markControlDiv);
@@ -62,13 +62,13 @@ function initMarkFeature(map) {
 
     // Tạo icon ghim tạm thời ngay vị trí vừa click chuột
     const tempEl = document.createElement('div');
-    tempEl.innerHTML = '🚩';
+    tempEl.innerHTML = '📍';
     tempEl.style.fontSize = '20px';
     tempEl.style.cursor = 'pointer';
 
     tempMarker = new maplibregl.Marker({ 
       element: tempEl,
-      anchor: 'bottom' // Neo chuẩn ngay chân đáy icon 🚩
+      anchor: 'bottom' // Neo chuẩn ngay chân đáy icon 📍
     })
     .setLngLat([e.lngLat.lng, e.lngLat.lat])
     .addTo(map);
@@ -213,7 +213,7 @@ async function loadSavedMarkers(map) {
 
       // Tạo phần tử biểu tượng Marker hiển thị trên bản đồ MapLibre
       const el = document.createElement('div');
-      el.innerHTML = '🚩';
+      el.innerHTML = '📍';
       el.style.fontSize = '20px';
       el.style.cursor = 'pointer';
 
