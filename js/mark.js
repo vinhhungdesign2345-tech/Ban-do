@@ -3,6 +3,7 @@
 // ==========================================
 
 let isMarkingMode = false; // Trạng thái bật/tắt chế độ đánh dấu trên bản đồ
+let tempMarker = null;     // Biến lưu trữ icon ghim tạm thời khi người dùng click chọn vị trí
 const MARK_API_URL = 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec';
 
 // ==========================================
@@ -33,6 +34,14 @@ function initMarkFeature(map) {
         this.style.background = 'white';
         this.style.border = 'none';
         map.getCanvas().style.cursor = '';
+        
+        // TẮT CHẾ ĐỘ GHIM: Tự động xóa hộp thoại nhập tên và ghim tạm nếu đang hiển thị
+        const oldPopup = document.getElementById('mark-input-popup');
+        if (oldPopup) oldPopup.remove();
+        if (tempMarker) {
+          tempMarker.remove();
+          tempMarker = null;
+        }
       }
     };
   }
@@ -44,6 +53,22 @@ function initMarkFeature(map) {
     const lng = e.lngLat.lng.toFixed(6);
     const lat = e.lngLat.lat.toFixed(6);
     const coordinatesStr = `${lat}, ${lng}`;
+
+    // Xóa ghim tạm cũ nếu có trước khi tạo ghim tạm mới
+    if (tempMarker) {
+      tempMarker.remove();
+      tempMarker = null;
+    }
+
+    // Tạo icon ghim tạm thời ngay vị trí vừa click chuột
+    const tempEl = document.createElement('div');
+    tempEl.innerHTML = '📌';
+    tempEl.style.fontSize = '20px';
+    tempEl.style.cursor = 'pointer';
+
+    tempMarker = new maplibregl.Marker({ element: tempEl })
+      .setLngLat([e.lngLat.lng, e.lngLat.lat])
+      .addTo(map);
 
     // Hiển thị hộp thoại nhỏ cho phép người dùng nhập tên địa điểm
     openMarkPrompt(coordinatesStr, map, { lng: e.lngLat.lng, lat: e.lngLat.lat });
@@ -74,15 +99,15 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
     transform: translateX(-50%);         /* Dịch chuyển ngược lại 50% chiều rộng để tâm nằm chính giữa ngang */
     background: #ffffff;                 /* Màu nền trắng hiển thị hộp thoại */
     padding: 3px;                        /* Khoảng cách đệm bên trong thu nhỏ tối đa còn 3px */
-    border-radius: 6px;                  /* Độ bo tròn 4 góc 6px */
+    border-radius: 6px;                  /* Độ bo tròn 4 góc của hộp thoại vừa vặn */
     box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng đậm tạo chiều nổi khối */
-    z-index: 200;                      /* Độ nổi lớp giao diện 200 */
-    width: 150px;                        /* Chiều rộng hộp thoại 150px */
+    z-index: 10000;                      /* Độ nổi lớp giao diện cao nhất, đè lên mọi thành phần khác */
+    width: 150px;                        /* Chiều rộng cố định của hộp thoại được thu nhỏ gọn còn 150px */
     font-family: sans-serif;             /* Kiểu font chữ hiển thị chuẩn dễ đọc */
   `;
   
   popupDiv.innerHTML = `
-    <h3 style="margin: 2px 0 4px 0; font-size: 13px; color: #333; text-align: center;">Ghim</h3>
+    <h3 style="margin: 2px 0 4px 0; font-size: 13px; color: #333; text-align: center;">Đánh dấu</h3>
     <p style="font-size: 10px; color: #666; margin: 0 0 4px 0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${coordinatesStr}</p>
     <input type="text" id="placeNameInput" placeholder="Tên địa điểm..." style="width: 100%; padding: 3px 6px; box-sizing: border-box; margin-bottom: 4px; border: 1px solid #ccc; border-radius: 3px; font-size: 11px;" autofocus>
     <div style="text-align: right; margin-bottom: 2px;">
@@ -93,7 +118,13 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
   document.body.appendChild(popupDiv);
 
   // Sự kiện nút Hủy
-  document.getElementById('cancelMarkBtn').onclick = () => popupDiv.remove();
+  document.getElementById('cancelMarkBtn').onclick = () => {
+    popupDiv.remove();
+    if (tempMarker) {
+      tempMarker.remove();
+      tempMarker = null;
+    }
+  };
   
   // Sự kiện nút Lưu đánh dấu
   document.getElementById('saveMarkBtn').onclick = async () => {
@@ -137,7 +168,13 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
       alert('Đã lưu địa điểm về Google Sheet thành công!');
       popupDiv.remove();
       
-      // Tải lại toàn bộ danh sách điểm đánh dấu trên bản đồ để cập nhật điểm mới
+      // Xóa ghim tạm sau khi đã lưu thành công vào Sheet
+      if (tempMarker) {
+        tempMarker.remove();
+        tempMarker = null;
+      }
+      
+      // Tải lại toàn bộ danh sách điểm đánh dấu trên bản đồ để cập nhật điểm mới từ Sheet
       loadSavedMarkers(map);
 
     } catch (err) {
