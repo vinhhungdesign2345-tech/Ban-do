@@ -196,91 +196,189 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
 // ==========================================
 async function loadSavedMarkers(map) {
   try {
-    // Gọi API kèm tham số chỉ định lấy dữ liệu từ tab "Đánh dấu"
+    // Gọi API kèm tham số chỉ định lấy dữ liệu từ tab "Đánh dấu" trong Google Sheet
     const apiGetUrl = `${MARK_API_URL}?sheet=danhdau`;
     const response = await fetch(apiGetUrl);
     const data = await response.json(); 
     
+    // Nếu dữ liệu trả về không phải dạng mảng thì dừng lại
     if (!Array.isArray(data)) return;
 
+    // Duyệt qua từng điểm đánh dấu trong danh sách lấy từ Sheet
     data.forEach(item => {
+      // Kiểm tra xem dữ liệu có tọa độ hay không
       if (!item.toaDo) return;
+      
+      // Tách chuỗi tọa độ thành vĩ độ (lat) và kinh độ (lng)
       const parts = item.toaDo.split(',').map(s => parseFloat(s.trim()));
       if (parts.length !== 2) return;
       const [lat, lng] = parts;
 
+      // Kiểm tra tính hợp lệ của tọa độ số
       if (isNaN(lat) || isNaN(lng)) return;
 
-      // Tạo phần tử biểu tượng Marker hiển thị trên bản đồ MapLibre
+      // Tạo phần tử biểu tượng icon ghim (Marker) hiển thị trên bản đồ MapLibre
       const el = document.createElement('div');
-      el.innerHTML = '📍';
-      el.style.fontSize = '20px';
-      el.style.cursor = 'pointer';
+      el.innerHTML = '📍';                  // Biểu tượng icon ghim
+      el.style.fontSize = '20px';          // Cỡ chữ của icon
+      el.style.cursor = 'pointer';         // Đổi con trỏ chuột thành dạng bấm được
 
-      // 1. Tạo phần tử DOM chứa nội dung popup để dễ dàng gắn sự kiện click nút Xóa
+      // Tạo phần tử DOM chứa nội dung popup linh hoạt (hỗ trợ chuyển đổi qua lại giữa chế độ Xem và Sửa)
       const popupContent = document.createElement('div');
-      popupContent.style.cssText = 'font-family: sans-serif; font-size: 11px; line-height: 1.3; width: 160px;';
-      popupContent.innerHTML = `
-        <div style="font-weight: bold; color: #007bff; margin-bottom: 2px;">
-          ${item.tenDiaDiem || 'Địa điểm đánh dấu'}
-        </div>
-        <div style="color: #555; font-family: monospace; margin-bottom: 6px;">
-          ${item.toaDo}
-        </div>
-        <div style="text-align: right;">
-          <button class="delete-mark-btn" style="background: #dc3545; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;">Xóa ghim</button>
-        </div>
-      `;
+      popupContent.style.cssText = 'font-family: sans-serif; font-size: 11px; line-height: 1.3; width: 170px;';
 
-      // 2. Bắt sự kiện khi người dùng bấm nút "Xóa ghim" trong popup
-      popupContent.querySelector('.delete-mark-btn').onclick = async () => {
-        if (!confirm(`Bạn có chắc muốn xóa địa điểm "${item.tenDiaDiem || item.toaDo}" này không?`)) return;
+      // ==========================================
+      // HÀM CON 1: HIỂN THỊ GIAO DIỆN XEM THÔNG TIN (MẶC ĐỊNH)
+      // ==========================================
+      const renderViewMode = () => {
+        popupContent.innerHTML = `
+          <!-- Khối hiển thị Tên địa điểm: In đậm, màu xanh dương chủ đạo -->
+          <div style="font-weight: bold; color: #007bff; margin-bottom: 2px;">
+            ${item.tenDiaDiem || 'Địa điểm đánh dấu'}
+          </div>
+          
+          <!-- Khối hiển thị Tọa độ: Màu xám đậm, dùng font monospace để thẳng hàng số -->
+          <div style="color: #555; font-family: monospace; margin-bottom: 6px;">
+            ${item.toaDo}
+          </div>
+          
+          <!-- Hàng chứa 2 nút chức năng Sửa và Xóa nằm hai bên -->
+          <div style="display: flex; justify-content: space-between;">
+            <button class="edit-mark-btn" style="background: #ffc107; color: #333; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: bold;">Sửa</button>
+            <button class="delete-mark-btn" style="background: #dc3545; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;">Xóa</button>
+          </div>
+        `;
 
-        // Cấu trúc gói dữ liệu gửi lệnh xóa lên Google Apps Script
-        const payload = {
-          action: 'deleteMark', 
-          toaDo: item.toaDo
+        // Bắt sự kiện khi người dùng bấm nút "Sửa" -> Chuyển sang giao diện nhập tên mới
+        popupContent.querySelector('.edit-mark-btn').onclick = () => {
+          renderEditMode();
         };
 
-        const deleteBtn = popupContent.querySelector('.delete-mark-btn');
-        try {
-          deleteBtn.innerText = 'Đang xóa...';
-          deleteBtn.disabled = true;
+        // Bắt sự kiện khi người dùng bấm nút "Xóa" trong popup
+        popupContent.querySelector('.delete-mark-btn').onclick = async () => {
+          if (!confirm(`Bạn có chắc muốn xóa địa điểm "${item.tenDiaDiem || item.toaDo}" này không?`)) return;
 
-          // Gửi yêu cầu xóa lên Google Sheet qua Web App
-          await fetch(MARK_API_URL, {
-            method: 'POST',
-            mode: 'no-cors', 
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
+          // Cấu trúc gói dữ liệu gửi lệnh xóa lên Google Apps Script
+          const payload = {
+            action: 'deleteMark', 
+            toaDo: item.toaDo
+          };
 
-          alert('Đã gửi yêu cầu xóa điểm đánh dấu!');
-          popup.remove(); // Đóng popup hiện tại
-          
-          // Tải lại danh sách điểm trên bản đồ để cập nhật trạng thái mới nhất từ Sheet
-          loadSavedMarkers(map);
+          const deleteBtn = popupContent.querySelector('.delete-mark-btn');
+          try {
+            deleteBtn.innerText = 'Đang xóa...';
+            deleteBtn.disabled = true;
 
-        } catch (err) {
-          console.error('Lỗi khi xóa điểm đánh dấu:', err);
-          alert('Có lỗi xảy ra khi xóa dữ liệu!');
-          deleteBtn.innerText = 'Xóa ghim';
-          deleteBtn.disabled = false;
-        }
+            // Gửi yêu cầu xóa lên Google Sheet qua Web App
+            await fetch(MARK_API_URL, {
+              method: 'POST',
+              mode: 'no-cors', 
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            alert('Đã gửi yêu cầu xóa điểm đánh dấu!');
+            popup.remove(); // Đóng khung popup hiện tại
+            
+            // Tải lại toàn bộ danh sách điểm trên bản đồ để cập nhật trạng thái mới nhất
+            loadSavedMarkers(map);
+
+          } catch (err) {
+            console.error('Lỗi khi xóa điểm đánh dấu:', err);
+            alert('Có lỗi xảy ra khi xóa dữ liệu!');
+            deleteBtn.innerText = 'Xóa';
+            deleteBtn.disabled = false;
+          }
+        };
       };
 
-      // 3. Tạo khung popup (tắt nút x, thu gọn) và gắn DOM Content vào
+      // ==========================================
+      // HÀM CON 2: HIỂN THỊ GIAO DIỆN CHỈNH SỬA TÊN ĐỊA ĐIỂM
+      // ==========================================
+      const renderEditMode = () => {
+        popupContent.innerHTML = `
+          <!-- Ô nhập văn bản để thay đổi tên địa điểm mới -->
+          <div style="margin-bottom: 4px;">
+            <input type="text" class="edit-input" value="${item.tenDiaDiem || ''}" placeholder="Nhập tên mới..." style="width: 100%; padding: 2px 4px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 3px; font-size: 11px;" autofocus>
+          </div>
+          
+          <!-- Tọa độ tĩnh phía dưới ô nhập tên -->
+          <div style="color: #555; font-family: monospace; margin-bottom: 6px;">
+            ${item.toaDo}
+          </div>
+          
+          <!-- Hàng chứa 2 nút Lưu và Hủy chỉnh sửa -->
+          <div style="display: flex; justify-content: flex-end; gap: 4px;">
+            <button class="save-edit-btn" style="background: #28a745; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;">Lưu</button>
+            <button class="cancel-edit-btn" style="background: #ccc; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;">Hủy</button>
+          </div>
+        `;
+
+        // Tự động trỏ con trỏ chuột và bôi đen toàn bộ chữ trong ô input để gõ nhanh hơn
+        const input = popupContent.querySelector('.edit-input');
+        input.focus();
+        input.select();
+
+        // Bắt sự kiện bấm nút "Hủy" -> Quay lại chế độ xem thông tin bình thường
+        popupContent.querySelector('.cancel-edit-btn').onclick = () => {
+          renderViewMode();
+        };
+
+        // Bắt sự kiện bấm nút "Lưu" -> Gửi dữ liệu cập nhật tên mới lên Google Sheet
+        popupContent.querySelector('.save-edit-btn').onclick = async () => {
+          const newName = input.value.trim();
+          const saveBtn = popupContent.querySelector('.save-edit-btn');
+          
+          // Cấu trúc gói dữ liệu gửi lệnh cập nhật lên Google Apps Script
+          const payload = { 
+            action: 'updateMark', 
+            toaDo: item.toaDo,     // Dùng tọa độ làm khóa chính để tìm đúng dòng cần sửa
+            tenDiaDiem: newName    // Tên địa điểm mới do người dùng vừa nhập
+          };
+
+          try {
+            saveBtn.innerText = 'Đang lưu...';
+            saveBtn.disabled = true;
+
+            // Gửi yêu cầu cập nhật lên Google Sheet qua Web App
+            await fetch(MARK_API_URL, {
+              method: 'POST',
+              mode: 'no-cors', 
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            alert('Đã cập nhật tên địa điểm thành công!');
+            popup.remove(); // Đóng khung popup hiện tại
+            loadSavedMarkers(map); // Tải lại danh sách trên bản đồ
+
+          } catch (err) {
+            console.error('Lỗi khi cập nhật tên địa điểm:', err);
+            alert('Có lỗi xảy ra khi lưu dữ liệu!');
+            saveBtn.innerText = 'Lưu';
+            saveBtn.disabled = false;
+          }
+        };
+      };
+
+      // Khởi chạy chế độ hiển thị xem thông tin (mặc định ban đầu khi click vào ghim)
+      renderViewMode();
+
+      // Khởi tạo đối tượng Popup của MapLibre với các thông số tối ưu giao diện
       const popup = new maplibregl.Popup({ 
-        offset: 25,
-        maxWidth: '180px',
-        closeButton: false 
+        offset: 25,          // Khoảng cách hở theo chiều dọc so với chân icon ghim
+        maxWidth: '180px',   // Giới hạn chiều rộng tối đa của khung popup
+        closeButton: false   // Tắt nút 'x' mặc định vì người dùng có thể click ra ngoài để đóng
       }).setDOMContent(popupContent);
 
-      // Thêm Marker lên bản đồ MapLibre kèm anchor đúng chuẩn chân icon
-      new maplibregl.Marker({ element: el, anchor: 'bottom' })
-        .setLngLat([lng, lat])
-        .setPopup(popup)
-        .addTo(map);
+      // Tạo đối tượng Marker và gắn lên bản đồ MapLibre
+      new maplibregl.Marker({ 
+        element: el,         // Sử dụng phần tử icon tùy chỉnh
+        anchor: 'bottom'     // Neo chuẩn ở chân/đáy của icon để trùng khít tọa độ click
+      })
+        .setLngLat([lng, lat]) // Thiết lập tọa độ vị trí ghim
+        .setPopup(popup)       // Gắn popup chứa thông tin, nút sửa/xóa vào marker
+        .addTo(map);           // Thêm marker chính thức lên bản đồ
     });
   } catch (err) {
     console.error('Không thể tải danh sách điểm đánh dấu từ Google Sheet:', err);
