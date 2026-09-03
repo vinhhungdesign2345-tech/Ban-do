@@ -411,3 +411,7 @@ input {
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
     }
 }
+/* --- ÉP NÚT ĐO KHOẢNG CÁCH KHÔNG BỊ IN ĐẬM --- */
+#measureDistBtn {
+    font-weight: normal !important;
+}
