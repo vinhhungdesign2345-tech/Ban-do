@@ -207,28 +207,36 @@ function initMap() {
   // SỰ KIỆN CẬP NHẬT TỌA ĐỘ VỊ TRÍ CHUỘT
   // ==========================================
   map.on('mousemove', (e) => {
-    // Tìm hoặc tự tạo thẻ hiển thị tọa độ nằm ngay phía trên nút chuyển bản đồ
+    // Tìm hoặc tự tạo thẻ hiển thị tọa độ ghim cố định ở góc dưới bên trái
     let coordDisplay = document.getElementById('coordinate-display');
     if (!coordDisplay) {
       coordDisplay = document.createElement('div');
       coordDisplay.id = 'coordinate-display';
+      
+      // ----------------------------------------------------
+      // CẤU HÌNH GIAO DIỆN HỘP TỌA ĐỘ (ĐÃ TÁCH DÒNG & CHÚ THÍCH CHI TIẾT)
+      // ----------------------------------------------------
       coordDisplay.style.cssText = `
-        background: rgba(255, 255, 255, 0.9);
-        padding: 4px 8px;
-        font-size: 11px;
-        font-family: monospace;
-        border-radius: 4px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        margin-bottom: 5px;
-        text-align: center;
-        font-weight: bold;
-        color: #333;
+        position: absolute !important;     /* Đặt vị trí tuyệt đối so với khung chứa bản đồ */
+        bottom: 45px !important;           /* Khoảng cách cách đáy bản đồ lên cao 45px */
+        left: 10px !important;             /* Khoảng cách cách lề trái đúng 10px */
+        background: rgba(255, 255, 255, 0.9); /* Màu nền trắng có độ trong suốt nhẹ 90% */
+        padding: 4px 8px;                  /* Khoảng cách đệm bên trong (trên/dưới 4px, trái/phải 8px) */
+        font-size: 11px;                   /* Kích thước chữ hiển thị nhỏ gọn */
+        font-family: monospace;            /* Kiểu font chữ dạng đơn không gian giúp căn số thẳng hàng */
+        border-radius: 4px;                /* Độ bo tròn 4 góc của khung */
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Hiệu ứng đổ bóng mờ nhẹ tạo chiều sâu */
+        text-align: center;                /* Căn lề chữ ra giữa khung */
+        font-weight: bold;                 /* Định dạng chữ in đậm */
+        color: #333;                       /* Màu chữ xám đậm dễ nhìn */
+        z-index: 1000;                     /* Độ nổi lớp giao diện (luôn nằm trên các thành phần khác) */
+        margin: 0 !important;              /* Triệt tiêu khoảng cách lề ngoài mặc định */
       `;
       
-      // Chèn trực tiếp ngay phía trên nút chuyển bản đồ (toggleLayerBtn)
-      const toggleBtn = document.getElementById('toggleLayerBtn');
-      if (toggleBtn && toggleBtn.parentNode) {
-        toggleBtn.parentNode.insertBefore(coordDisplay, toggleBtn);
+      // Đưa thẳng vào thẻ chứa bản đồ để nó đứng độc lập, không bị phụ thuộc vào nút bấm nào khác
+      const mapContainer = document.getElementById('map');
+      if (mapContainer) {
+        mapContainer.appendChild(coordDisplay);
       } else {
         document.body.appendChild(coordDisplay);
       }
