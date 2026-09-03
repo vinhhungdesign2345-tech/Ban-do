@@ -90,7 +90,7 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
   popupDiv.id = 'mark-input-popup';
   
   // ----------------------------------------------------
-  // CẤU HÌNH GIAO DIỆN HỘP THOẠI POPUP (DÀN HÀNG NGANG, GỌN GÀNG, CÁCH ĐÁY 45PX)
+  // CẤU HÌNH GIAO DIỆN HỘP THOẠI POPUP
   // ----------------------------------------------------
   popupDiv.style.cssText = `
     position: fixed;                     /* Đặt vị trí cố định trên toàn màn hình cửa sổ */
@@ -111,10 +111,10 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
   `;
   
   popupDiv.innerHTML = `
-    <span style="font-size: 10px; color: #666; font-family: monospace;" title="Tọa độ">${coordinatesStr}</span>
+    <span style="font-size: 11px; color: #666; font-family: monospace;" title="Tọa độ">${coordinatesStr}</span>
     <input type="text" id="placeNameInput" placeholder="Tên địa điểm..." style="width: 110px; padding: 2px 4px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 3px; font-size: 11px;" autofocus>
-    <button id="saveMarkBtn" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Lưu</button>
-    <button id="cancelMarkBtn" style="padding: 2px 6px; background: #ccc; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Hủy</button>
+    <button id="saveMarkBtn" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Lưu</button>
+    <button id="cancelMarkBtn" style="padding: 2px 6px; background: #ccc; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Hủy</button>
   `;
   document.body.appendChild(popupDiv);
 
