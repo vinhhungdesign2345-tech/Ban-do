@@ -5,9 +5,6 @@
 let isMarkingMode = false; // Trạng thái bật/tắt chế độ đánh dấu trên bản đồ
 const MARK_API_URL = 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec';
 
-// Mảng lưu trữ tạm thời các điểm đánh dấu trong phiên làm việc hiện tại trên giao diện
-let activeMarkedInstances = [];
-
 // ==========================================
 // HÀM KHỞI TẠO TÍNH NĂNG ĐÁNH DẤU
 // ==========================================
@@ -52,7 +49,7 @@ function initMarkFeature(map) {
     openMarkPrompt(coordinatesStr, map, { lng: e.lngLat.lng, lat: e.lngLat.lat });
   });
 
-  // 3. Tải và hiển thị các điểm đánh dấu đã lưu từ Sheet lên bản đồ
+  // 3. Tải và hiển thị các điểm đánh dấu đã lưu từ tab "Đánh dấu" trên Google Sheet lên bản đồ
   loadSavedMarkers(map);
 }
 
@@ -101,14 +98,14 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
       return;
     }
 
-    // Lấy ngày cập nhật chuẩn định dạng DD.MM.YYYY theo quy ước dự án
+    // Lấy ngày cập nhật chuẩn định dạng dd/MM/yyyy theo quy ước dự án
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
-    const formattedDate = `${day}.${month}.${year} ${hours}:${minutes}`;
+    const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
 
     // Cấu trúc gói dữ liệu gửi lên Google Apps Script
     const payload = {
@@ -149,12 +146,14 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
 }
 
 // ==========================================
-// HÀM TẢI DANH SÁCH ĐIỂM TỪ GOOGLE SHEET HIỂN THỊ LÊN BẢN ĐỒ
+// HÀM TẢI DANH SÁCH ĐIỂM TỪ TAB "Đánh dấu" HIỂN THỊ LÊN BẢN ĐỒ
 // ==========================================
 async function loadSavedMarkers(map) {
   try {
-    const response = await fetch(MARK_API_URL);
-    const data = await response.json(); // Nhận mảng dữ liệu từ Google Sheet trả về
+    // Gọi API kèm tham số chỉ định lấy dữ liệu từ tab "Đánh dấu"
+    const apiGetUrl = `${MARK_API_URL}?sheet=danhdau`;
+    const response = await fetch(apiGetUrl);
+    const data = await response.json(); 
     
     if (!Array.isArray(data)) return;
 
@@ -164,7 +163,9 @@ async function loadSavedMarkers(map) {
       if (parts.length !== 2) return;
       const [lat, lng] = parts;
 
-      // Tạo phần tử biểu tượng Marker hiển thị trên bản đồ
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      // Tạo phần tử biểu tượng Marker hiển thị trên bản đồ MapLibre
       const el = document.createElement('div');
       el.innerHTML = '📍';
       el.style.fontSize = '20px';
@@ -186,6 +187,6 @@ async function loadSavedMarkers(map) {
         .addTo(map);
     });
   } catch (err) {
-    console.log('Không thể tải danh sách điểm đánh dấu từ Google Sheet:', err);
+    console.error('Không thể tải danh sách điểm đánh dấu từ Google Sheet:', err);
   }
 }
