@@ -213,29 +213,71 @@ async function loadSavedMarkers(map) {
 
       // Tạo phần tử biểu tượng Marker hiển thị trên bản đồ MapLibre
       const el = document.createElement('div');
-      el.innerHTML = '📍';
+      el.innerHTML = '📌';
       el.style.fontSize = '20px';
       el.style.cursor = 'pointer';
 
-     // Tạo khung thông tin chi tiết (Popup) khi click vào marker (đã thu nhỏ gọn lại)
-      const popup = new maplibregl.Popup({ 
-        offset: 25,          // Khoảng hở theo chiều dọc giữa đầu nhọn icon ghim và khung popup
-        maxWidth: '180px',   // Giới hạn chiều rộng tối đa
-        closeButton: false   // Bỏ nút "x" mặc định ở góc popup vì click ra ngoài là tự đóng
-      }).setHTML(`
-        <!-- Thẻ div bao ngoài: Thiết lập font chữ tổng thể, cỡ chữ nhỏ gọn 11px và khoảng cách dòng 1.3 -->
-        <div style="font-family: sans-serif; font-size: 11px; line-height: 1.3;">
-          
-          <!-- Phần khối hiển thị Tên địa điểm: In đậm, màu xanh dương chủ đạo (#007bff) và cách lề dưới 2px -->
-          <div style="font-weight: bold; color: #007bff; margin-bottom: 2px;">
-            ${item.tenDiaDiem || 'Địa điểm đánh dấu'}
-          </div>
-              
+      // 1. Tạo phần tử DOM chứa nội dung popup để dễ dàng gắn sự kiện click nút Xóa
+      const popupContent = document.createElement('div');
+      popupContent.style.cssText = 'font-family: sans-serif; font-size: 11px; line-height: 1.3; width: 160px;';
+      popupContent.innerHTML = `
+        <div style="font-weight: bold; color: #007bff; margin-bottom: 2px;">
+          ${item.tenDiaDiem || 'Địa điểm đánh dấu'}
         </div>
-      `);
+        <div style="color: #555; font-family: monospace; margin-bottom: 6px;">
+          ${item.toaDo}
+        </div>
+        <div style="text-align: right;">
+          <button class="delete-mark-btn" style="background: #dc3545; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;">Xóa ghim</button>
+        </div>
+      `;
 
-      // Thêm Marker lên bản đồ MapLibre
-      new maplibregl.Marker({ element: el })
+      // 2. Bắt sự kiện khi người dùng bấm nút "Xóa ghim" trong popup
+      popupContent.querySelector('.delete-mark-btn').onclick = async () => {
+        if (!confirm(`Bạn có chắc muốn xóa địa điểm "${item.tenDiaDiem || item.toaDo}" này không?`)) return;
+
+        // Cấu trúc gói dữ liệu gửi lệnh xóa lên Google Apps Script
+        const payload = {
+          action: 'deleteMark', 
+          toaDo: item.toaDo
+        };
+
+        const deleteBtn = popupContent.querySelector('.delete-mark-btn');
+        try {
+          deleteBtn.innerText = 'Đang xóa...';
+          deleteBtn.disabled = true;
+
+          // Gửi yêu cầu xóa lên Google Sheet qua Web App
+          await fetch(MARK_API_URL, {
+            method: 'POST',
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          alert('Đã gửi yêu cầu xóa điểm đánh dấu!');
+          popup.remove(); // Đóng popup hiện tại
+          
+          // Tải lại danh sách điểm trên bản đồ để cập nhật trạng thái mới nhất từ Sheet
+          loadSavedMarkers(map);
+
+        } catch (err) {
+          console.error('Lỗi khi xóa điểm đánh dấu:', err);
+          alert('Có lỗi xảy ra khi xóa dữ liệu!');
+          deleteBtn.innerText = 'Xóa ghim';
+          deleteBtn.disabled = false;
+        }
+      };
+
+      // 3. Tạo khung popup (tắt nút x, thu gọn) và gắn DOM Content vào
+      const popup = new maplibregl.Popup({ 
+        offset: 25,
+        maxWidth: '180px',
+        closeButton: false 
+      }).setDOMContent(popupContent);
+
+      // Thêm Marker lên bản đồ MapLibre kèm anchor đúng chuẩn chân icon
+      new maplibregl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat([lng, lat])
         .setPopup(popup)
         .addTo(map);
