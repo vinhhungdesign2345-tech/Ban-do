@@ -404,10 +404,10 @@ input {
         display: none !important;
     }
 
-    /* --- KHUNG POPUP TỌA ĐỘ TRÊN DI ĐỘNG (TRẠNG THÁI MẶC ĐỊNH) --- */
+    /* --- CỐ ĐỊNH POPUP TỌA ĐỘ DỜI LÊN CAO (130px) ĐỂ KHÔNG BỊ CHE KHUẤT --- */
     .maplibregl-popup {
         position: fixed !important;
-        bottom: 70px !important;        /* Mặc định cách đáy 70px */
+        bottom: 130px !important;       /* Dời hẳn lên cao 130px để vượt qua cụm nút bên dưới */
         left: 50% !important;
         transform: translateX(-50%) !important;
         top: auto !important;
@@ -415,12 +415,7 @@ input {
         max-width: 92% !important;
         width: 92% !important;
         z-index: 10000 !important;
-        transition: bottom 0.2s ease !important; /* Tạo hiệu ứng chuyển động mượt mà */
-    }
-
-    /* --- KHI BẬT CHẾ ĐỘ GHIM TRÊN DI ĐỘNG: TỰ ĐỘNG DỜI LÊN 130px ĐỂ KHÔNG BỊ CHE KHUẤT --- */
-    body.pinning-active .maplibregl-popup {
-        bottom: 130px !important; 
+        transition: bottom 0.2s ease !important;
     }
 
     .maplibregl-popup-content {
