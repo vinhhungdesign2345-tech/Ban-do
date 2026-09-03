@@ -220,15 +220,14 @@ function initMap() {
         position: absolute !important;     /* Đặt vị trí tuyệt đối so với khung chứa bản đồ */
         bottom: 45px !important;           /* Khoảng cách cách đáy bản đồ lên cao 45px */
         left: 10px !important;             /* Khoảng cách cách lề trái đúng 10px */
-        background: rgba(0, 0, 0, 0.9);    /* Nêền đen có độ trong suốt nhẹ 90% */
+        background: rgba(0, 0, 0, 0.9);    /* Nền đen có độ trong suốt nhẹ 90% */
         padding: 4px 8px;                  /* Khoảng cách đệm bên trong (trên/dưới 4px, trái/phải 8px) */
         font-size: 11px;                   /* Kích thước chữ hiển thị nhỏ gọn */
         font-family: monospace;            /* Kiểu font chữ dạng đơn không gian giúp căn số thẳng hàng */
         border-radius: 4px;                /* Độ bo tròn 4 góc của khung */
         box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Hiệu ứng đổ bóng mờ nhẹ tạo chiều sâu */
         text-align: center;                /* Căn lề chữ ra giữa khung */
-        font-weight: bold;                 /* Định dạng chữ in đậm */
-        color: #333;                       /* Màu chữ xám đậm dễ nhìn */
+        color: #ffffff;                    /* Chữ màu trắng */
         z-index: 1000;                     /* Độ nổi lớp giao diện (luôn nằm trên các thành phần khác) */
         margin: 0 !important;              /* Triệt tiêu khoảng cách lề ngoài mặc định */
       `;
