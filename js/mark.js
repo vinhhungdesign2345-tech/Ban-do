@@ -94,14 +94,14 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
   // ----------------------------------------------------
   popupDiv.style.cssText = `
     position: fixed;                     /* Đặt vị trí cố định trên toàn màn hình cửa sổ */
-    bottom: 45px;                        /* Khoảng cách cách mép dưới màn hình đúng 45px */
+    bottom: 35px;                        /* Khoảng cách cách mép dưới màn hình 35px */
     left: 50%;                           /* Căn giữa theo chiều ngang từ trái sang 50% */
     transform: translateX(-50%);         /* Dịch chuyển ngược lại 50% chiều rộng để tâm nằm chính giữa ngang */
     background: #ffffff;                 /* Màu nền trắng hiển thị hộp thoại */
     padding: 4px 6px;                    /* Khoảng cách đệm bên trong nhỏ gọn 4px trên/dưới, 6px trái/phải */
     border-radius: 6px;                  /* Độ bo tròn 4 góc của hộp thoại vừa vặn */
     box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng đậm tạo chiều nổi khối */
-    z-index: 10000;                      /* Độ nổi lớp giao diện cao nhất, đè lên mọi thành phần khác */
+    z-index: 100;                        /* Độ nổi lớp giao diện  */
     width: auto;                         /* Chiều rộng tự động co giãn theo nội dung hàng ngang */
     white-space: nowrap;                 /* Ép toàn bộ nội dung nằm trên một hàng ngang duy nhất không bị xuống dòng */
     font-family: sans-serif;             /* Kiểu font chữ hiển thị chuẩn dễ đọc */
