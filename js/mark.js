@@ -66,11 +66,12 @@ function initMarkFeature(map) {
     tempEl.style.fontSize = '20px';
     tempEl.style.cursor = 'pointer';
 
-    tempMarker = new maplibregl.Marker({ element: tempEl })
-      anchor: 'bottom' // <-- Neo điểm chuẩn ở ngay chân/đáy icon 🚩-->
+    tempMarker = new maplibregl.Marker({ 
+      element: tempEl,
+      anchor: 'bottom' // Neo chuẩn ngay chân đáy icon 🚩
     })
-      .setLngLat([e.lngLat.lng, e.lngLat.lat])
-      .addTo(map);
+    .setLngLat([e.lngLat.lng, e.lngLat.lat])
+    .addTo(map);
 
     // Hiển thị hộp thoại nhỏ cho phép người dùng nhập tên địa điểm
     openMarkPrompt(coordinatesStr, map, { lng: e.lngLat.lng, lat: e.lngLat.lat });
