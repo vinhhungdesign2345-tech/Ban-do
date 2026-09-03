@@ -203,59 +203,7 @@ function initMap() {
     initThuaDatSearch(map);
   });
 
-  // ==========================================
-  // SỰ KIỆN CẬP NHẬT TỌA ĐỘ VỊ TRÍ CHUỘT
-  // ==========================================
-  map.on('mousemove', (e) => {
-    // Tìm hoặc tự tạo thẻ hiển thị tọa độ ghim cố định ở góc dưới bên trái
-    let coordDisplay = document.getElementById('coordinate-display');
-    if (!coordDisplay) {
-      coordDisplay = document.createElement('div');
-      coordDisplay.id = 'coordinate-display';
-      
-      // ----------------------------------------------------
-      // CẤU HÌNH GIAO DIỆN HỘP TỌA ĐỘ
-      // ----------------------------------------------------
-      coordDisplay.style.cssText = `
-        position: absolute !important;     /* Đặt vị trí tuyệt đối so với khung chứa bản đồ */
-        bottom: 80px !important;           /* Khoảng cách cách đáy bản đồ lên cao 80px */
-        left: 10px !important;             /* Khoảng cách cách lề trái đúng 10px */
-        background: rgba(0, 0, 0, 0.6);    /* Nền đen có độ trong suốt nhẹ 60% */
-        padding: 4px 8px;                  /* Khoảng cách đệm bên trong (trên/dưới 4px, trái/phải 8px) */
-        font-size: 11px;                   /* Kích thước chữ hiển thị nhỏ gọn */
-        font-family: monospace;            /* Kiểu font chữ dạng đơn không gian giúp căn số thẳng hàng */
-        border-radius: 4px;                /* Độ bo tròn 4 góc của khung */
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Hiệu ứng đổ bóng mờ nhẹ tạo chiều sâu */
-        text-align: center;                /* Căn lề chữ ra giữa khung */
-        color: #ffffff;                    /* Chữ màu trắng */
-        z-index: 100;                     /* Độ nổi lớp giao diện (luôn nằm trên các thành phần khác) */
-        margin: 0 !important;              /* Triệt tiêu khoảng cách lề ngoài mặc định */
-      `;
-      
-      // Đưa thẳng vào thẻ chứa bản đồ để nó đứng độc lập, không bị phụ thuộc vào nút bấm nào khác
-      const mapContainer = document.getElementById('map');
-      if (mapContainer) {
-        mapContainer.appendChild(coordDisplay);
-      } else {
-        document.body.appendChild(coordDisplay);
-      }
-    }
-
-    // Lấy tọa độ vĩ độ và kinh độ theo chuẩn 6 chữ số thập phân
-    const lat = e.lngLat.lat.toFixed(6); 
-    const lng = e.lngLat.lng.toFixed(6); 
-    coordDisplay.innerText = `${lat}, ${lng}`; // Hiển thị chuẩn định dạng yêu cầu
-  });
-
-  // Xóa nội dung hiển thị tọa độ khi con trỏ chuột rời khỏi vùng bản đồ
-  map.on('mouseout', () => {
-    const coordDisplay = document.getElementById('coordinate-display');
-    if (coordDisplay) {
-      coordDisplay.innerText = '';
-    }
-  });
-
-  // Mảng chứa ID các lớp (layer) của thửa đất trên bản đồ cần lắng nghe sự kiện click
+   // Mảng chứa ID các lớp (layer) của thửa đất trên bản đồ cần lắng nghe sự kiện click
   const sheetLayers = ['sheet-thua-dat-fill', 'sheet-thua-dat-line'];
   let isFeatureClicked = false; // Biến cờ kiểm tra xem có click trúng thửa đất hay không
 
