@@ -67,6 +67,8 @@ function initMarkFeature(map) {
     tempEl.style.cursor = 'pointer';
 
     tempMarker = new maplibregl.Marker({ element: tempEl })
+      anchor: 'bottom' // <-- Neo điểm chuẩn ở ngay chân/đáy icon 🚩-->
+    })
       .setLngLat([e.lngLat.lng, e.lngLat.lat])
       .addTo(map);
 
