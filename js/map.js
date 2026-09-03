@@ -193,9 +193,59 @@ function initMap() {
       initMeasureFeature(map);
     }
 
+    // Khởi tạo tính năng đánh dấu tọa độ địa điểm chuyên dụng từ tệp mark.js
+    if (typeof initMarkFeature === 'function') {
+      initMarkFeature(map);
+    }
+
     // Gọi các hàm khởi tạo bộ lọc và tìm kiếm thửa đất
     initFilter(map);
     initThuaDatSearch(map);
+  });
+
+  // ==========================================
+  // SỰ KIỆN CẬP NHẬT TỌA ĐỘ VỊ TRÍ CHUỘT
+  // ==========================================
+  map.on('mousemove', (e) => {
+    // Tìm hoặc tự tạo thẻ hiển thị tọa độ nằm ngay phía trên nút chuyển bản đồ
+    let coordDisplay = document.getElementById('coordinate-display');
+    if (!coordDisplay) {
+      coordDisplay = document.createElement('div');
+      coordDisplay.id = 'coordinate-display';
+      coordDisplay.style.cssText = `
+        background: rgba(255, 255, 255, 0.9);
+        padding: 4px 8px;
+        font-size: 11px;
+        font-family: monospace;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        margin-bottom: 5px;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
+      `;
+      
+      // Chèn trực tiếp ngay phía trên nút chuyển bản đồ (toggleLayerBtn)
+      const toggleBtn = document.getElementById('toggleLayerBtn');
+      if (toggleBtn && toggleBtn.parentNode) {
+        toggleBtn.parentNode.insertBefore(coordDisplay, toggleBtn);
+      } else {
+        document.body.appendChild(coordDisplay);
+      }
+    }
+
+    // Lấy tọa độ vĩ độ và kinh độ theo chuẩn 6 chữ số thập phân
+    const lat = e.lngLat.lat.toFixed(6); 
+    const lng = e.lngLat.lng.toFixed(6); 
+    coordDisplay.innerText = `${lat}, ${lng}`; // Hiển thị chuẩn định dạng yêu cầu
+  });
+
+  // Xóa nội dung hiển thị tọa độ khi con trỏ chuột rời khỏi vùng bản đồ
+  map.on('mouseout', () => {
+    const coordDisplay = document.getElementById('coordinate-display');
+    if (coordDisplay) {
+      coordDisplay.innerText = '';
+    }
   });
 
   // Mảng chứa ID các lớp (layer) của thửa đất trên bản đồ cần lắng nghe sự kiện click
@@ -205,8 +255,8 @@ function initMap() {
   sheetLayers.forEach(layerId => {
     // Sự kiện khi người dùng click chuột vào một thửa đất trên bản đồ
     map.on('click', layerId, (e) => {
-      // Nếu đang trong chế độ đo đạc tự do thì bỏ qua sự kiện click chọn thửa đất này
-      if (isMeasuring) return; 
+      // Nếu đang trong chế độ đo đạc tự do hoặc chế độ đánh dấu thì bỏ qua sự kiện click chọn thửa đất
+      if (isMeasuring || (typeof isMarkingMode !== 'undefined' && isMarkingMode)) return; 
 
       if (!e.features || !e.features.length) return;
       isFeatureClicked = true; // Đánh dấu là đã click trúng thửa đất
