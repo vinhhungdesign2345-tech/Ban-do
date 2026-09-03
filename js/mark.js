@@ -213,7 +213,7 @@ async function loadSavedMarkers(map) {
 
       // Tạo phần tử biểu tượng Marker hiển thị trên bản đồ MapLibre
       const el = document.createElement('div');
-      el.innerHTML = '📌';
+      el.innerHTML = '📍';
       el.style.fontSize = '20px';
       el.style.cursor = 'pointer';
 
