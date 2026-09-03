@@ -207,19 +207,19 @@ input {
 /* --- KHUNG THÔNG TIN THỬA ĐẤT DƯỚI MÀN HÌNH (PC) --- */
 .parcel-panel {
     position: fixed;               /* Đặt vị trí cố định trên màn hình, không bị trôi theo trang */
-    bottom: 20px;                  /* Cách cạnh dưới 20 pixel */
+    bottom: 10px;                  /* Cách cạnh dưới 10 px */
     left: 50%;                     /* Điểm căn lề trái ở chính giữa màn hình */
     transform: translateX(-50%);   /* Dịch chuyển ngược lại 50% bề ngang để khung được căn giữa tuyệt đối */
     z-index: 200;                  /* Độ ưu tiên hiển thị rất cao, nổi lên trên mọi thành phần giao diện khác */
     background: rgba(255, 255, 255, 0.95); /* Màu nền trắng trong suốt 95% */
     backdrop-filter: blur(10px);   /* Làm mờ các chi tiết hiển thị phía sau khung thông tin */
     -webkit-backdrop-filter: blur(10px); /* Hỗ trợ hiệu ứng làm mờ cho trình duyệt Safari */
-    padding: 12px 16px;            /* Khoảng đệm bên trong khung: trên dưới 12px, trái phải 16px */
+    padding: 6px 8px;            /* Khoảng đệm bên trong khung: trên dưới 6px, trái phải 8px */
     border-radius: 12px;           /* Bo tròn các góc khung thông tin với bán kính lớn 12px */
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); /* Tạo hiệu ứng đổ bóng đậm và rộng quanh khung */
     width: 90%;                    /* Chiều rộng khung chiếm 90% màn hình ở các thiết bị nhỏ */
     max-width: 450px;              /* Giới hạn chiều rộng tối đa của khung thông tin là 450 pixel */
-    font-family: Arial, sans-serif;/* Quy định font chữ chuẩn cho toàn bộ panel */
+    font-family: Arial, sans-serif;/* Font chữ Arial cho toàn bộ panel */
     font-size: 12px;               /* Kích thước chữ bên trong panel là 12px */
     color: #1a1a1a;                /* Màu chữ hiển thị là màu đen đậm vừa (#1a1a1a) */
     box-sizing: border-box;        /* Tính toán kích thước khung bao gồm cả padding và border */
@@ -230,9 +230,9 @@ input {
     justify-content: space-between;/* Đẩy tiêu đề sang trái và nút đóng sang phải tối đa */
     align-items: center;           /* Canh chỉnh tiêu đề và nút đóng thẳng hàng theo chiều dọc */
     border-bottom: 1px solid #ddd; /* Tạo đường kẻ ngang mỏng màu xám phân cách phần đầu và nội dung */
-    padding-bottom: 6px;           /* Khoảng cách từ chữ tiêu đề xuống đường kẻ dưới là 6px */
-    margin-bottom: 8px;            /* Khoảng cách lề dưới của phần header với nội dung bên dưới là 8px */
-    font-size: 14px;               /* Kích thước chữ tiêu đề lớn hơn một chút (14px) */
+    padding-bottom: 3px;           /* Khoảng cách từ chữ tiêu đề xuống đường kẻ dưới là 3px */
+    margin-bottom: 6px;            /* Khoảng cách lề dưới của phần header với nội dung bên dưới là 6px */
+    font-size: 14px;               /* Kích thước chữ tiêu đề 14px */
     color: #007bff;                /* Màu chữ tiêu đề là màu xanh dương nổi bật (#007bff) */
 }
 
@@ -251,7 +251,7 @@ input {
 
 .panel-body {
     display: grid;                 /* Sử dụng hệ thống lưới (Grid) để sắp xếp thông tin thửa đất */
-    grid-template-columns: 1fr 1fr;/* Chia nội dung thành đúng 2 cột có chiều rộng bằng nhau (1fr mỗi cột) */
+    grid-template-columns: 1fr 1fr;/* Chia nội dung thành 2 cột có chiều rộng bằng nhau (1fr mỗi cột) */
     gap: 6px 12px;                 /* Khoảng cách lưới: hàng cách hàng 6px, cột cách cột 12px */
 }
 
