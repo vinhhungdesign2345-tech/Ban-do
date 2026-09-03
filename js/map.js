@@ -87,6 +87,15 @@ function initMap() {
 
   // Lưu lại instance của bản đồ vào biến toàn cục để các hàm khác có thể gọi chung
   window.currentMapInstance = map;
+  
+  // ==========================================
+  // NÚT LA BÀN & ĐIỀU HƯỚNG (NAVIGATION CONTROL)
+  // ==========================================
+  map.addControl(new maplibregl.NavigationControl({
+      showCompass: true,     // Hiển thị biểu tượng la bàn xoay theo hướng bản đồ
+      showZoom: true,        // Hiển thị nút phóng to/thu nhỏ (+/-)
+      visualizePitch: true   // Hiển thị trực quan góc nghiêng 3D trên la bàn
+  }), 'top-right');          // Đặt ở góc trên bên phải
 
   // Tạo công cụ định vị vị trí người dùng trên bản đồ
   const geolocate = new maplibregl.GeolocateControl({
@@ -113,7 +122,7 @@ function initMap() {
     }
   });
 
-  // Sự kiện khi bản đồ đã tải hoàn tất toàn bộ tài nguyên cốt lõi
+  // Sự kiện khi bản đồ đã tải hoàn toàn bộ tài nguyên cốt lõi
   map.on('load', () => {
     const satLayer = 'google-satellite-layer'; // ID lớp bản đồ vệ tinh
     const osmLayer = 'osm-layer'; // ID lớp bản đồ OpenStreetMap
