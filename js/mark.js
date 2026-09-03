@@ -82,7 +82,7 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
   `;
   
   popupDiv.innerHTML = `
-    <h3 style="margin: 2px 0 4px 0; font-size: 13px; color: #333; text-align: center;">Đánh dấu</h3>
+    <h3 style="margin: 2px 0 4px 0; font-size: 13px; color: #333; text-align: center;">Ghim</h3>
     <p style="font-size: 10px; color: #666; margin: 0 0 4px 0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${coordinatesStr}</p>
     <input type="text" id="placeNameInput" placeholder="Tên địa điểm..." style="width: 100%; padding: 3px 6px; box-sizing: border-box; margin-bottom: 4px; border: 1px solid #ccc; border-radius: 3px; font-size: 11px;" autofocus>
     <div style="text-align: right; margin-bottom: 2px;">
