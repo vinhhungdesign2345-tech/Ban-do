@@ -415,3 +415,8 @@ input {
 #measureDistBtn {
     font-weight: normal !important;
 }
+/* --- DỜI KHUNG TỌA ĐỘ RÊ CHUỘT LÊN CAO KHI BẬT CHẾ ĐỘ GHIM TRÊN DI ĐỘNG --- */
+body.pinning-active .maplibregl-popup {
+    bottom: 130px !important; /* Dời khung tọa độ lên cao hơn vị trí popup ghim địa điểm */
+    transition: bottom 0.2s ease; /* Tạo hiệu ứng dịch chuyển mượt mà */
+}
