@@ -217,12 +217,19 @@ async function loadSavedMarkers(map) {
       el.style.fontSize = '20px';
       el.style.cursor = 'pointer';
 
-      // Tạo khung thông tin chi tiết (Popup) khi click vào marker
-      const popup = new maplibregl.Popup({ offset: 25 }).setHTML(`
-        <div style="font-family: sans-serif;">
-          <b>${item.tenDiaDiem || 'Địa điểm đánh dấu'}</b><br>
-          <span style="font-size: 11px; color: #666;">Tọa độ: ${item.toaDo}</span><br>
-          <span style="font-size: 11px; color: #666;">Cập nhật: ${item.ngayCapNhat || ''}</span>
+     // Tạo khung thông tin chi tiết (Popup) khi click vào marker (đã thu nhỏ gọn lại)
+      const popup = new maplibregl.Popup({ 
+        offset: 25,          // Khoảng hở theo chiều dọc giữa đầu nhọn icon ghim và khung popup
+        maxWidth: '180px'    // Giới hạn chiều rộng tối đa của khung popup nhỏ lại (tránh bị bè rộng mặc định)
+      }).setHTML(`
+        <!-- Thẻ div bao ngoài: Thiết lập font chữ tổng thể, cỡ chữ nhỏ gọn 11px và khoảng cách dòng 1.3 -->
+        <div style="font-family: sans-serif; font-size: 11px; line-height: 1.3;">
+          
+          <!-- Phần khối hiển thị Tên địa điểm: In đậm, màu xanh dương chủ đạo (#007bff) và cách lề dưới 2px -->
+          <div style="font-weight: bold; color: #007bff; margin-bottom: 2px;">
+            ${item.tenDiaDiem || 'Địa điểm đánh dấu'}
+          </div>
+              
         </div>
       `);
 
