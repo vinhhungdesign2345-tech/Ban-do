@@ -63,26 +63,31 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
 
   const popupDiv = document.createElement('div');
   popupDiv.id = 'mark-input-popup';
+  
+  // ----------------------------------------------------
+  // CẤU HÌNH GIAO DIỆN HỘP THOẠI POPUP (THU NHỎ, GỌN GÀNG, CÁCH ĐÁY 45PX)
+  // ----------------------------------------------------
   popupDiv.style.cssText = `
-    position: fixed; 
-    top: 50%; 
-    left: 50%; 
-    transform: translate(-50%, -50%);
-    background: white; 
-    padding: 20px; 
-    border-radius: 8px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    z-index: 10000; 
-    width: 300px; 
-    font-family: sans-serif;
+    position: fixed;                     /* Đặt vị trí cố định trên toàn màn hình cửa sổ */
+    bottom: 45px;                        /* Khoảng cách cách mép dưới màn hình đúng 45px */
+    left: 50%;                           /* Căn giữa theo chiều ngang từ trái sang 50% */
+    transform: translateX(-50%);         /* Dịch chuyển ngược lại 50% chiều rộng để tâm nằm chính giữa ngang */
+    background: #ffffff;                 /* Màu nền trắng hiển thị hộp thoại */
+    padding: 3px;                        /* Khoảng cách đệm bên trong thu nhỏ tối đa còn 3px */
+    border-radius: 6px;                  /* Độ bo tròn 4 góc 6px */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng đậm tạo chiều nổi khối */
+    z-index: 200;                      /* Độ nổi lớp giao diện 200 */
+    width: 150px;                        /* Chiều rộng hộp thoại 150px */
+    font-family: sans-serif;             /* Kiểu font chữ hiển thị chuẩn dễ đọc */
   `;
+  
   popupDiv.innerHTML = `
-    <h3 style="margin-top: 0; font-size: 16px; color: #333;">Đánh dấu địa điểm</h3>
-    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Tọa độ: <b>${coordinatesStr}</b></p>
-    <input type="text" id="placeNameInput" placeholder="Nhập tên địa điểm..." style="width: 100%; padding: 8px; box-sizing: border-box; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;" autofocus>
-    <div style="text-align: right;">
-      <button id="cancelMarkBtn" style="padding: 6px 12px; margin-right: 5px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Hủy</button>
-      <button id="saveMarkBtn" style="padding: 6px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Đánh dấu</button>
+    <h3 style="margin: 2px 0 4px 0; font-size: 13px; color: #333; text-align: center;">Đánh dấu</h3>
+    <p style="font-size: 10px; color: #666; margin: 0 0 4px 0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${coordinatesStr}</p>
+    <input type="text" id="placeNameInput" placeholder="Tên địa điểm..." style="width: 100%; padding: 3px 6px; box-sizing: border-box; margin-bottom: 4px; border: 1px solid #ccc; border-radius: 3px; font-size: 11px;" autofocus>
+    <div style="text-align: right; margin-bottom: 2px;">
+      <button id="cancelMarkBtn" style="padding: 2px 6px; margin-right: 3px; background: #ccc; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Hủy</button>
+      <button id="saveMarkBtn" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Lưu</button>
     </div>
   `;
   document.body.appendChild(popupDiv);
@@ -98,14 +103,14 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
       return;
     }
 
-    // Lấy ngày cập nhật chuẩn định dạng dd/MM/yyyy theo quy ước dự án
+    // Lấy ngày cập nhật theo chuẩn định dạng DD.MM.YYYY của dự án (Lưu ý: dùng dấu chấm theo quy ước chung)
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
-    const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
+    const formattedDate = `${day}.${month}.${year} ${hours}:${minutes}`;
 
     // Cấu trúc gói dữ liệu gửi lên Google Apps Script
     const payload = {
@@ -139,7 +144,7 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
       console.error('Lỗi khi lưu điểm đánh dấu:', err);
       alert('Có lỗi xảy ra khi lưu dữ liệu!');
     } finally {
-      saveBtn.innerText = 'Đánh dấu';
+      saveBtn.innerText = 'Lưu';
       saveBtn.disabled = false;
     }
   };
