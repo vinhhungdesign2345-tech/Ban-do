@@ -90,7 +90,7 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
   popupDiv.id = 'mark-input-popup';
   
   // ----------------------------------------------------
-  // CẤU HÌNH GIAO DIỆN HỘP THOẠI POPUP (THU NHỎ, GỌN GÀNG, CÁCH ĐÁY 45PX)
+  // CẤU HÌNH GIAO DIỆN HỘP THOẠI POPUP (DÀN HÀNG NGANG, GỌN GÀNG, CÁCH ĐÁY 45PX)
   // ----------------------------------------------------
   popupDiv.style.cssText = `
     position: fixed;                     /* Đặt vị trí cố định trên toàn màn hình cửa sổ */
@@ -98,22 +98,23 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
     left: 50%;                           /* Căn giữa theo chiều ngang từ trái sang 50% */
     transform: translateX(-50%);         /* Dịch chuyển ngược lại 50% chiều rộng để tâm nằm chính giữa ngang */
     background: #ffffff;                 /* Màu nền trắng hiển thị hộp thoại */
-    padding: 3px;                        /* Khoảng cách đệm bên trong thu nhỏ tối đa còn 3px */
+    padding: 4px 6px;                    /* Khoảng cách đệm bên trong nhỏ gọn 4px trên/dưới, 6px trái/phải */
     border-radius: 6px;                  /* Độ bo tròn 4 góc của hộp thoại vừa vặn */
     box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng đậm tạo chiều nổi khối */
     z-index: 10000;                      /* Độ nổi lớp giao diện cao nhất, đè lên mọi thành phần khác */
-    width: 150px;                        /* Chiều rộng cố định của hộp thoại được thu nhỏ gọn còn 150px */
+    width: auto;                         /* Chiều rộng tự động co giãn theo nội dung hàng ngang */
+    white-space: nowrap;                 /* Ép toàn bộ nội dung nằm trên một hàng ngang duy nhất không bị xuống dòng */
     font-family: sans-serif;             /* Kiểu font chữ hiển thị chuẩn dễ đọc */
+    display: flex;                       /* Sử dụng Flexbox để dàn các phần tử thành hàng ngang */
+    align-items: center;                 /* Căn giữa theo chiều dọc các phần tử trong hàng */
+    gap: 6px;                            /* Khoảng cách khoảng hở giữa các phần tử là 6px */
   `;
   
   popupDiv.innerHTML = `
-    <h3 style="margin: 2px 0 4px 0; font-size: 13px; color: #333; text-align: center;">Đánh dấu</h3>
-    <p style="font-size: 10px; color: #666; margin: 0 0 4px 0; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${coordinatesStr}</p>
-    <input type="text" id="placeNameInput" placeholder="Tên địa điểm..." style="width: 100%; padding: 3px 6px; box-sizing: border-box; margin-bottom: 4px; border: 1px solid #ccc; border-radius: 3px; font-size: 11px;" autofocus>
-    <div style="text-align: right; margin-bottom: 2px;">
-      <button id="cancelMarkBtn" style="padding: 2px 6px; margin-right: 3px; background: #ccc; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Hủy</button>
-      <button id="saveMarkBtn" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Lưu</button>
-    </div>
+    <span style="font-size: 10px; color: #666; font-family: monospace;" title="Tọa độ">${coordinatesStr}</span>
+    <input type="text" id="placeNameInput" placeholder="Tên địa điểm..." style="width: 110px; padding: 2px 4px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 3px; font-size: 11px;" autofocus>
+    <button id="saveMarkBtn" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Lưu</button>
+    <button id="cancelMarkBtn" style="padding: 2px 6px; background: #ccc; border: none; border-radius: 3px; cursor: pointer; font-size: 10px;">Hủy</button>
   `;
   document.body.appendChild(popupDiv);
 
@@ -154,7 +155,7 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
     const saveBtn = document.getElementById('saveMarkBtn');
 
     try {
-      saveBtn.innerText = 'Đang lưu...';
+      saveBtn.innerText = 'Lưu...';
       saveBtn.disabled = true;
 
       // Gửi yêu cầu lưu dữ liệu lên Google Sheet qua Web App
