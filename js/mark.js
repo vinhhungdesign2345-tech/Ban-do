@@ -2,10 +2,15 @@
 // js/mark.js - QUẢN LÝ TÍNH NĂNG ĐÁNH DẤU ĐỊA ĐIỂM
 // ==========================================
 
-let isMarkingMode = false; // Trạng thái bật/tắt chế độ đánh dấu
+let isMarkingMode = false; // Trạng thái bật/tắt chế độ đánh dấu trên bản đồ
 const MARK_API_URL = 'https://script.google.com/macros/s/AKfycbz87dcUkndM5w5BeFqUFYJt8JDEcPu98IH5mbzNdov_6eXTNUEhIiknFQ9P7H2c0ZQE/exec';
 
-// Khởi tạo tính năng đánh dấu
+// Mảng lưu trữ tạm thời các điểm đánh dấu trong phiên làm việc hiện tại trên giao diện
+let activeMarkedInstances = [];
+
+// ==========================================
+// HÀM KHỞI TẠO TÍNH NĂNG ĐÁNH DẤU
+// ==========================================
 function initMarkFeature(map) {
   // 1. Tạo nút đánh dấu nằm chung cụm góc trên bên phải (dưới nút định vị)
   const topRightContainer = document.querySelector('.maplibregl-ctrl-top-right');
@@ -44,25 +49,35 @@ function initMarkFeature(map) {
     const coordinatesStr = `${lat}, ${lng}`;
 
     // Hiển thị hộp thoại nhỏ cho phép người dùng nhập tên địa điểm
-    openMarkPrompt(coordinatesStr, map);
+    openMarkPrompt(coordinatesStr, map, { lng: e.lngLat.lng, lat: e.lngLat.lat });
   });
 
   // 3. Tải và hiển thị các điểm đánh dấu đã lưu từ Sheet lên bản đồ
   loadSavedMarkers(map);
 }
 
-// Hàm mở popup nhập tên địa điểm
-function openMarkPrompt(coordinatesStr, map) {
-  // Xóa popup cũ nếu có
+// ==========================================
+// HÀM MỞ HỘP THOẠI NHẬP TÊN ĐỊA ĐIỂM
+// ==========================================
+function openMarkPrompt(coordinatesStr, map, lngLatObj) {
+  // Xóa hộp thoại cũ nếu đang tồn tại trên giao diện
   const oldPopup = document.getElementById('mark-input-popup');
   if (oldPopup) oldPopup.remove();
 
   const popupDiv = document.createElement('div');
   popupDiv.id = 'mark-input-popup';
   popupDiv.style.cssText = `
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    z-index: 10000; width: 300px; font-family: sans-serif;
+    position: fixed; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    background: white; 
+    padding: 20px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 10000; 
+    width: 300px; 
+    font-family: sans-serif;
   `;
   popupDiv.innerHTML = `
     <h3 style="margin-top: 0; font-size: 16px; color: #333;">Đánh dấu địa điểm</h3>
@@ -75,8 +90,10 @@ function openMarkPrompt(coordinatesStr, map) {
   `;
   document.body.appendChild(popupDiv);
 
+  // Sự kiện nút Hủy
   document.getElementById('cancelMarkBtn').onclick = () => popupDiv.remove();
   
+  // Sự kiện nút Lưu đánh dấu
   document.getElementById('saveMarkBtn').onclick = async () => {
     const placeName = document.getElementById('placeNameInput').value.trim();
     if (!placeName) {
@@ -84,50 +101,60 @@ function openMarkPrompt(coordinatesStr, map) {
       return;
     }
 
-    // Lấy ngày cập nhật chuẩn (DD.MM.YYYY hoặc định dạng ISO tùy ý, ở đây dùng ngày giờ hiện tại)
+    // Lấy ngày cập nhật chuẩn định dạng DD.MM.YYYY theo quy ước dự án
     const now = new Date();
-    const formattedDate = `${String(now.getDate()).padStart(2, '0')}.${String(now.getMonth() + 1).padStart(2, '0')}.${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const formattedDate = `${day}.${month}.${year} ${hours}:${minutes}`;
 
-    // Dữ liệu gửi lên Google Apps Script (Cột A: Tên địa điểm, Cột B: Tọa độ, Cột C: Ngày cập nhật)
+    // Cấu trúc gói dữ liệu gửi lên Google Apps Script
     const payload = {
-      action: 'addMark', // Tùy thuộc vào cách viết phía Apps Script của ông
+      action: 'addMark', 
       tenDiaDiem: placeName,
       toaDo: coordinatesStr,
       ngayCapNhat: formattedDate
     };
 
-    try {
-      saveMarkBtn.innerText = 'Đang lưu...';
-      saveMarkBtn.disabled = true;
+    const saveBtn = document.getElementById('saveMarkBtn');
 
+    try {
+      saveBtn.innerText = 'Đang lưu...';
+      saveBtn.disabled = true;
+
+      // Gửi yêu cầu lưu dữ liệu lên Google Sheet qua Web App
       await fetch(MARK_API_URL, {
         method: 'POST',
-        mode: 'no-cors', // Thường dùng cho GAS web app đơn giản
+        mode: 'no-cors', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
-      alert('Đã lưu địa điểm thành công!');
+      alert('Đã lưu địa điểm về Google Sheet thành công!');
       popupDiv.remove();
       
-      // Reload lại danh sách điểm đánh dấu trên bản đồ
+      // Tải lại toàn bộ danh sách điểm đánh dấu trên bản đồ để cập nhật điểm mới
       loadSavedMarkers(map);
 
     } catch (err) {
       console.error('Lỗi khi lưu điểm đánh dấu:', err);
-      alert('Có lỗi xảy ra khi lưu!');
+      alert('Có lỗi xảy ra khi lưu dữ liệu!');
     } finally {
-      saveMarkBtn.innerText = 'Đánh dấu';
-      saveMarkBtn.disabled = false;
+      saveBtn.innerText = 'Đánh dấu';
+      saveBtn.disabled = false;
     }
   };
 }
 
-// Hàm tải danh sách điểm đánh dấu từ Google Sheet hiển thị lên bản đồ
+// ==========================================
+// HÀM TẢI DANH SÁCH ĐIỂM TỪ GOOGLE SHEET HIỂN THỊ LÊN BẢN ĐỒ
+// ==========================================
 async function loadSavedMarkers(map) {
   try {
     const response = await fetch(MARK_API_URL);
-    const data = await response.json(); // Giả định Apps Script trả về mảng các đối tượng [{tenDiaDiem, toaDo, ngayCapNhat}, ...]
+    const data = await response.json(); // Nhận mảng dữ liệu từ Google Sheet trả về
     
     if (!Array.isArray(data)) return;
 
@@ -137,13 +164,13 @@ async function loadSavedMarkers(map) {
       if (parts.length !== 2) return;
       const [lat, lng] = parts;
 
-      // Tạo phần tử hiển thị marker trên bản đồ
+      // Tạo phần tử biểu tượng Marker hiển thị trên bản đồ
       const el = document.createElement('div');
       el.innerHTML = '📍';
       el.style.fontSize = '20px';
       el.style.cursor = 'pointer';
 
-      // Tạo popup thông tin khi click vào marker
+      // Tạo khung thông tin chi tiết (Popup) khi click vào marker
       const popup = new maplibregl.Popup({ offset: 25 }).setHTML(`
         <div style="font-family: sans-serif;">
           <b>${item.tenDiaDiem || 'Địa điểm đánh dấu'}</b><br>
@@ -152,12 +179,13 @@ async function loadSavedMarkers(map) {
         </div>
       `);
 
+      // Thêm Marker lên bản đồ MapLibre
       new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
         .setPopup(popup)
         .addTo(map);
     });
   } catch (err) {
-    console.log('Không thể tải danh sách đánh dấu hoặc cấu trúc phản hồi khác:', err);
+    console.log('Không thể tải danh sách điểm đánh dấu từ Google Sheet:', err);
   }
 }
