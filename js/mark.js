@@ -17,7 +17,7 @@ function initMarkFeature(map) {
     markControlDiv.className = 'maplibregl-ctrl maplibregl-ctrl-group';
     markControlDiv.innerHTML = `
       <button id="toggleMarkBtn" type="button" title="Bật/Tắt chế độ đánh dấu địa điểm" style="background: white; border: none; cursor: pointer; width: 29px; height: 29px; display: flex; align-items: center; justify-content: center; font-size: 16px;">
-        📍
+        📌
       </button>
     `;
     topRightContainer.appendChild(markControlDiv);
@@ -63,24 +63,19 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
 
   const popupDiv = document.createElement('div');
   popupDiv.id = 'mark-input-popup';
-  
-  // ----------------------------------------------------
-  // CẤU HÌNH GIAO DIỆN HỘP THOẠI POPUP (ĐÃ TÁCH DÒNG & CHÚ THÍCH)
-  // ----------------------------------------------------
   popupDiv.style.cssText = `
-    position: fixed;                     /* Đặt vị trí cố định trên toàn màn hình cửa sổ */
-    top: 50%;                            /* Căn giữa theo chiều dọc từ trên xuống 50% */
-    left: 50%;                           /* Căn giữa theo chiều ngang từ trái sang 50% */
-    transform: translate(-50%, -50%);    /* Dịch chuyển ngược lại 50% kích thước để tâm hộp thoại nằm chính giữa tuyệt đối */
-    background: #ffffff;                 /* Màu nền trắng hiển thị hộp thoại */
-    padding: 20px;                       /* Khoảng cách đệm bên trong toàn bộ các cạnh 20px */
-    border-radius: 8px;                  /* Độ bo tròn 4 góc của hộp thoại */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Hiệu ứng đổ bóng đậm tạo chiều nổi khối */
-    z-index: 10000;                      /* Độ nổi lớp giao diện cao nhất, đè lên mọi thành phần khác */
-    width: 300px;                        /* Chiều rộng cố định của hộp thoại là 300px */
-    font-family: sans-serif;             /* Kiểu font chữ hiển thị chuẩn dễ đọc */
+    position: fixed; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    background: white; 
+    padding: 20px; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 10000; 
+    width: 300px; 
+    font-family: sans-serif;
   `;
-  
   popupDiv.innerHTML = `
     <h3 style="margin-top: 0; font-size: 16px; color: #333;">Đánh dấu địa điểm</h3>
     <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Tọa độ: <b>${coordinatesStr}</b></p>
@@ -103,34 +98,21 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
       return;
     }
 
-    // Lấy ngày cập nhật theo chuẩn định dạng DD.MM.YYYY của dự án
+    // Lấy ngày cập nhật chuẩn định dạng dd/MM/yyyy theo quy ước dự án
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
-    const formattedDate = `${day}.${month}.${year} ${hours}:${minutes}`;
-  };
-}
+    const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
 
-    // ==========================================
-    // CẤU TRÚC GÓI DỮ LIỆU (PAYLOAD) GỬI LÊN GOOGLE APPS SCRIPT
-    // ==========================================
+    // Cấu trúc gói dữ liệu gửi lên Google Apps Script
     const payload = {
-      
-      // Hành động yêu cầu xử lý phía server (Xác định đây là lệnh lưu điểm đánh dấu)
       action: 'addMark', 
-      
-      // Tên của địa điểm do người dùng nhập vào từ ô input
       tenDiaDiem: placeName,
-      
-      // Chuỗi tọa độ vị trí vừa click trên bản đồ (Định dạng: "Latitude, Longitude")
       toaDo: coordinatesStr,
-      
-      // Thời điểm thực hiện đánh dấu hoặc cập nhật (Định dạng chuẩn DD.MM.YYYY HH:mm)
       ngayCapNhat: formattedDate
-      
     };
 
     const saveBtn = document.getElementById('saveMarkBtn');
@@ -143,16 +125,14 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
       await fetch(MARK_API_URL, {
         method: 'POST',
         mode: 'no-cors', 
-        headers: { 
-          'Content-Type': 'application/json' 
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       alert('Đã lưu địa điểm về Google Sheet thành công!');
       popupDiv.remove();
       
-      // Tải lại toàn bộ danh sách điểm đánh dấu trên bản đồ để hiển thị ngay lập tức điểm mới
+      // Tải lại toàn bộ danh sách điểm đánh dấu trên bản đồ để cập nhật điểm mới
       loadSavedMarkers(map);
 
     } catch (err) {
@@ -170,7 +150,7 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
 // ==========================================
 async function loadSavedMarkers(map) {
   try {
-    // Gọi API kèm theo tham số chỉ định lấy dữ liệu chính xác từ tab "Đánh dấu"
+    // Gọi API kèm tham số chỉ định lấy dữ liệu từ tab "Đánh dấu"
     const apiGetUrl = `${MARK_API_URL}?sheet=danhdau`;
     const response = await fetch(apiGetUrl);
     const data = await response.json(); 
@@ -191,7 +171,7 @@ async function loadSavedMarkers(map) {
       el.style.fontSize = '20px';
       el.style.cursor = 'pointer';
 
-      // Tạo khung thông tin chi tiết (Popup) hiển thị khi click vào marker trên bản đồ
+      // Tạo khung thông tin chi tiết (Popup) khi click vào marker
       const popup = new maplibregl.Popup({ offset: 25 }).setHTML(`
         <div style="font-family: sans-serif;">
           <b>${item.tenDiaDiem || 'Địa điểm đánh dấu'}</b><br>
@@ -200,7 +180,7 @@ async function loadSavedMarkers(map) {
         </div>
       `);
 
-      // Thêm Marker lên bản đồ MapLibre tại tọa độ Longitude, Latitude đã lấy
+      // Thêm Marker lên bản đồ MapLibre
       new maplibregl.Marker({ element: el })
         .setLngLat([lng, lat])
         .setPopup(popup)
