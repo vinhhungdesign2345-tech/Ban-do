@@ -114,8 +114,8 @@ function openMarkPrompt(coordinatesStr, map, lngLatObj) {
   `;
   
   popupDiv.innerHTML = `
-    <span style="font-size: 11px; color: #666; font-family: monospace;" title="Tọa độ">${coordinatesStr}</span>
     <input type="text" id="placeNameInput" placeholder="Tên địa điểm..." style="width: 110px; padding: 2px 4px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 3px; font-size: 11px;" autofocus>
+    <span style="font-size: 11px; color: #666; font-family: monospace;" title="Tọa độ">${coordinatesStr}</span>
     <button id="saveMarkBtn" style="padding: 2px 6px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Lưu</button>
     <button id="cancelMarkBtn" style="padding: 2px 6px; background: #ccc; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">Hủy</button>
   `;
